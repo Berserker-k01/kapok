@@ -41,7 +41,7 @@ const CheckoutCOD = () => {
                 // Utiliser la route publique existante pour récupérer les infos du produit
                 // Note: On utilise ici une route produit publique (à créer si elle n'existe pas, ou adapter)
                 // Pour l'instant on suppose qu'on peut récupérer le produit via une route publique
-                const response = await axios.get(`http://localhost:5000/api/products/${productId}`)
+                const response = await axios.get(`/api/products/${productId}`)
                 setProduct(response.data.data.product)
             } catch (error) {
                 console.error('Erreur chargement produit:', error)
@@ -59,7 +59,7 @@ const CheckoutCOD = () => {
         if (!product) return
 
         try {
-            await axios.post('http://localhost:5000/api/orders/public', {
+            await axios.post('/api/orders/public', {
                 ...data,
                 items: [{ productId: product.id, quantity: data.quantity }],
                 shopId: product.shop_id

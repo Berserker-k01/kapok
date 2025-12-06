@@ -74,7 +74,7 @@ const Dashboard = () => {
     const fetchInitialData = async () => {
       try {
         // 1. Récupérer les boutiques
-        const shopsRes = await axios.get('http://localhost:5000/api/shops');
+        const shopsRes = await axios.get('/api/shops');
 
         // CORRECTION: Utilisation de shopsRes.data.shops (comme dans Products.jsx) au lieu de data.data.shops
         const shopsData = shopsRes.data.shops || [];
@@ -100,12 +100,12 @@ const Dashboard = () => {
     setLoading(true);
     try {
       // Stats Produits
-      const productsRes = await axios.get(`http://localhost:5000/api/products/shop/${shopId}`);
+      const productsRes = await axios.get(`/api/products/shop/${shopId}`);
       // CORRECTION: productsRes.data.products (comme dans Products.jsx)
       const products = productsRes.data?.products || [];
 
       // Stats Commandes
-      const ordersRes = await axios.get(`http://localhost:5000/api/orders/shop/${shopId}`);
+      const ordersRes = await axios.get(`/api/orders/shop/${shopId}`);
       // CORRECTION: ordersRes.data.orders (comme dans Orders.jsx)
       const orders = ordersRes.data?.orders || [];
 

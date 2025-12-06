@@ -24,7 +24,7 @@ const Shops = () => {
 
   const fetchShops = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/shops')
+      const response = await axios.get('/api/shops')
       setShops(response.data.data.shops)
     } catch (error) {
       console.error('Erreur chargement boutiques:', error)
@@ -41,7 +41,7 @@ const Shops = () => {
   const handleCreateShop = async (e) => {
     e.preventDefault()
     try {
-      await axios.post('http://localhost:5000/api/shops', newShop)
+      await axios.post('/api/shops', newShop)
       toast.success('Boutique créée avec succès !')
       setShowCreateModal(false)
       setNewShop({ name: '', slug: '', category: 'Mode & Vêtements' })
@@ -55,7 +55,7 @@ const Shops = () => {
   const handleToggleStatus = async (shop) => {
     const newStatus = shop.status === 'active' ? 'suspended' : 'active' // 'suspended' comme inactif temporaire
     try {
-      await axios.put(`http://localhost:5000/api/shops/${shop.id}`, { status: newStatus })
+      await axios.put(`/api/shops/${shop.id}`, { status: newStatus })
       toast.success(`Boutique ${newStatus === 'active' ? 'activée' : 'désactivée'}`)
       fetchShops()
     } catch (error) {
@@ -105,7 +105,7 @@ const Shops = () => {
                 </div>
                 <div className="ml-3">
                   <h3 className="text-lg font-semibold text-gray-900">{shop.name}</h3>
-                  <a href={`http://localhost:3001/s/${shop.slug}`} target="_blank" rel="noopener noreferrer" className="text-sm text-primary-600 hover:underline flex items-center">
+                  <a href={`/s/${shop.slug}`} target="_blank" rel="noopener noreferrer" className="text-sm text-primary-600 hover:underline flex items-center">
                     <FiGlobe className="mr-1 h-3 w-3" />
                     {shop.slug}.lesigne.com
                   </a>
@@ -148,7 +148,7 @@ const Shops = () => {
 
             {/* Actions */}
             <div className="flex space-x-2">
-              <a href={`http://localhost:3001/s/${shop.slug}`} target="_blank" rel="noopener noreferrer" className="flex-1 btn-secondary text-sm flex items-center justify-center">
+              <a href={`/s/${shop.slug}`} target="_blank" rel="noopener noreferrer" className="flex-1 btn-secondary text-sm flex items-center justify-center">
                 <FiEye className="mr-1 h-4 w-4" />
                 Voir
               </a>

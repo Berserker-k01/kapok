@@ -31,48 +31,26 @@ app.use(cors({
   origin: [
     'http://localhost:3000', // client
     'http://localhost:3001', // user-panel
-    'http://localhost:3002'  // admin-panel
+    'http://localhost:3002', // admin-panel
+    process.env.FRONTEND_URL, // URL Vercel
+    /\.vercel\.app$/ // Tous les sous-domaines Vercel
   ],
   credentials: true
 }))
 
-// Body parsing middleware
-app.use(express.json({ limit: '10mb' }))
-app.use(express.urlencoded({ extended: true, limit: '10mb' }))
+// ... (reste du code)
 
-// Routes
-app.use('/api/auth', authRoutes)
-app.use('/api/users', userRoutes)
-app.use('/api/shops', shopRoutes)
-app.use('/api/products', productRoutes)
-app.use('/api/orders', orderRoutes)
-app.use('/api/admin', adminRoutes)
-app.use('/api/subscriptions', subscriptionRoutes)
-
-// Health check
-app.get('/api/health', (req, res) => {
-  res.json({
-    status: 'OK',
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime()
-  })
-})
-
-// 404 handler
-app.use('*', (req, res) => {
-  res.status(404).json({
-    error: 'Route non trouvée',
-    path: req.originalUrl
-  })
-})
-
-// Error handler
 // Error handler
 app.use(require('./middleware/errorHandler'));
 
+// Export pour Vercel (Serverless)
+module.exports = app;
 
-app.listen(PORT, () => {
-  console.log(`🚀 Serveur Lesigne démarré sur le port ${PORT}`)
-  console.log(`📊 Mode: ${process.env.NODE_ENV || 'development'}`)
-  console.log(`🔗 API disponible sur: http://localhost:${PORT}/api`)
-})
+// Démarrage serveur (Local uniquement)
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`🚀 Serveur Lesigne démarré sur le port ${PORT}`)
+    console.log(`📊 Mode: ${process.env.NODE_ENV || 'development'}`)
+    console.log(`🔗 API disponible sur: http://localhost:${PORT}/api`)
+  })
+}

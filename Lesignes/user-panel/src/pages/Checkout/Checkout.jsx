@@ -46,7 +46,7 @@ const Checkout = () => {
                 shopId
             }
 
-            await axios.post('http://localhost:5000/api/orders/public', payload)
+            await axios.post('/api/orders/public', payload)
 
             setIsSuccess(true)
             clearCart()
