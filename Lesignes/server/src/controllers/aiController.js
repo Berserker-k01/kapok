@@ -1,0 +1,22 @@
+const aiService = require('../services/aiService');
+const catchAsync = require('../utils/catchAsync');
+
+exports.generateDescription = catchAsync(async (req, res, next) => {
+    const { productName, keywords } = req.body;
+
+    if (!productName) {
+        return res.status(400).json({
+            status: 'fail',
+            message: 'Le nom du produit est requis'
+        });
+    }
+
+    const description = await aiService.generateDescription(productName, keywords);
+
+    res.status(200).json({
+        status: 'success',
+        data: {
+            description
+        }
+    });
+});

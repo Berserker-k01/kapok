@@ -1,0 +1,108 @@
+{% if template contains 'product' %}
+<div id="aliorders-bukl-action" class="aliorders-bukl-action-edit">
+    <span id="ao__icon_shop_owner" onclick="window.open('https://aliorders.fireapps.io/products/edit/{{ product.id }}/{{ shop.permanent_domain }}','mywindow');" style="cursor: pointer;">
+        <img src="https://aliorders.fireapps.io/images/backend/ailorder-shortcut.png" />
+        <span class="ao__tooltip_wrap">Click to edit the product in Ali Orders.<br/>Note: only show for shop owner<span></span></span>
+    </span>
+</div>
+{% endif %}
+<style type="text/css">
+    .aliorders-bukl-action-edit {
+        position: fixed;
+        left: 20px;
+        bottom: 88px;
+        width: 60px;
+        height: 60px;
+        cursor: pointer;
+        display: none;
+        z-index: 9999;
+    }
+    .aliorders-bukl-action-edit > span {
+      	position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+    }
+  	.ao__tooltip_wrap {
+      	display: none;
+  		padding: 10px 15px;
+      	position: absolute;
+      	top: 1px;
+      	left: calc(100% + 10px);
+      	font-size: 13px;
+      	border-radius: 6px;
+      	background: #242539;
+      	color: #FFF;
+      	white-space: nowrap;
+  	}
+    .ao__tooltip_wrap.active {
+        display: block
+    }
+    .ao__tooltip_wrap > span {
+        width: 0;
+        height: 0;
+        border-style: solid;
+        border-width: 10px 8px 10px 0;
+        border-color: transparent #242539 transparent transparent;
+        position: absolute;
+        top: 19px;
+        left: -8px;
+    }
+</style>
+<script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        function loadScript(url, callback){
+            var script = document.createElement("script")
+            script.type = "text/javascript";
+            if (script.readyState){
+                script.onreadystatechange = function(){
+                    if (script.readyState == "loaded" ||
+                        script.readyState == "complete"){
+                        script.onreadystatechange = null;
+                        callback();
+                    }
+                };
+            } else {
+                script.onload = function(){
+                    callback();
+                };
+            }
+            script.src = url;
+            document.getElementsByTagName("head")[0].appendChild(script);
+        }
+
+        let adminBarIframe = document.getElementById('admin-bar-iframe');
+        let checkShopStatus = function($, adminBarIframe) {
+            let status = 0;
+            $.ajax({
+                url: "https://aliorders.fireapps.io/api/shop/{{shop.permanent_domain}}",
+                dataType: "json",
+                success : function(res) {
+                    status = res.data.status;
+                    if(status == 1 && adminBarIframe != null) {
+                        $(".aliorders-bukl-action-edit").css("display", "block");
+                    } else {
+                        $(".aliorders-bukl-action-edit").css("display", "none");
+                    }
+                    document.getElementById("ao__icon_shop_owner").addEventListener("mouseover", function() {
+                        document.querySelector(".ao__tooltip_wrap").classList.add('active')
+                    });
+
+                    document.getElementById("ao__icon_shop_owner").addEventListener("mouseout", function() {
+                        document.querySelector(".ao__tooltip_wrap").classList.remove('active')
+                    });
+                }
+            });
+        }
+
+        if ((typeof jQuery === "undefined") || (parseFloat(jQuery.fn.jquery) < 1.7)) {
+            loadScript("https://code.jquery.com/jquery-3.3.1.min.js", function(){
+                jQuery191 = jQuery.noConflict(true);
+                checkShopStatus(jQuery191, adminBarIframe);
+            });
+        } else {
+            checkShopStatus(jQuery, adminBarIframe);
+        }
+    });
+</script>
