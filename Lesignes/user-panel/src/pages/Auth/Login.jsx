@@ -4,6 +4,7 @@ import toast from 'react-hot-toast'
 import { Card, CardBody } from '../../components/ui/Card'
 import Input from '../../components/ui/Input'
 import Button from '../../components/ui/Button'
+import { Link } from 'react-router-dom'
 
 const Login = () => {
   const [credentials, setCredentials] = useState({ email: '', password: '' })
@@ -97,6 +98,14 @@ const Login = () => {
               >
                 Connexion Démo
               </Button>
+            </div>
+            <div className="text-center mt-4">
+              <p className="text-sm text-gray-600">
+                Pas encore de compte ?{' '}
+                <Link to="/register" className="font-medium text-primary-600 hover:text-primary-500">
+                  S'inscrire
+                </Link>
+              </p>
             </div>
           </form>
         </CardBody>

@@ -47,6 +47,32 @@ export const useAuthStore = create(persist((set, get) => ({
     }
   },
 
+  register: async (userData) => {
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const response = await fetch(`${apiUrl}/api/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData)
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        set({
+          user: data.user,
+          token: data.token,
+          isAuthenticated: true
+        })
+        return { success: true }
+      } else {
+        const errorData = await response.json()
+        return { success: false, error: errorData.error || errorData.message || 'Erreur lors de l\'inscription' }
+      }
+    } catch (error) {
+      return { success: false, error: 'Erreur de connexion' }
+    }
+  },
+
   logout: () => {
     set({
       user: null,

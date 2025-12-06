@@ -4,6 +4,7 @@ import Layout from './components/Layout/Layout'
 import CustomThemeLayout from './layouts/CustomThemeLayout'
 import Dashboard from './pages/Dashboard/Dashboard'
 import Login from './pages/Auth/Login'
+import Register from './pages/Auth/Register'
 import OrderValidation from './pages/OrderValidation/OrderValidation'
 import CheckoutCOD from './pages/Checkout/CheckoutCOD'
 import Checkout from './pages/Checkout/Checkout'
@@ -56,6 +57,7 @@ function App() {
         <Routes>
           {/* Routes Publiques */}
           <Route path="/login" element={!isAuthenticated ? <Login /> : <Navigate to="/" />} />
+          <Route path="/register" element={!isAuthenticated ? <Register /> : <Navigate to="/" />} />
           <Route path="/validate-order/:orderId" element={<OrderValidation />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/checkout/cod/:productId" element={<CheckoutCOD />} />
