@@ -3,6 +3,7 @@ import axios from 'axios'
 import toast from 'react-hot-toast'
 import { FiPlus, FiEdit, FiTrash2, FiImage, FiSearch, FiFilter, FiLoader, FiCpu, FiBox, FiX } from 'react-icons/fi'
 import { motion, AnimatePresence } from 'framer-motion'
+import Button from '../../components/ui/Button'
 import { useAuthStore } from '../../store/authStore'
 import { formatCurrency } from '../../utils/currency'
 
@@ -160,14 +161,14 @@ const Products = () => {
             <span className="text-sm text-red-500">Aucune boutique trouvée</span>
           )}
 
-          <button
+          <Button
             onClick={() => setShowAddModal(true)}
-            className="btn btn-primary shadow-lg shadow-primary-500/20 hover:shadow-primary-500/40 transition-all transform hover:-translate-y-0.5"
             disabled={shops.length === 0}
+            className="flex items-center"
           >
             <FiPlus className="w-5 h-5 mr-2" />
             Ajouter un produit
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -232,14 +233,13 @@ const Products = () => {
                       <p className="text-gray-500 mb-6 max-w-sm">
                         Commencez par ajouter votre premier produit à cette boutique.
                       </p>
-                      <button
+                      <Button
                         onClick={() => setShowAddModal(true)}
-                        className="btn btn-primary"
                         disabled={shops.length === 0}
                       >
                         <FiPlus className="w-4 h-4 mr-2" />
                         Ajouter un produit
-                      </button>
+                      </Button>
                     </div>
                   </td>
                 </tr>
@@ -394,19 +394,20 @@ const Products = () => {
                   </div>
 
                   <div className="flex space-x-3 pt-2">
-                    <button
+                    <Button
                       type="button"
+                      variant="secondary"
                       onClick={() => setShowAddModal(false)}
-                      className="flex-1 btn-secondary"
+                      className="flex-1"
                     >
                       Annuler
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="submit"
-                      className="flex-1 btn-primary"
+                      className="flex-1"
                     >
                       Ajouter le produit
-                    </button>
+                    </Button>
                   </div>
                 </form>
               </motion.div>

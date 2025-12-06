@@ -14,11 +14,11 @@ const Button = React.forwardRef(({
     const baseStyles = 'inline-flex items-center justify-center font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
 
     const variants = {
-        primary: 'bg-primary-600 hover:bg-primary-700 text-white focus:ring-primary-500 shadow-sm',
-        secondary: 'bg-secondary-100 hover:bg-secondary-200 text-secondary-900 border border-secondary-300 focus:ring-secondary-500',
-        outline: 'border border-primary-600 text-primary-600 hover:bg-primary-50 focus:ring-primary-500',
-        ghost: 'text-secondary-700 hover:bg-secondary-100 focus:ring-secondary-500',
-        danger: 'bg-red-600 hover:bg-red-700 text-white focus:ring-red-500'
+        primary: 'bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white shadow-lg shadow-primary-500/30 hover:shadow-primary-500/50 transform active:scale-95',
+        secondary: 'bg-white text-secondary-900 border border-gray-200 hover:bg-gray-50 hover:border-gray-300 shadow-sm',
+        outline: 'border-2 border-primary-600 text-primary-600 hover:bg-primary-50',
+        ghost: 'text-secondary-600 hover:bg-secondary-100 hover:text-secondary-900',
+        danger: 'bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg shadow-red-500/30 hover:shadow-red-500/50'
     };
 
     const sizes = {
