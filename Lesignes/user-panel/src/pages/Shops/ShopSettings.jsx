@@ -40,30 +40,29 @@ const ShopSettings = () => {
     useEffect(() => {
         const fetchShop = async () => {
             try {
-                // En production, utiliser l'API réelle
-                // const response = await axios.get(`/api/shops/${shopId}`)
-                // const settings = response.data.data.shop.settings || {}
+                const response = await axios.get(`/api/shops/${shopId}`)
+                const shop = response.data.data.shop
+                const settings = shop.settings || {}
 
-                // Mock data pour l'instant
-                const mockSettings = {
-                    facebookPixelId: '',
-                    googleAnalyticsId: '',
-                    theme: 'custom',
-                    themeConfig: {
+                reset({
+                    theme: shop.theme || 'minimal',
+                    facebookPixelId: settings.facebookPixelId || '',
+                    googleAnalyticsId: settings.googleAnalyticsId || '',
+                    themeConfig: settings.themeConfig || {
                         colors: {
-                            primary: '#12f568',
-                            secondary: '#000000',
+                            primary: '#000000',
+                            secondary: '#ffffff',
                             background: '#ffffff',
-                            text: '#000000',
+                            text: '#000000'
                         },
                         content: {
                             logoUrl: '',
-                            shopName: 'Ma Boutique',
+                            shopName: ''
                         }
                     }
-                }
-                reset(mockSettings)
+                })
             } catch (error) {
+                console.error(error)
                 toast.error("Impossible de charger les paramètres")
             } finally {
                 setLoading(false)
@@ -74,12 +73,19 @@ const ShopSettings = () => {
 
     const onSubmit = async (data) => {
         try {
-            // En production :
-            // await axios.put(`/api/shops/${shopId}`, { settings: data })
+            // Séparer le thème (colonne dédiée) des autres réglages (JSONB settings)
+            const { theme, ...settingsData } = data
 
-            console.log('Saving settings:', data)
+            const payload = {
+                theme,
+                settings: settingsData
+            }
+
+            await axios.put(`/api/shops/${shopId}`, payload)
+
             toast.success('Paramètres sauvegardés !')
         } catch (error) {
+            console.error(error)
             toast.error("Erreur lors de la sauvegarde")
         }
     }

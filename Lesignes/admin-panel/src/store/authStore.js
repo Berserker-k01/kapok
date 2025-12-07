@@ -7,7 +7,8 @@ export const useAuthStore = create((set, get) => ({
 
   login: async (credentials) => {
     try {
-      const response = await fetch('/api/auth/admin/login', {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const response = await fetch(`${apiUrl}/api/auth/admin/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(credentials)
