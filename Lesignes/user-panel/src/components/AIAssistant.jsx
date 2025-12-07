@@ -8,7 +8,7 @@ import toast from 'react-hot-toast'
 const AIAssistant = () => {
     const [isOpen, setIsOpen] = useState(false)
     const [messages, setMessages] = useState([
-        { id: 1, text: "Bonjour ! Je suis l'assistant IA de Lesigne. Comment puis-je vous aider aujourd'hui ?", sender: 'ai' }
+        { id: 1, text: "Bonjour ! Je suis l'assistant IA de Assimε. Comment puis-je vous aider aujourd'hui ?", sender: 'ai' }
     ])
     const [input, setInput] = useState('')
     const [isTyping, setIsTyping] = useState(false)
@@ -86,7 +86,7 @@ const AIAssistant = () => {
                                     <Sparkles className="w-5 h-5" />
                                 </div>
                                 <div>
-                                    <h3 className="font-bold text-sm">Assistant Lesigne</h3>
+                                    <h3 className="font-bold text-sm">Assistant Assimε</h3>
                                     <p className="text-xs text-indigo-100 flex items-center">
                                         <span className="w-2 h-2 bg-green-400 rounded-full mr-1.5 animate-pulse"></span>
                                         En ligne

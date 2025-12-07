@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Facebook, Instagram, Twitter } from 'lucide-react';
 
 const Footer = ({ config }) => {
-    const { shopName } = config?.content || { shopName: 'LESIGNE' };
+    const { shopName } = config?.content || { shopName: 'ASSIMΕ' };
 
     return (
         <footer className="site-footer pt-16 pb-8" style={{ backgroundColor: 'var(--color-footer-bg)', color: 'var(--color-footer-text)' }}>

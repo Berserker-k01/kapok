@@ -49,10 +49,10 @@ const Login = () => {
         <CardBody className="space-y-8">
           <div className="text-center">
             <div className="mx-auto h-12 w-12 bg-primary-600 rounded-lg flex items-center justify-center">
-              <span className="text-white text-xl font-bold">L</span>
+              <span className="text-white text-xl font-bold">A</span>
             </div>
             <h2 className="mt-6 text-3xl font-extrabold text-secondary-900">
-              Connexion à Lesigne
+              Connexion à Assimε
             </h2>
             <p className="mt-2 text-sm text-secondary-600">
               Accédez à votre dashboard utilisateur

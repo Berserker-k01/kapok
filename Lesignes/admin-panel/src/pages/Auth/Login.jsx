@@ -26,8 +26,8 @@ const Login = () => {
   }
 
   const handleDemoLogin = () => {
-    setCredentials({ email: 'admin@lesigne.com', password: 'admin123' })
-    useAuthStore.getState().login({ email: 'admin@lesigne.com', password: 'admin123' })
+    setCredentials({ email: 'admin@assime.com', password: 'admin123' })
+    useAuthStore.getState().login({ email: 'admin@assime.com', password: 'admin123' })
     toast.success('Connexion admin démo réussie!')
   }
 
@@ -45,7 +45,7 @@ const Login = () => {
             Accès réservé aux administrateurs
           </p>
         </div>
-        
+
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
@@ -60,10 +60,10 @@ const Login = () => {
                 value={credentials.email}
                 onChange={(e) => setCredentials({ ...credentials, email: e.target.value })}
                 className="input-field mt-1"
-                placeholder="admin@lesigne.com"
+                placeholder="admin@assime.com"
               />
             </div>
-            
+
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                 Mot de passe
@@ -89,7 +89,7 @@ const Login = () => {
             >
               {isLoading ? 'Connexion...' : 'Se connecter'}
             </button>
-            
+
             <button
               type="button"
               onClick={handleDemoLogin}

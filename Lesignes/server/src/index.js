@@ -42,7 +42,7 @@ app.use(cors({
 
 // Route racine pour vérifier que l'API tourne
 app.get('/', (req, res) => {
-  res.send('API Lesigne est en ligne ! 🚀');
+  res.send('API Assimε est en ligne ! 🚀');
 });
 
 // Error handler
@@ -54,7 +54,7 @@ module.exports = app;
 // Démarrage serveur (Local uniquement)
 if (require.main === module) {
   app.listen(PORT, () => {
-    console.log(`🚀 Serveur Lesigne démarré sur le port ${PORT}`)
+    console.log(`🚀 Serveur Assimε démarré sur le port ${PORT}`)
     console.log(`📊 Mode: ${process.env.NODE_ENV || 'development'}`)
     console.log(`🔗 API disponible sur: http://localhost:${PORT}/api`)
   })

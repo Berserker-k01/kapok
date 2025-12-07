@@ -41,7 +41,7 @@ router.post('/register', async (req, res) => {
       VALUES ($1, $2, $3, $4, 'user', 'active', NOW())
       RETURNING id, name, email, role, created_at
     `
-    
+
     const result = await db.query(insertQuery, [userId, name, email, hashedPassword])
     const user = result.rows[0]
 
@@ -130,14 +130,14 @@ router.post('/admin/login', async (req, res) => {
     }
 
     // Connexion démo admin
-    if (email === 'admin@lesigne.com' && password === 'admin123') {
+    if (email === 'admin@assime.com' && password === 'admin123') {
       const token = generateToken('admin-demo', 'super_admin')
       return res.json({
         message: 'Connexion admin démo réussie',
         user: {
           id: 'admin-demo',
           name: 'Super Admin',
-          email: 'admin@lesigne.com',
+          email: 'admin@assime.com',
           role: 'super_admin'
         },
         token

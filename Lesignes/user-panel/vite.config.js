@@ -9,9 +9,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
       manifest: {
-        name: 'Lesigne Platform',
-        short_name: 'Lesigne',
-        description: 'Gérez votre boutique en ligne avec Lesigne',
+        name: 'Assimε Platform',
+        short_name: 'Assimε',
+        description: 'Gérez votre boutique en ligne avec Assimε',
         theme_color: '#ffffff',
         icons: [
           {

@@ -111,10 +111,10 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
           <div className="flex items-center justify-between h-16 px-6 border-b border-secondary-200">
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">L</span>
+                <span className="text-white font-bold text-sm">A</span>
               </div>
               <div>
-                <div className="text-lg font-semibold text-secondary-900">Lesigne</div>
+                <div className="text-lg font-semibold text-secondary-900">Assimε</div>
                 <div className="text-xs text-muted-foreground">Ma Boutique</div>
               </div>
             </div>

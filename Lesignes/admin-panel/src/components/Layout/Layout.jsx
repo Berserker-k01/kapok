@@ -40,7 +40,7 @@ const Layout = ({ children }) => {
             {sidebarOpen ? (
               <div className="flex items-center space-x-2">
                 <ShieldCheck className="text-red-500" />
-                <span className="text-xl font-bold">Lesigne Admin</span>
+                <span className="text-xl font-bold">Assimε Admin</span>
               </div>
             ) : (
               <ShieldCheck className="text-red-500" size={24} />
@@ -88,7 +88,7 @@ const Layout = ({ children }) => {
               {sidebarOpen && (
                 <div className="ml-3 overflow-hidden">
                   <p className="text-sm font-medium text-white truncate">Super Admin</p>
-                  <p className="text-xs text-secondary-400 truncate">admin@lesigne.com</p>
+                  <p className="text-xs text-secondary-400 truncate">admin@assime.com</p>
                 </div>
               )}
             </div>

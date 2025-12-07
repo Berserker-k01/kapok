@@ -17,7 +17,7 @@ const CustomThemeLayout = ({ children, config }) => {
         },
         content: {
             logoUrl: null,
-            shopName: 'LESIGNE',
+            shopName: 'ASSIMΕ',
             ...config?.content
         }
     };

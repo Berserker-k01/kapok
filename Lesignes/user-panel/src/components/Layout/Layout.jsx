@@ -49,10 +49,10 @@ const Layout = ({ children }) => {
           <div className="h-16 flex items-center justify-center border-b border-secondary-200">
             {sidebarOpen ? (
               <h1 className="text-xl font-bold bg-gradient-to-r from-primary-600 to-primary-800 bg-clip-text text-transparent">
-                Lesigne
+                Assimε
               </h1>
             ) : (
-              <span className="text-2xl font-bold text-primary-600">L</span>
+              <span className="text-2xl font-bold text-primary-600">A</span>
             )}
           </div>
 
@@ -97,7 +97,7 @@ const Layout = ({ children }) => {
               {sidebarOpen && (
                 <div className="ml-3 overflow-hidden">
                   <p className="text-sm font-medium text-secondary-900 truncate">Utilisateur Démo</p>
-                  <p className="text-xs text-secondary-500 truncate">demo@lesigne.com</p>
+                  <p className="text-xs text-secondary-500 truncate">demo@assime.com</p>
                 </div>
               )}
             </div>

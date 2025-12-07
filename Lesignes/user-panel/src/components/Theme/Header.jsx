@@ -4,7 +4,7 @@ import { ShoppingCart, Search, Menu, X } from 'lucide-react';
 
 const Header = ({ config }) => {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-    const { logoUrl, shopName } = config?.content || { shopName: 'LESIGNE' };
+    const { logoUrl, shopName } = config?.content || { shopName: 'ASSIMΕ' };
 
     return (
         <div data-section-type="header-section">
