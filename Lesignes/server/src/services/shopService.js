@@ -183,9 +183,54 @@ class ShopService {
 
     const salesResult = await db.query(salesQuery, [shopId]);
 
+    // Top Produits (5 meilleurs)
+    const topProductsQuery = `
+      SELECT 
+        p.name,
+        COUNT(oi.id) as sales,
+        COALESCE(SUM(oi.total), 0) as revenue
+      FROM order_items oi
+      JOIN products p ON oi.product_id = p.id
+      JOIN orders o ON oi.order_id = o.id
+      WHERE o.shop_id = $1 AND o.status = 'completed'
+      GROUP BY p.id, p.name
+      ORDER BY revenue DESC
+      LIMIT 5
+    `;
+    const topProductsResult = await db.query(topProductsQuery, [shopId]);
+
+    // Ventes par Catégorie
+    const categoryQuery = `
+      SELECT 
+        p.category as name,
+        COALESCE(SUM(oi.total), 0) as value
+      FROM order_items oi
+      JOIN products p ON oi.product_id = p.id
+      JOIN orders o ON oi.order_id = o.id
+      WHERE o.shop_id = $1 AND o.status = 'completed'
+      GROUP BY p.category
+    `;
+    const categoryResult = await db.query(categoryQuery, [shopId]);
+
+    // Activité Récente (5 dernières commandes)
+    const recentActivityQuery = `
+      SELECT 
+        'Nouvelle commande' as action,
+        orders.order_number as details,
+        orders.created_at as time
+      FROM orders
+      WHERE shop_id = $1
+      ORDER BY created_at DESC
+      LIMIT 5
+    `;
+    const recentActivityResult = await db.query(recentActivityQuery, [shopId]);
+
     return {
       stats: statsResult.rows[0],
-      monthlySales: salesResult.rows
+      monthlySales: salesResult.rows,
+      topProducts: topProductsResult.rows,
+      categorySales: categoryResult.rows,
+      recentActivity: recentActivityResult.rows
     };
   }
 }

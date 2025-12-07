@@ -28,6 +28,19 @@ export default defineConfig({
       }
     })
   ],
+  build: {
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'ui-vendor': ['@headlessui/react', 'framer-motion', 'lucide-react', 'react-icons', 'react-hot-toast', 'react-dropzone'],
+          'charts-vendor': ['recharts'],
+          'utils-vendor': ['axios', 'date-fns', 'zod', 'react-hook-form', '@hookform/resolvers', 'zustand']
+        }
+      }
+    }
+  },
   server: {
     port: 3001,
     proxy: {
