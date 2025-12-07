@@ -33,7 +33,7 @@ exports.chat = async (messages) => {
         // Ajouter le contexte système si ce n'est pas le cas
         const systemMessage = {
             role: "system",
-            content: "Tu es l'assistant IA de la plateforme e-commerce 'Lesigne'. Tu aides les commerçants à gérer leur boutique, optimiser leurs ventes et résoudre leurs problèmes techniques. Sois concis, utile et courtois."
+            content: "Tu es l'assistant IA de la plateforme e-commerce 'Assimε'. Tu aides les commerçants à gérer leur boutique, optimiser leurs ventes et résoudre leurs problèmes techniques. Sois concis, utile et courtois."
         };
 
         const conversation = [systemMessage, ...messages];

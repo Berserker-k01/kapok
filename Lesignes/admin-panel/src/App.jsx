@@ -1,4 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import axios from 'axios'
+import { useEffect } from 'react'
 import { Toaster } from 'react-hot-toast'
 import Layout from './components/Layout/Layout'
 import Dashboard from './pages/Dashboard/Dashboard'
@@ -87,6 +89,15 @@ const AdminLogin = () => {
 
 function App() {
   const { isAuthenticated } = useAuthStore()
+
+  // Configuration Axios
+  useEffect(() => {
+    axios.defaults.baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    const token = useAuthStore.getState().token;
+    if (token) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    }
+  }, []);
 
   if (!isAuthenticated) {
     return (

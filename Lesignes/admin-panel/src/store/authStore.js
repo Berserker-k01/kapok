@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import axios from 'axios'
 
 export const useAuthStore = create((set, get) => ({
   user: null,
@@ -7,41 +8,33 @@ export const useAuthStore = create((set, get) => ({
 
   login: async (credentials) => {
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-      const response = await fetch(`${apiUrl}/api/auth/admin/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(credentials)
-      })
+      try {
+        const response = await axios.post('/api/auth/admin/login', credentials);
 
-      if (response.ok) {
-        const data = await response.json()
-        set({
-          user: data.user,
-          token: data.token,
-          isAuthenticated: true
-        })
-        return { success: true }
-      } else {
-        const errorData = await response.json()
-        return { success: false, error: errorData.error || 'Identifiants invalides' }
+        if (response.data) {
+          set({
+            user: response.data.user,
+            token: response.data.token,
+            isAuthenticated: true
+          })
+          return { success: true }
+        }
+      } catch (error) {
+        return { success: false, error: error.response?.data?.error || 'Erreur de connexion au serveur' }
       }
-    } catch (error) {
-      return { success: false, error: 'Erreur de connexion au serveur' }
-    }
-  },
+    },
 
-  logout: () => {
-    set({
-      user: null,
-      token: null,
-      isAuthenticated: false
-    })
-  },
+    logout: () => {
+      set({
+        user: null,
+        token: null,
+        isAuthenticated: false
+      })
+    },
 
-  updateUser: (userData) => {
-    set(state => ({
-      user: { ...state.user, ...userData }
-    }))
-  }
-}))
+      updateUser: (userData) => {
+        set(state => ({
+          user: { ...state.user, ...userData }
+        }))
+      }
+  }))

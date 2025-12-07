@@ -38,7 +38,19 @@ app.use(cors({
   credentials: true
 }))
 
-// ... (reste du code)
+// Middleware de parsing
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/shops', shopRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/subscriptions', subscriptionRoutes);
+app.use('/api/ai', require('./routes/ai')); // Import direct pour l'IA
 
 // Route racine pour vérifier que l'API tourne
 app.get('/', (req, res) => {

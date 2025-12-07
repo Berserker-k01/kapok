@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import axios from 'axios'
 
 export const useAuthStore = create(persist((set, get) => ({
   user: null,
@@ -23,53 +24,36 @@ export const useAuthStore = create(persist((set, get) => ({
     }
 
     try {
-      // API call réelle (à implémenter)
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-      const response = await fetch(`${apiUrl}/api/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(credentials)
-      })
+      // API call réelle
+      const response = await axios.post('/api/auth/login', credentials);
 
-      if (response.ok) {
-        const data = await response.json()
+      if (response.data) {
         set({
-          user: data.user,
-          token: data.token,
+          user: response.data.user,
+          token: response.data.token,
           isAuthenticated: true
         })
         return { success: true }
-      } else {
-        return { success: false, error: 'Identifiants invalides' }
       }
     } catch (error) {
-      return { success: false, error: 'Erreur de connexion' }
+      return { success: false, error: error.response?.data?.error || 'Erreur de connexion' }
     }
   },
 
   register: async (userData) => {
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-      const response = await fetch(`${apiUrl}/api/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(userData)
-      })
+      const response = await axios.post('/api/auth/register', userData);
 
-      if (response.ok) {
-        const data = await response.json()
+      if (response.data) {
         set({
-          user: data.user,
-          token: data.token,
+          user: response.data.user,
+          token: response.data.token,
           isAuthenticated: true
         })
         return { success: true }
-      } else {
-        const errorData = await response.json()
-        return { success: false, error: errorData.error || errorData.message || 'Erreur lors de l\'inscription' }
       }
     } catch (error) {
-      return { success: false, error: 'Erreur de connexion' }
+      return { success: false, error: error.response?.data?.error || 'Erreur lors de l\'inscription' }
     }
   },
 
