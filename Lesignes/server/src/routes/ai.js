@@ -8,5 +8,6 @@ const router = express.Router();
 router.use(protect);
 
 router.post('/generate-description', aiController.generateDescription);
+router.post('/chat', aiController.chat);
 
 module.exports = router;

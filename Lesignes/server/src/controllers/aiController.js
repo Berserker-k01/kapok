@@ -20,3 +20,23 @@ exports.generateDescription = catchAsync(async (req, res, next) => {
         }
     });
 });
+
+exports.chat = catchAsync(async (req, res, next) => {
+    const { messages } = req.body;
+
+    if (!messages || !Array.isArray(messages)) {
+        return res.status(400).json({
+            status: 'fail',
+            message: 'Les messages sont requis et doivent être un tableau'
+        });
+    }
+
+    const reply = await aiService.chat(messages);
+
+    res.status(200).json({
+        status: 'success',
+        data: {
+            reply
+        }
+    });
+});
