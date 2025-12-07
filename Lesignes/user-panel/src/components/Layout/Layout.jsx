@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import Button from '../ui/Button';
 import { useAuthStore } from '../../store/authStore';
+import AIAssistant from '../AIAssistant';
 
 const Layout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -132,6 +133,7 @@ const Layout = ({ children }) => {
           </div>
         </main>
       </div>
+      <AIAssistant />
     </div>
   );
 };

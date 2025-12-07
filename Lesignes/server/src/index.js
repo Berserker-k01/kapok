@@ -40,6 +40,11 @@ app.use(cors({
 
 // ... (reste du code)
 
+// Route racine pour vérifier que l'API tourne
+app.get('/', (req, res) => {
+  res.send('API Lesigne est en ligne ! 🚀');
+});
+
 // Error handler
 app.use(require('./middleware/errorHandler'));
 
