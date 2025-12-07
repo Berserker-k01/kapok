@@ -1,11 +1,11 @@
 const express = require('express');
 const aiController = require('../controllers/aiController');
-const { protect } = require('../middleware/auth');
+const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
 
 // Protéger toutes les routes IA
-router.use(protect);
+router.use(authenticateToken);
 
 router.post('/generate-description', aiController.generateDescription);
 router.post('/chat', aiController.chat);

@@ -15,6 +15,9 @@ const subscriptionRoutes = require('./routes/subscriptions')
 const app = express()
 const PORT = process.env.PORT || 5000
 
+// Trust Proxy pour Vercel/Heroku
+app.set('trust proxy', 1);
+
 // Middleware de sécurité
 app.use(helmet())
 
