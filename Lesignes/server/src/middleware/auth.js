@@ -14,17 +14,17 @@ const authenticateToken = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET)
-    
+
     // Vérifier si l'utilisateur existe toujours
     const userQuery = 'SELECT id, email, role, status FROM users WHERE id = $1'
     const userResult = await db.query(userQuery, [decoded.userId])
-    
+
     if (userResult.rows.length === 0) {
       return res.status(401).json({ error: 'Utilisateur non trouvé' })
     }
 
     const user = userResult.rows[0]
-    
+
     if (user.status !== 'active') {
       return res.status(401).json({ error: 'Compte suspendu ou inactif' })
     }
@@ -32,7 +32,8 @@ const authenticateToken = async (req, res, next) => {
     req.user = user
     next()
   } catch (error) {
-    return res.status(403).json({ error: 'Token invalide' })
+    console.error('Auth Middleware Error:', error);
+    return res.status(403).json({ error: 'Token invalide ou erreur serveur' })
   }
 }
 
@@ -56,7 +57,7 @@ const requireSuperAdmin = (req, res, next) => {
 const requireShopOwnership = async (req, res, next) => {
   try {
     const shopId = req.params.shopId || req.body.shopId
-    
+
     if (!shopId) {
       return res.status(400).json({ error: 'ID de boutique requis' })
     }
@@ -64,7 +65,7 @@ const requireShopOwnership = async (req, res, next) => {
     // Vérifier si l'utilisateur possède cette boutique
     const query = 'SELECT id FROM shops WHERE id = $1 AND owner_id = $2'
     const result = await db.query(query, [shopId, req.user.id])
-    
+
     if (result.rows.length === 0) {
       return res.status(403).json({ error: 'Accès non autorisé à cette boutique' })
     }
