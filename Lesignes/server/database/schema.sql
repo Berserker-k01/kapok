@@ -202,3 +202,20 @@ INSERT INTO themes (name, description, category, is_free) VALUES
 ('Fashion', 'Thème optimisé pour la mode', 'fashion', TRUE),
 ('Electronics', 'Thème pour produits électroniques', 'electronics', TRUE),
 ('Home & Garden', 'Thème pour maison et jardin', 'home', TRUE);
+
+-- Table des paramètres de la plateforme (Admin)
+CREATE TABLE platform_settings (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    key VARCHAR(255) UNIQUE NOT NULL,
+    value TEXT,
+    description TEXT,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Données de configuration par défaut
+INSERT INTO platform_settings (key, value, description) VALUES
+('platform_name', 'Assimε', 'Nom public de la plateforme'),
+('support_email', 'support@assime.com', 'Email de support principal'),
+('free_plan_shops_limit', '2', 'Nombre de boutiques gratuites par utilisateur'),
+('free_plan_products_limit', '100', 'Nombre de produits max par boutique gratuite');
+

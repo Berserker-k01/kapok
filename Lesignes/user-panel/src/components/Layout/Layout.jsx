@@ -19,7 +19,7 @@ const Layout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
-  const { logout } = useAuthStore();
+  const { user, logout } = useAuthStore();
 
   const handleLogout = () => {
     logout();
@@ -96,8 +96,8 @@ const Layout = ({ children }) => {
               </div>
               {sidebarOpen && (
                 <div className="ml-3 overflow-hidden">
-                  <p className="text-sm font-medium text-secondary-900 truncate">Utilisateur Démo</p>
-                  <p className="text-xs text-secondary-500 truncate">demo@assime.com</p>
+                  <p className="text-sm font-medium text-secondary-900 truncate">{user?.name || 'Utilisateur'}</p>
+                  <p className="text-xs text-secondary-500 truncate">{user?.email || ''}</p>
                 </div>
               )}
             </div>

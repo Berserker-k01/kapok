@@ -30,7 +30,8 @@ router.get('/dashboard', async (req, res) => {
       SELECT 
         DATE_TRUNC('month', created_at) as month,
         COUNT(CASE WHEN role = 'user' THEN 1 END) as new_users,
-        (SELECT COUNT(*) FROM shops WHERE DATE_TRUNC('month', created_at) = DATE_TRUNC('month', u.created_at)) as new_shops
+        (SELECT COUNT(*) FROM shops WHERE DATE_TRUNC('month', created_at) = DATE_TRUNC('month', u.created_at)) as new_shops,
+        (SELECT COALESCE(SUM(total_amount), 0) FROM orders WHERE status = 'completed' AND DATE_TRUNC('month', created_at) = DATE_TRUNC('month', u.created_at)) as total_revenue
       FROM users u
       WHERE created_at >= CURRENT_DATE - INTERVAL '6 months'
       GROUP BY DATE_TRUNC('month', created_at)
@@ -47,6 +48,49 @@ router.get('/dashboard', async (req, res) => {
   } catch (error) {
     console.error('Erreur dashboard admin:', error)
     res.status(500).json({ error: 'Erreur lors de la récupération des statistiques' })
+  }
+})
+
+// --- Gestion des Paramètres Plateforme ---
+
+// Récupérer les paramètres
+router.get('/settings', async (req, res) => {
+  try {
+    const query = 'SELECT key, value FROM platform_settings'
+    const result = await db.query(query)
+
+    // Convertir en objet { key: value }
+    const settings = result.rows.reduce((acc, row) => {
+      acc[row.key] = row.value
+      return acc
+    }, {})
+
+    res.json({ settings })
+  } catch (error) {
+    console.error('Erreur récupération paramètres:', error)
+    res.status(500).json({ error: 'Erreur lors de la récupération des paramètres' })
+  }
+})
+
+// Mettre à jour les paramètres
+router.put('/settings', requireSuperAdmin, async (req, res) => {
+  try {
+    const settings = req.body // { platform_name: '...', ... }
+
+    // On met à jour chaque clé reçue
+    const keys = Object.keys(settings)
+
+    for (const key of keys) {
+      await db.query(
+        'INSERT INTO platform_settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = $2, updated_at = NOW()',
+        [key, String(settings[key])]
+      )
+    }
+
+    res.json({ message: 'Paramètres mis à jour avec succès' })
+  } catch (error) {
+    console.error('Erreur mise à jour paramètres:', error)
+    res.status(500).json({ error: 'Erreur lors de la mise à jour des paramètres' })
   }
 })
 

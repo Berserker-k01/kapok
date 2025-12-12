@@ -36,9 +36,10 @@ const Products = () => {
     const fetchShops = async () => {
       try {
         const response = await axios.get('/api/shops')
-        setShops(response.data.shops)
-        if (response.data.shops.length > 0) {
-          setSelectedShop(response.data.shops[0].id)
+        const shopsData = response.data.data?.shops || []
+        setShops(shopsData)
+        if (shopsData.length > 0) {
+          setSelectedShop(shopsData[0].id)
         } else {
           setLoading(false)
         }

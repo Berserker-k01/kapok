@@ -1,14 +1,38 @@
+import { useState, useEffect } from 'react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts'
+import axios from 'axios'
+import { format } from 'date-fns'
+import { fr } from 'date-fns/locale'
 
 const Analytics = () => {
-  const data = [
-    { name: 'Jan', users: 400, shops: 240, revenue: 2400 },
-    { name: 'Fév', users: 300, shops: 139, revenue: 2210 },
-    { name: 'Mar', users: 200, shops: 980, revenue: 2290 },
-    { name: 'Avr', users: 278, shops: 390, revenue: 2000 },
-    { name: 'Mai', users: 189, shops: 480, revenue: 2181 },
-    { name: 'Jun', users: 239, shops: 380, revenue: 2500 },
-  ]
+  const [data, setData] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchAnalytics = async () => {
+      try {
+        const response = await axios.get('/api/admin/dashboard')
+        const growth = response.data.monthlyGrowth
+
+        // Formatter les données pour le graphique
+        const formattedData = growth.map(item => ({
+          name: format(new Date(item.month), 'MMM', { locale: fr }),
+          users: parseInt(item.new_users),
+          shops: parseInt(item.new_shops),
+          revenue: parseFloat(item.total_revenue)
+        })).reverse() // On veut du plus ancien au plus récent
+
+        setData(formattedData)
+      } catch (error) {
+        console.error('Erreur chargement analytics:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchAnalytics()
+  }, [])
+
+  if (loading) return <div className="p-8 text-center">Chargement des données...</div>
 
   return (
     <div className="space-y-6">
@@ -26,7 +50,7 @@ const Analytics = () => {
               <XAxis dataKey="name" />
               <YAxis />
               <Tooltip />
-              <Line type="monotone" dataKey="users" stroke="#3b82f6" strokeWidth={2} />
+              <Line type="monotone" dataKey="users" stroke="#3b82f6" strokeWidth={2} name="Nouveaux Utilisateurs" />
             </LineChart>
           </ResponsiveContainer>
         </div>
@@ -38,8 +62,8 @@ const Analytics = () => {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
               <YAxis />
-              <Tooltip />
-              <Bar dataKey="revenue" fill="#10b981" />
+              <Tooltip formatter={(value) => `${value} FCFA`} />
+              <Bar dataKey="revenue" fill="#10b981" name="Revenus" />
             </BarChart>
           </ResponsiveContainer>
         </div>

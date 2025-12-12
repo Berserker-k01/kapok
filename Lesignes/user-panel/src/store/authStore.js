@@ -8,21 +8,7 @@ export const useAuthStore = create(persist((set, get) => ({
   isAuthenticated: false,
 
   login: async (credentials) => {
-    // Simulation connexion démo
-    if (credentials.demo || credentials.email === 'demo@user.com') {
-      set({
-        user: {
-          id: 1,
-          name: 'Utilisateur Démo',
-          email: 'demo@user.com',
-          role: 'user'
-        },
-        token: 'demo-token-123',
-        isAuthenticated: true
-      })
-      return { success: true }
-    }
-
+    // Connexion normale via API
     try {
       // API call réelle
       const response = await axios.post('/api/auth/login', credentials);

@@ -33,7 +33,20 @@ class ShopService {
     }
 
     const userPlan = userResult.rows[0].plan || 'free';
-    const planLimit = PLANS[userPlan]?.maxShops || 2;
+
+    // Récupérer les limites dynamiques depuis la DB
+    let planLimit = 2; // Fallback
+
+    if (userPlan === 'free') {
+      const settingsQuery = "SELECT value FROM platform_settings WHERE key = 'free_plan_shops_limit'";
+      const settingsResult = await db.query(settingsQuery);
+      if (settingsResult.rows.length > 0) {
+        planLimit = parseInt(settingsResult.rows[0].value);
+      }
+    } else {
+      // Pour les autres plans, on garde la config statique pour l'instant (ou on pourrait aussi la mettre en DB)
+      planLimit = PLANS[userPlan]?.maxShops || 2;
+    }
 
     // Vérifier la limite de boutiques
     const countQuery = 'SELECT COUNT(*) FROM shops WHERE owner_id = $1';

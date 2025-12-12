@@ -13,38 +13,21 @@ import PublicShop from './pages/Shops/PublicShop'
 import Products from './pages/Products/Products'
 import Orders from './pages/Orders/Orders'
 import Shops from './pages/Shops/Shops'
+import Analytics from './pages/Analytics/Analytics'
+import Settings from './pages/Settings/Settings'
 import { useAuthStore } from './store/authStore'
-import { Card, CardBody } from './components/ui/Card'
 import axios from 'axios'
 import { useEffect } from 'react'
 import ErrorBoundary from './components/ErrorBoundary'
-
-// Pages simples pour les autres routes (Placeholder amélioré)
-const PlaceholderPage = ({ title, description, icon, color }) => (
-  <div className="space-y-6">
-    <h1 className="text-2xl font-bold text-secondary-900">{title}</h1>
-    <Card>
-      <CardBody className="text-center py-12">
-        <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4 ${color}`}>
-          <span className="text-3xl">{icon}</span>
-        </div>
-        <h3 className="text-lg font-medium text-secondary-900">Module {title}</h3>
-        <p className="text-secondary-500 mt-2 max-w-md mx-auto">{description}</p>
-      </CardBody>
-    </Card>
-  </div>
-)
-
-const ShopsPage = () => <PlaceholderPage title="Mes Boutiques" description="Gérez vos boutiques, configurez vos thèmes et paramètres." icon="🏪" color="bg-blue-100 text-blue-600" />
-const AnalyticsPage = () => <PlaceholderPage title="Analytics" description="Visualisez les performances de vos boutiques." icon="📊" color="bg-purple-100 text-purple-600" />
-const SettingsPage = () => <PlaceholderPage title="Paramètres" description="Gérez votre compte et vos préférences." icon="⚙️" color="bg-gray-100 text-gray-600" />
 
 function App() {
   const { isAuthenticated, token } = useAuthStore()
 
   useEffect(() => {
     // Configuration de l'URL de base pour Axios
-    axios.defaults.baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    // En Docker/Prod, on utilise le proxy Nginx (relatif)
+    // En Dev local, Vite proxy s'en charge aussi
+    axios.defaults.baseURL = import.meta.env.VITE_API_URL || '/';
 
     if (token) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
@@ -116,8 +99,8 @@ function App() {
                     <Route path="/shops/:shopId/settings" element={<ShopSettings />} />
                     <Route path="/products" element={<Products />} />
                     <Route path="/orders" element={<Orders />} />
-                    <Route path="/analytics" element={<AnalyticsPage />} />
-                    <Route path="/settings" element={<SettingsPage />} />
+                    <Route path="/analytics" element={<Analytics />} />
+                    <Route path="/settings" element={<Settings />} />
                     <Route path="*" element={<Navigate to="/" replace />} />
                   </Routes>
                 </Layout>

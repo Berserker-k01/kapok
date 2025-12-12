@@ -24,7 +24,9 @@ exports.generateDescription = async (productName, keywords) => {
         return completion.choices[0].message.content;
     } catch (error) {
         console.error('DeepSeek Error:', error);
-        throw new Error("Erreur lors de la génération de la description");
+        // Renvoyer l'erreur spécifique de l'API si disponible
+        const errorMessage = error.error?.message || error.message || "Erreur lors de la génération de la description";
+        throw new Error(errorMessage);
     }
 };
 
