@@ -15,6 +15,17 @@ const authenticateToken = async (req, res, next) => {
   try {
     const decoded = jwt.verify(token, JWT_SECRET)
 
+    // Cas spécial pour l'admin démo (bypass DB)
+    if (decoded.userId === 'admin-demo') {
+      req.user = {
+        id: 'admin-demo',
+        email: 'admin@assime.com',
+        role: 'super_admin',
+        status: 'active'
+      }
+      return next()
+    }
+
     // Vérifier si l'utilisateur existe toujours
     const userQuery = 'SELECT id, email, role, status FROM users WHERE id = $1'
     const userResult = await db.query(userQuery, [decoded.userId])
