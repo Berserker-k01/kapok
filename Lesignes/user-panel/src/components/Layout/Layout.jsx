@@ -9,7 +9,8 @@ import {
   Settings,
   Menu,
   LogOut,
-  User
+  User,
+  CreditCard
 } from 'lucide-react';
 import Button from '../ui/Button';
 import { useAuthStore } from '../../store/authStore';
@@ -32,6 +33,7 @@ const Layout = ({ children }) => {
     { icon: Package, label: 'Produits', path: '/products' },
     { icon: ShoppingCart, label: 'Commandes', path: '/orders' },
     { icon: BarChart2, label: 'Analytics', path: '/analytics' },
+    { icon: CreditCard, label: 'Abonnements', path: '/subscriptions' },
     { icon: Settings, label: 'Paramètres', path: '/settings' },
   ];
 

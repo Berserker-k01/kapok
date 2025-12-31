@@ -14,10 +14,9 @@ const handleDuplicateFieldsDB = err => {
 
 const sendErrorDev = (err, res) => {
     res.status(err.statusCode).json({
-        status: err.status,
-        error: err,
-        message: err.message,
-        stack: err.stack
+        success: false,
+        error: err.message,
+        ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
     });
 };
 
@@ -25,16 +24,16 @@ const sendErrorProd = (err, res) => {
     // Operational, trusted error: send message to client
     if (err.isOperational) {
         res.status(err.statusCode).json({
-            status: err.status,
-            message: err.message
+            success: false,
+            error: err.message
         });
     }
     // Programming or other unknown error: don't leak error details
     else {
         console.error('ERROR 💥', err);
         res.status(500).json({
-            status: 'error',
-            message: 'Une erreur est survenue, veuillez réessayer plus tard.'
+            success: false,
+            error: 'Une erreur est survenue, veuillez réessayer plus tard.'
         });
     }
 };

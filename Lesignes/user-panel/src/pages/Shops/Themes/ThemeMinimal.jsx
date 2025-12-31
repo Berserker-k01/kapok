@@ -1,9 +1,25 @@
 import { FiShoppingBag, FiSearch, FiArrowRight } from 'react-icons/fi'
 import { Link } from 'react-router-dom'
 import { useCart } from '../../../context/CartContext'
+import { trackViewContent, isPixelReady } from '../../../utils/facebookPixel'
+import { useEffect } from 'react'
 
 const ThemeMinimal = ({ shop, products }) => {
     const { addToCart, setIsCartOpen, cartCount } = useCart()
+
+    // Tracker ViewContent pour chaque produit au chargement
+    useEffect(() => {
+        if (isPixelReady() && products.length > 0) {
+            products.forEach(product => {
+                trackViewContent(
+                    product.name,
+                    'product',
+                    product.price,
+                    product.currency || 'XOF'
+                )
+            })
+        }
+    }, [products])
 
     return (
         <div className="min-h-screen bg-white font-sans text-gray-900">

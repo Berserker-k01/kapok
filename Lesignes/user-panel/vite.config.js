@@ -30,6 +30,10 @@ export default defineConfig({
   ],
   build: {
     chunkSizeWarningLimit: 1000,
+    outDir: 'dist',
+    assetsDir: 'assets',
+    sourcemap: false,
+    minify: 'terser',
     rollupOptions: {
       output: {
         manualChunks: {
@@ -41,6 +45,7 @@ export default defineConfig({
       }
     }
   },
+  base: process.env.NODE_ENV === 'production' ? '/app/' : '/',
   server: {
     port: 3001,
     proxy: {

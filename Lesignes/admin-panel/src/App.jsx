@@ -7,6 +7,9 @@ import Dashboard from './pages/Dashboard/Dashboard'
 import Subscriptions from './pages/Subscriptions/Subscriptions'
 import Users from './pages/Users/Users'
 import Shops from './pages/Shops/Shops'
+import PaymentRequests from './pages/PaymentRequests/PaymentRequests'
+import Plans from './pages/Plans/Plans'
+import PaymentNumbers from './pages/PaymentNumbers/PaymentNumbers'
 import { useAuthStore } from './store/authStore'
 import { useState } from 'react'
 
@@ -45,6 +48,9 @@ function App() {
           <Route path="/users" element={<Users />} />
           <Route path="/shops" element={<Shops />} />
           <Route path="/subscriptions" element={<Subscriptions />} />
+          <Route path="/payment-requests" element={<PaymentRequests />} />
+          <Route path="/plans" element={<Plans />} />
+          <Route path="/payment-numbers" element={<PaymentNumbers />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Layout>

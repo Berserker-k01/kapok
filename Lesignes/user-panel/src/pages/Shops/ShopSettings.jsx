@@ -204,20 +204,34 @@ const ShopSettings = () => {
                         )}
 
                         <div className="border-t pt-6">
-                            <h3 className="font-semibold text-gray-900 mb-4">Marketing & Tracking</h3>
+                            <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                                <FiFacebook className="text-blue-600" />
+                                Marketing & Tracking
+                            </h3>
                             <div className="space-y-4">
-                                <Input
-                                    label="ID Pixel Facebook"
-                                    placeholder="Ex: 123456789012345"
-                                    {...register('facebookPixelId')}
-                                    error={errors.facebookPixelId?.message}
-                                />
-                                <Input
-                                    label="ID Google Analytics (G-XXXXX)"
-                                    placeholder="Ex: G-ABC123DEF"
-                                    {...register('googleAnalyticsId')}
-                                    error={errors.googleAnalyticsId?.message}
-                                />
+                                <div>
+                                    <Input
+                                        label="ID Pixel Facebook"
+                                        placeholder="Ex: 123456789012345"
+                                        {...register('facebookPixelId')}
+                                        error={errors.facebookPixelId?.message}
+                                    />
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        Permet de tracker les conversions, créer des audiences et optimiser vos publicités Facebook.
+                                        Trouvez votre ID dans les Paramètres de votre Pixel Facebook.
+                                    </p>
+                                </div>
+                                <div>
+                                    <Input
+                                        label="ID Google Analytics (G-XXXXX)"
+                                        placeholder="Ex: G-ABC123DEF"
+                                        {...register('googleAnalyticsId')}
+                                        error={errors.googleAnalyticsId?.message}
+                                    />
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        Suivez le trafic et les performances de votre boutique avec Google Analytics.
+                                    </p>
+                                </div>
                             </div>
                         </div>
 

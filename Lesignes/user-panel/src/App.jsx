@@ -15,6 +15,9 @@ import Orders from './pages/Orders/Orders'
 import Shops from './pages/Shops/Shops'
 import Analytics from './pages/Analytics/Analytics'
 import Settings from './pages/Settings/Settings'
+import PlanSelection from './pages/Subscriptions/PlanSelection'
+import Payment from './pages/Subscriptions/Payment'
+import PaymentStatus from './pages/Subscriptions/PaymentStatus'
 import { useAuthStore } from './store/authStore'
 import axios from 'axios'
 import { useEffect } from 'react'
@@ -101,6 +104,9 @@ function App() {
                     <Route path="/orders" element={<Orders />} />
                     <Route path="/analytics" element={<Analytics />} />
                     <Route path="/settings" element={<Settings />} />
+                    <Route path="/subscriptions" element={<PlanSelection />} />
+                    <Route path="/subscriptions/payment/:planKey" element={<Payment />} />
+                    <Route path="/subscriptions/payment-status/:paymentId" element={<PaymentStatus />} />
                     <Route path="*" element={<Navigate to="/" replace />} />
                   </Routes>
                 </Layout>

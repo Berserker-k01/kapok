@@ -1,11 +1,12 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import toast from 'react-hot-toast'
+import { trackAddToCart } from '../utils/facebookPixel'
 
 const CartContext = createContext()
 
 export const useCart = () => useContext(CartContext)
 
-export const CartProvider = ({ children }) => {
+export const CartProvider = ({ children, facebookPixelId }) => {
     const [cartItems, setCartItems] = useState(() => {
         try {
             const savedCart = localStorage.getItem('lesigne_cart')
@@ -36,6 +37,11 @@ export const CartProvider = ({ children }) => {
             return [...prev, { ...product, quantity }]
         })
         setIsCartOpen(true)
+
+        // Tracker l'événement Facebook Pixel
+        if (facebookPixelId) {
+            trackAddToCart(product, quantity)
+        }
     }
 
     const removeFromCart = (productId) => {

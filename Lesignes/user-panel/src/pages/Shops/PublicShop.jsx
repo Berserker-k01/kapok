@@ -6,6 +6,7 @@ import ThemeMinimal from './Themes/ThemeMinimal'
 import ThemeBold from './Themes/ThemeBold'
 import { CartProvider } from '../../context/CartContext'
 import CartDrawer from '../../components/Cart/CartDrawer'
+import FacebookPixel from '../../components/FacebookPixel/FacebookPixel'
 
 const PublicShop = () => {
     const { slug } = useParams()
@@ -27,30 +28,15 @@ const PublicShop = () => {
         fetchShop()
     }, [slug])
 
-    // Injection du Pixel Facebook
+    // Récupérer l'ID du pixel Facebook depuis les settings
+    const facebookPixelId = shop?.settings?.facebookPixelId || shop?.tracking?.facebookPixelId
+
+    // Stocker le pixelId dans localStorage pour l'utiliser dans le checkout
     useEffect(() => {
-        if (shop?.tracking?.facebookPixelId) {
-            const pixelId = shop.tracking.facebookPixelId;
-
-            // Code standard Facebook Pixel
-            !function (f, b, e, v, n, t, s) {
-                if (f.fbq) return; n = f.fbq = function () {
-                    n.callMethod ?
-                        n.callMethod.apply(n, arguments) : n.queue.push(arguments)
-                };
-                if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = '2.0';
-                n.queue = []; t = b.createElement(e); t.async = !0;
-                t.src = v; s = b.getElementsByTagName(e)[0];
-                s.parentNode.insertBefore(t, s)
-            }(window, document, 'script',
-                'https://connect.facebook.net/en_US/fbevents.js');
-
-            window.fbq('init', pixelId);
-            window.fbq('track', 'PageView');
-
-            console.log(`Facebook Pixel ${pixelId} initialized`)
+        if (facebookPixelId) {
+            localStorage.setItem('lesigne_facebook_pixel_id', facebookPixelId)
         }
-    }, [shop])
+    }, [facebookPixelId])
 
     if (loading) return <div className="min-h-screen flex items-center justify-center">Chargement...</div>
     if (error) return <div className="min-h-screen flex items-center justify-center text-red-500">{error}</div>
@@ -64,17 +50,19 @@ const PublicShop = () => {
     ]
 
     // Sélection du thème (par défaut 'minimal')
-    const currentTheme = shop.settings?.theme || 'minimal'
+    const currentTheme = shop?.settings?.theme || shop?.theme || 'minimal'
 
     return (
-        <CartProvider>
-            <CartDrawer />
-            {currentTheme === 'bold' ? (
-                <ThemeBold shop={shop} products={products} />
-            ) : (
-                <ThemeMinimal shop={shop} products={products} />
-            )}
-        </CartProvider>
+        <FacebookPixel pixelId={facebookPixelId}>
+            <CartProvider facebookPixelId={facebookPixelId}>
+                <CartDrawer />
+                {currentTheme === 'bold' ? (
+                    <ThemeBold shop={shop} products={products} />
+                ) : (
+                    <ThemeMinimal shop={shop} products={products} />
+                )}
+            </CartProvider>
+        </FacebookPixel>
     )
 }
 

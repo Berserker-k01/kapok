@@ -1,0 +1,59 @@
+# ============================================
+# FICHIER DE CONFIGURATION SERVEUR
+# ============================================
+# Copiez ce fichier vers .env et remplissez les valeurs
+# IMPORTANT: Ne commitez JAMAIS le fichier .env dans Git!
+
+# ============================================
+# ENVIRONNEMENT
+# ============================================
+NODE_ENV=production
+PORT=5000
+
+# ============================================
+# BASE DE DONNÉES POSTGRESQL
+# ============================================
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=lesigne_db
+DB_USER=lesigne_user
+DB_PASSWORD=CHANGEZ_MOI_AVEC_UN_MOT_DE_PASSE_SECURISE
+
+# ============================================
+# SÉCURITÉ JWT
+# ============================================
+# Générez une clé sécurisée avec: openssl rand -base64 32
+JWT_SECRET=CHANGEZ_MOI_AVEC_UNE_CLE_SECRETE_TRES_LONGUE_ET_ALEATOIRE
+
+# ============================================
+# URLS FRONTEND (pour CORS)
+# ============================================
+FRONTEND_URL=https://votre-domaine.com
+USER_PANEL_URL=https://app.votre-domaine.com
+ADMIN_PANEL_URL=https://admin.votre-domaine.com
+
+# ============================================
+# STRIPE (Optionnel - pour les paiements)
+# ============================================
+STRIPE_SECRET_KEY=
+STRIPE_PUBLISHABLE_KEY=
+
+# ============================================
+# OPENAI (Optionnel - pour l'assistant IA)
+# ============================================
+OPENAI_API_KEY=
+
+# ============================================
+# GOOGLE APIs (Optionnel - pour Google Sheets)
+# ============================================
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GOOGLE_REDIRECT_URI=
+
+# ============================================
+# NOTES
+# ============================================
+# - Remplacez toutes les valeurs "CHANGEZ_MOI" par vos vraies valeurs
+# - Ne partagez JAMAIS ce fichier .env
+# - Faites des backups réguliers de ce fichier (hors du dépôt Git)
+

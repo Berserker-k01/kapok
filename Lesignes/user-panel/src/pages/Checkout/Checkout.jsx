@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -10,6 +10,7 @@ import Button from '../../components/ui/Button'
 import { ShoppingBag, Truck, CheckCircle, ArrowLeft } from 'lucide-react'
 import { useCart } from '../../context/CartContext'
 import { Link, useNavigate } from 'react-router-dom'
+import { trackInitiateCheckout, trackPurchase, trackAddPaymentInfo, isPixelReady } from '../../utils/facebookPixel'
 
 const checkoutSchema = z.object({
     firstName: z.string().min(2, 'Le prénom est requis'),
@@ -23,15 +24,38 @@ const Checkout = () => {
     const { cartItems, cartTotal, clearCart } = useCart()
     const navigate = useNavigate()
     const [isSuccess, setIsSuccess] = useState(false)
+    const [facebookPixelId, setFacebookPixelId] = useState(null)
 
     const { register, handleSubmit, formState: { errors, isSubmitting }, watch } = useForm({
         resolver: zodResolver(checkoutSchema)
     })
 
+    // Récupérer le pixel ID depuis localStorage (stocké lors de la visite de la boutique)
+    useEffect(() => {
+        const pixelId = localStorage.getItem('lesigne_facebook_pixel_id')
+        if (pixelId) {
+            setFacebookPixelId(pixelId)
+        }
+    }, [])
+
+    // Tracker InitiateCheckout au chargement de la page
+    useEffect(() => {
+        if (cartItems.length > 0 && isPixelReady()) {
+            const currency = cartItems[0]?.currency || 'XOF'
+            trackInitiateCheckout(cartItems, cartTotal, currency)
+        }
+    }, []) // Une seule fois au montage
+
     const onSubmit = async (data) => {
         if (cartItems.length === 0) return
 
         try {
+            // Tracker AddPaymentInfo avant la soumission
+            if (isPixelReady()) {
+                const currency = cartItems[0]?.currency || 'XOF'
+                trackAddPaymentInfo(cartTotal, currency)
+            }
+
             // On suppose que tous les items viennent du même shop pour l'instant
             // ou que le backend gère le multi-shop (ce qui n'est pas encore le cas dans notre contrôleur simplifié)
             // On prend le shopId du premier item
@@ -46,7 +70,25 @@ const Checkout = () => {
                 shopId
             }
 
-            await axios.post('/api/orders/public', payload)
+            const response = await axios.post('/api/orders/public', payload)
+            const orderId = response.data?.data?.order?.id || response.data?.order?.id
+
+            // Tracker Purchase après succès
+            if (isPixelReady()) {
+                const currency = cartItems[0]?.currency || 'XOF'
+                trackPurchase({
+                    orderId: orderId || `order_${Date.now()}`,
+                    value: cartTotal,
+                    currency: currency,
+                    items: cartItems.map(item => ({
+                        id: item.id,
+                        productId: item.id,
+                        quantity: item.quantity,
+                        price: item.price,
+                        total: item.price * item.quantity
+                    }))
+                })
+            }
 
             setIsSuccess(true)
             clearCart()

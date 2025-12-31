@@ -11,6 +11,10 @@ const productRoutes = require('./routes/products')
 const orderRoutes = require('./routes/orders')
 const adminRoutes = require('./routes/admin')
 const subscriptionRoutes = require('./routes/subscriptions')
+const subscriptionPaymentRoutes = require('./routes/subscriptionPayments')
+const planConfigRoutes = require('./routes/planConfig')
+const paymentConfigRoutes = require('./routes/paymentConfig')
+const path = require('path')
 
 const app = express()
 const PORT = process.env.PORT || 5000
@@ -45,6 +49,9 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Servir les fichiers statiques (images uploadées)
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
@@ -53,6 +60,9 @@ app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
+app.use('/api/subscription-payments', subscriptionPaymentRoutes);
+app.use('/api/admin/plans', planConfigRoutes);
+app.use('/api/admin/payment-numbers', paymentConfigRoutes);
 app.use('/api/ai', require('./routes/ai')); // Import direct pour l'IA
 
 // Route racine pour vérifier que l'API tourne

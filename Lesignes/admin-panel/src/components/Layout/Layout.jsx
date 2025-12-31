@@ -9,7 +9,10 @@ import {
   Menu,
   LogOut,
   ShieldCheck,
-  Bell
+  Bell,
+  Clock,
+  Package,
+  Phone
 } from 'lucide-react';
 import Button from '../ui/Button';
 
@@ -22,6 +25,9 @@ const Layout = ({ children }) => {
     { icon: Users, label: 'Utilisateurs', path: '/users' },
     { icon: Store, label: 'Boutiques', path: '/shops' },
     { icon: CreditCard, label: 'Abonnements', path: '/subscriptions' },
+    { icon: Clock, label: 'Paiements en attente', path: '/payment-requests' },
+    { icon: Package, label: 'Gestion des plans', path: '/plans' },
+    { icon: Phone, label: 'Numéros de paiement', path: '/payment-numbers' },
     { icon: Settings, label: 'Paramètres', path: '/settings' },
   ];
 
