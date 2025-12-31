@@ -1,8 +1,13 @@
 {
   "name": "lesigne-server",
   "version": "1.0.0",
-  "description": "Serveur backend multi-tenant pour Lesigne",
+  "description": "Serveur backend multi-tenant pour Lesigne - Express API",
   "main": "src/index.js",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
@@ -11,11 +16,11 @@
   "keywords": [
     "ecommerce",
     "multi-tenant",
-    "api"
+    "api",
+    "express"
   ],
   "author": "Lesigne Team",
   "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
