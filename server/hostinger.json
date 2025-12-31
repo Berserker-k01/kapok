@@ -1,0 +1,15 @@
+{
+  "name": "lesigne-api",
+  "version": "1.0.0",
+  "type": "commonjs",
+  "framework": "express",
+  "main": "src/index.js",
+  "start": {
+    "command": "node src/index.js",
+    "port": 5000
+  },
+  "build": {
+    "command": "npm install --production"
+  }
+}
+

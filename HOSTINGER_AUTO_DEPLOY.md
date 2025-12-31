@@ -133,3 +133,4 @@ Les hébergements partagés ont souvent des limitations. Un **VPS** vous donne :
 
 **En résumé** : Configurez manuellement dans le panneau Hostinger ou utilisez SSH/VPS pour plus de contrôle.
 
+

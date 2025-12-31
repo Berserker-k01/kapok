@@ -1,14 +1,16 @@
 {
-  "name": "user-panel",
+  "name": "lesigne-user-panel",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
+  "description": "Dashboard utilisateurs Lesigne - React + Vite",
+  "framework": "vite",
   "scripts": {
     "dev": "vite --port 3001",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview",
-    "start": "serve -s dist -l 3001"
+    "preview": "vite preview --port 3001",
+    "start": "vite preview --port 3001"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.9",

@@ -4,6 +4,7 @@
   "description": "Serveur backend multi-tenant pour Lesigne - Express API",
   "main": "src/index.js",
   "type": "commonjs",
+  "framework": "express",
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=9.0.0"

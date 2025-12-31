@@ -1,14 +1,16 @@
 {
-  "name": "admin-panel",
+  "name": "lesigne-admin-panel",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
+  "description": "Dashboard admin Lesigne - React + Vite",
+  "framework": "vite",
   "scripts": {
     "dev": "vite --port 3002",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview",
-    "start": "serve -s dist -l 3002"
+    "preview": "vite preview --port 3002",
+    "start": "vite preview --port 3002"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",

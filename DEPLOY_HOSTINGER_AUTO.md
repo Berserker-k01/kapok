@@ -151,3 +151,4 @@ Avant de déployer, vérifiez :
 
 **Note** : L'hébergement partagé Hostinger peut avoir des limitations pour les applications Node.js complexes. Un VPS est recommandé pour ce type de projet.
 
+

@@ -2,6 +2,10 @@
 
 Guide pour déployer Lesigne sur un VPS avec Dokploy.
 
+> 📚 **Guides détaillés disponibles** :
+> - `GUIDE_DOKPLOY_COMPLET.md` - Guide complet étape par étape
+> - `DOKPLOY_QUICK_START.md` - Guide express (15 minutes)
+
 ## 📋 Spécifications VPS Recommandées
 
 ### Minimum (Développement/Test)

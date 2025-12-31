@@ -268,3 +268,4 @@ themes/
 
 **Dernière mise à jour** : Structure simplifiée - tout à la racine pour faciliter le déploiement.
 
+
