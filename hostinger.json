@@ -1,0 +1,19 @@
+{
+  "name": "lesigne-api",
+  "version": "1.0.0",
+  "type": "nodejs",
+  "main": "server/src/index.js",
+  "scripts": {
+    "start": "cd server && node src/index.js",
+    "install": "cd server && npm install --production",
+    "build": "npm run build:all"
+  },
+  "engines": {
+    "node": "18.x",
+    "npm": "9.x"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}
+

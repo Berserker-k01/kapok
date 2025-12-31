@@ -1,0 +1,19 @@
+{
+  "name": "lesigne-platform",
+  "version": "1.0.0",
+  "type": "nodejs",
+  "framework": "express",
+  "build": {
+    "command": "cd server && npm install --production",
+    "directory": "server"
+  },
+  "start": {
+    "command": "cd server && node src/index.js",
+    "directory": "server"
+  },
+  "env": {
+    "NODE_ENV": "production",
+    "PORT": "5000"
+  }
+}
+

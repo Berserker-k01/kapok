@@ -1,0 +1,29 @@
+{
+  "name": "Lesigne Platform",
+  "description": "Plateforme e-commerce multi-tenant",
+  "repository": "https://github.com/votre-repo/lesigne",
+  "keywords": ["ecommerce", "multi-tenant", "nodejs", "express"],
+  "success_url": "/",
+  "env": {
+    "NODE_ENV": {
+      "description": "Environment",
+      "value": "production"
+    },
+    "PORT": {
+      "description": "Port du serveur",
+      "value": "5000"
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "standard-1x"
+    }
+  },
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    }
+  ]
+}
+

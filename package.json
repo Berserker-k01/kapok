@@ -1,9 +1,17 @@
 {
-  "name": "lesigne-monorepo",
+  "name": "lesigne-platform",
   "version": "1.0.0",
   "description": "Plateforme e-commerce multi-tenant Lesigne",
   "private": true,
+  "main": "index.js",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
   "scripts": {
+    "start": "node index.js",
+    "install": "cd server && npm install --production",
+    "postinstall": "npm run install:all",
     "install:all": "npm run install:server && npm run install:user-panel && npm run install:admin-panel",
     "install:server": "cd server && npm install --production",
     "install:user-panel": "cd user-panel && npm install",
@@ -25,10 +33,14 @@
     "saas",
     "react",
     "nodejs",
-    "postgresql"
+    "postgresql",
+    "express"
   ],
   "author": "Lesigne Team",
   "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.4.7"
+  },
   "devDependencies": {
     "concurrently": "^8.2.2"
   }
