@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  # API Backend
+  api:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: lesigne-api
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=production
+      - PORT=5000
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=lesigne_db
+      - DB_USER=lesigne_user
+      - DB_PASSWORD=${DB_PASSWORD:-change_me}
+      - JWT_SECRET=${JWT_SECRET:-change_me}
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost}
+      - USER_PANEL_URL=${USER_PANEL_URL:-http://localhost:3001}
+      - ADMIN_PANEL_URL=${ADMIN_PANEL_URL:-http://localhost:3002}
+    volumes:
+      - ./server/uploads:/app/uploads
+      - ./server/logs:/app/logs
+    depends_on:
+      - postgres
+    networks:
+      - lesigne-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:5000/', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: lesigne-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=lesigne_db
+      - POSTGRES_USER=lesigne_user
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-change_me}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./server/database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./server/database/migration_subscription_payments.sql:/docker-entrypoint-initdb.d/02-migration.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - lesigne-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lesigne_user -d lesigne_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres-data:
+    driver: local
+
+networks:
+  lesigne-network:
+    driver: bridge

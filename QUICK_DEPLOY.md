@@ -1,5 +1,15 @@
 # ⚡ Déploiement Rapide - Hostinger
 
+## ⚠️ Prérequis
+
+Avant de commencer, assurez-vous que Node.js est installé :
+```bash
+node --version  # Doit afficher v18.x.x ou supérieur
+npm --version   # Doit afficher 10.x.x ou supérieur
+```
+
+Si vous obtenez "command not found", consultez **`INSTALL_NODE_HOSTINGER.md`**
+
 ## En 3 Commandes
 
 ```bash

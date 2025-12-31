@@ -25,8 +25,13 @@ ssh votre-utilisateur@votre-serveur.hostinger.com
 sudo apt update && sudo apt upgrade -y
 
 # Installer Node.js 18 (si pas déjà installé)
+# Si vous obtenez "npm: command not found", consultez INSTALL_NODE_HOSTINGER.md
 curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
 sudo apt-get install -y nodejs
+
+# Vérifier l'installation
+node --version  # Devrait afficher v18.x.x
+npm --version   # Devrait afficher 10.x.x
 
 # Installer PM2 globalement
 sudo npm install -g pm2
@@ -34,6 +39,8 @@ sudo npm install -g pm2
 # Installer PostgreSQL (si pas déjà installé)
 sudo apt install postgresql postgresql-contrib -y
 ```
+
+> ⚠️ **Si vous obtenez "npm: command not found"**, consultez le fichier **`INSTALL_NODE_HOSTINGER.md`** pour un guide détaillé d'installation de Node.js.
 
 ### 1.3 Configuration PostgreSQL
 
