@@ -1,151 +1,239 @@
 # 🚀 Déploiement - Hostinger Cloud Startup
 
-Guide pour déployer votre SaaS Lesigne sur Hostinger Cloud Startup.
+Guide pour déployer votre SaaS Lesigne sur Hostinger Cloud Startup (3 déploiements séparés).
 
 ---
 
-## 🚀 Méthode Rapide (Recommandée)
+## 📋 Prérequis
 
-```bash
-# 1. Se connecter en SSH
-ssh root@votre-ip-hostinger
-
-# 2. Cloner le projet
-cd /var/www
-git clone https://github.com/votre-username/lesigne.git
-cd lesigne
-
-# 3. Exécuter le script de déploiement
-chmod +x deploy-hostinger.sh
-./deploy-hostinger.sh
-```
-
-Le script installe tout automatiquement : Docker, Nginx, build les frontends, configure SSL.
+- ✅ Accès SSH root à votre VPS Hostinger
+- ✅ 3 domaines configurés : `api.votre-domaine.com`, `app.votre-domaine.com`, `admin.votre-domaine.com`
 
 ---
 
-## 📋 Déploiement Manuel
+## 🔧 Partie 1 : Backend API
 
-### 1. Installation Docker
+### 1. Installation Node.js et PostgreSQL
 
 ```bash
-apt update && apt upgrade -y
-apt install -y apt-transport-https ca-certificates curl software-properties-common
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
-apt update
-apt install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
-systemctl enable docker && systemctl start docker
+# Node.js 18
+curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+apt install -y nodejs
+
+# PostgreSQL
+apt install -y postgresql postgresql-contrib
+
+# PM2 (gestionnaire de processus)
+npm install -g pm2
 ```
 
-### 2. Cloner le projet
+### 2. Configuration PostgreSQL
+
+```bash
+# Se connecter à PostgreSQL
+su - postgres
+psql
+```
+
+Dans PostgreSQL :
+
+```sql
+CREATE DATABASE lesigne_db;
+CREATE USER lesigne_user WITH PASSWORD 'votre_mot_de_passe_secure';
+GRANT ALL PRIVILEGES ON DATABASE lesigne_db TO lesigne_user;
+\q
+exit
+```
+
+### 3. Cloner et configurer le backend
 
 ```bash
 cd /var/www
 git clone https://github.com/votre-username/lesigne.git
-cd lesigne
-```
+cd lesigne/server
 
-### 3. Configuration
+# Installer les dépendances
+npm install --production
 
-Créer le fichier `.env` à la racine :
-
-```bash
-cp .env.example .env
+# Créer le fichier .env
+cp ENV_TEMPLATE.txt .env
 nano .env
 ```
 
-Variables essentielles :
+**Variables dans `server/.env` :**
 
 ```env
-DB_PASSWORD=$(openssl rand -base64 32)
+NODE_ENV=production
+PORT=5000
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=lesigne_db
+DB_USER=lesigne_user
+DB_PASSWORD=votre_mot_de_passe_secure
 JWT_SECRET=$(openssl rand -base64 64)
 FRONTEND_URL=https://app.votre-domaine.com
 USER_PANEL_URL=https://app.votre-domaine.com
 ADMIN_PANEL_URL=https://admin.votre-domaine.com
 ```
 
-### 4. Build et démarrage
+### 4. Initialiser la base de données
 
 ```bash
-# Builder les frontends
-chmod +x build-frontends.sh
-./build-frontends.sh https://api.votre-domaine.com/api
-
-# Démarrer les services
-docker compose build
-docker compose up -d
+cd /var/www/lesigne/server
+psql -U lesigne_user -d lesigne_db -f database/schema.sql
+psql -U lesigne_user -d lesigne_db -f database/migration_subscription_payments.sql
 ```
 
-### 5. Configuration Nginx
+### 5. Créer les dossiers nécessaires
 
 ```bash
-apt install -y nginx
+mkdir -p /var/www/lesigne/server/uploads/payment-proofs
+mkdir -p /var/www/lesigne/server/logs
+chmod -R 755 /var/www/lesigne/server/uploads
 ```
 
-**API** (`/etc/nginx/sites-available/lesigne-api`) :
+### 6. Démarrer avec PM2
+
+```bash
+cd /var/www/lesigne
+pm2 start ecosystem.config.js --only lesigne-server
+pm2 save
+pm2 startup
+# Exécuter la commande affichée
+```
+
+### 7. Configuration Nginx pour l'API
+
+```bash
+nano /etc/nginx/sites-available/lesigne-api
+```
 
 ```nginx
 server {
     listen 80;
     server_name api.votre-domaine.com;
+
     location / {
         proxy_pass http://localhost:5000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
     }
 }
 ```
 
-**User Panel** (`/etc/nginx/sites-available/lesigne-user-panel`) :
+```bash
+ln -s /etc/nginx/sites-available/lesigne-api /etc/nginx/sites-enabled/
+nginx -t && systemctl restart nginx
+```
+
+---
+
+## 🎨 Partie 2 : User Panel
+
+### 1. Build de l'application
+
+```bash
+cd /var/www/lesigne/user-panel
+
+# Installer les dépendances
+npm install
+
+# Build avec l'URL de l'API
+VITE_API_URL=https://api.votre-domaine.com/api npm run build
+```
+
+### 2. Configuration Nginx
+
+```bash
+nano /etc/nginx/sites-available/lesigne-user-panel
+```
 
 ```nginx
 server {
     listen 80;
     server_name app.votre-domaine.com;
+
     root /var/www/lesigne/user-panel/dist;
     index index.html;
+
     location / {
         try_files $uri $uri/ /index.html;
     }
+
     location /api {
-        proxy_pass http://localhost:5000;
+        proxy_pass https://api.votre-domaine.com;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
     }
 }
 ```
 
-**Admin Panel** (`/etc/nginx/sites-available/lesigne-admin-panel`) :
+```bash
+ln -s /etc/nginx/sites-available/lesigne-user-panel /etc/nginx/sites-enabled/
+nginx -t && systemctl restart nginx
+```
+
+---
+
+## 🛡️ Partie 3 : Admin Panel
+
+### 1. Build de l'application
+
+```bash
+cd /var/www/lesigne/admin-panel
+
+# Installer les dépendances
+npm install
+
+# Build avec l'URL de l'API
+VITE_API_URL=https://api.votre-domaine.com/api npm run build
+```
+
+### 2. Configuration Nginx
+
+```bash
+nano /etc/nginx/sites-available/lesigne-admin-panel
+```
 
 ```nginx
 server {
     listen 80;
     server_name admin.votre-domaine.com;
+
     root /var/www/lesigne/admin-panel/dist;
     index index.html;
+
     location / {
         try_files $uri $uri/ /index.html;
     }
+
     location /api {
-        proxy_pass http://localhost:5000;
+        proxy_pass https://api.votre-domaine.com;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
     }
 }
 ```
 
-**Activer les configurations :**
-
 ```bash
-ln -s /etc/nginx/sites-available/lesigne-api /etc/nginx/sites-enabled/
-ln -s /etc/nginx/sites-available/lesigne-user-panel /etc/nginx/sites-enabled/
 ln -s /etc/nginx/sites-available/lesigne-admin-panel /etc/nginx/sites-enabled/
-rm -f /etc/nginx/sites-enabled/default
 nginx -t && systemctl restart nginx
 ```
 
-### 6. SSL avec Let's Encrypt
+---
+
+## 🔒 Configuration SSL (pour les 3 domaines)
 
 ```bash
 apt install -y certbot python3-certbot-nginx
+
+# Obtenir les certificats SSL
 certbot --nginx -d api.votre-domaine.com -d app.votre-domaine.com -d admin.votre-domaine.com
 ```
 
@@ -153,22 +241,51 @@ certbot --nginx -d api.votre-domaine.com -d app.votre-domaine.com -d admin.votre
 
 ## 🔧 Commandes Utiles
 
+### Backend
+
 ```bash
-# Logs
-docker compose logs -f
+# Voir les logs
+pm2 logs lesigne-server
 
 # Redémarrer
-docker compose restart
-
-# Mettre à jour
-git pull
-docker compose down
-docker compose build
-docker compose up -d
-./build-frontends.sh https://api.votre-domaine.com/api
+pm2 restart lesigne-server
 
 # Statut
-docker compose ps
+pm2 status
+
+# Mettre à jour
+cd /var/www/lesigne
+git pull
+cd server
+npm install --production
+pm2 restart lesigne-server
+```
+
+### Frontends
+
+```bash
+# Rebuild User Panel
+cd /var/www/lesigne/user-panel
+npm install
+VITE_API_URL=https://api.votre-domaine.com/api npm run build
+
+# Rebuild Admin Panel
+cd /var/www/lesigne/admin-panel
+npm install
+VITE_API_URL=https://api.votre-domaine.com/api npm run build
+```
+
+### Nginx
+
+```bash
+# Tester la configuration
+nginx -t
+
+# Redémarrer
+systemctl restart nginx
+
+# Voir les logs
+tail -f /var/log/nginx/error.log
 ```
 
 ---
@@ -177,31 +294,47 @@ docker compose ps
 
 **Backend ne démarre pas :**
 ```bash
-docker compose logs api
+pm2 logs lesigne-server
+# Vérifier les variables dans server/.env
 ```
 
 **Erreur 502 Nginx :**
 ```bash
 curl http://localhost:5000/api/health
-nginx -t
+pm2 status
 ```
 
-**Frontends non buildés :**
+**Frontends ne se chargent pas :**
 ```bash
-./build-frontends.sh https://api.votre-domaine.com/api
+# Vérifier que les dossiers dist/ existent
+ls -la /var/www/lesigne/user-panel/dist
+ls -la /var/www/lesigne/admin-panel/dist
+
+# Rebuild si nécessaire
 ```
 
 ---
 
 ## ✅ Checklist
 
-- [ ] Docker installé
-- [ ] Projet cloné
-- [ ] Fichier `.env` configuré
-- [ ] Services démarrés (`docker compose ps`)
-- [ ] Frontends buildés
+### Backend
+- [ ] Node.js 18 installé
+- [ ] PostgreSQL installé et configuré
+- [ ] Base de données créée et initialisée
+- [ ] Fichier `server/.env` configuré
+- [ ] PM2 démarré (`pm2 status`)
+- [ ] Nginx configuré pour l'API
+
+### User Panel
+- [ ] Application buildée (`user-panel/dist` existe)
 - [ ] Nginx configuré
-- [ ] SSL actif
+
+### Admin Panel
+- [ ] Application buildée (`admin-panel/dist` existe)
+- [ ] Nginx configuré
+
+### SSL
+- [ ] Certificats Let's Encrypt installés pour les 3 domaines
 
 ---
 
