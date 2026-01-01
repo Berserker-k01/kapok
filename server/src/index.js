@@ -40,7 +40,10 @@ app.use(cors({
     'http://localhost:3001', // user-panel
     'http://localhost:3002', // admin-panel
     process.env.FRONTEND_URL, // URL Vercel
-    /\.vercel\.app$/ // Tous les sous-domaines Vercel
+    process.env.USER_PANEL_URL, // User Panel URL
+    process.env.ADMIN_PANEL_URL, // Admin Panel URL
+    /\.vercel\.app$/, // Tous les sous-domaines Vercel
+    /\.fly\.dev$/ // Tous les sous-domaines Fly.io
   ],
   credentials: true
 }))
@@ -68,6 +71,15 @@ app.use('/api/ai', require('./routes/ai')); // Import direct pour l'IA
 // Route racine pour vérifier que l'API tourne
 app.get('/', (req, res) => {
   res.send('API Assimε est en ligne ! 🚀');
+});
+
+// Route de santé pour les healthchecks
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  });
 });
 
 // Error handler
