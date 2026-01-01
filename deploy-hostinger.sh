@@ -14,10 +14,16 @@ YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m'
 
-# Vérifier si on est root ou avec sudo
+# Vérifier si on est root (avec ou sans sudo)
 if [ "$EUID" -ne 0 ]; then 
-    echo -e "${YELLOW}⚠️  Ce script doit être exécuté avec sudo${NC}"
-    exit 1
+    echo -e "${YELLOW}⚠️  Ce script doit être exécuté en tant que root${NC}"
+    echo -e "${YELLOW}   Si vous êtes connecté en tant que root, continuez${NC}"
+    echo -e "${YELLOW}   Sinon, utilisez: sudo ./deploy-hostinger.sh${NC}"
+    read -p "Continuer quand même ? (y/N): " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        exit 1
+    fi
 fi
 
 # Variables

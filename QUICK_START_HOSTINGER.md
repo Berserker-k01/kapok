@@ -17,7 +17,9 @@ cd lesigne
 
 # 3. Exécuter le script de déploiement
 chmod +x deploy-hostinger.sh
-sudo ./deploy-hostinger.sh
+./deploy-hostinger.sh
+
+# Note: Si vous êtes connecté en tant que root, pas besoin de sudo
 ```
 
 Le script va automatiquement :

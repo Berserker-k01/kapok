@@ -10,7 +10,7 @@ Guide complet pour déployer votre SaaS Lesigne sur Hostinger Cloud Startup (VPS
 
 - ✅ Accès SSH à votre VPS Hostinger Cloud Startup
 - ✅ Domaine(s) configuré(s) dans Hostinger
-- ✅ Accès root ou utilisateur avec sudo
+- ✅ Accès root (connecté en tant que root directement, pas besoin de sudo)
 
 ---
 
@@ -26,7 +26,10 @@ cd lesigne
 
 # Rendre le script exécutable et l'exécuter
 chmod +x deploy-hostinger.sh
-sudo ./deploy-hostinger.sh
+./deploy-hostinger.sh
+
+# Note: Si vous êtes déjà connecté en root, pas besoin de sudo
+# Si vous êtes un utilisateur normal, utilisez: sudo ./deploy-hostinger.sh
 ```
 
 Le script vous guidera à travers tout le processus.
@@ -44,9 +47,11 @@ Le script vous guidera à travers tout le processus.
 ### Étape 1 : Connexion SSH
 
 ```bash
+# Se connecter en tant que root (sur Hostinger Cloud Startup)
 ssh root@votre-ip-hostinger
-# ou
-ssh votre-utilisateur@votre-ip-hostinger
+
+# Note: Si vous êtes connecté en root, vous n'avez pas besoin de sudo
+# pour les commandes d'administration
 ```
 
 ### Étape 2 : Installation de Docker et Docker Compose
@@ -80,7 +85,7 @@ systemctl start docker
 ### Étape 3 : Installation de Git et clonage du projet
 
 ```bash
-# Installer Git si nécessaire
+# Installer Git si nécessaire (pas besoin de sudo si vous êtes root)
 apt install -y git
 
 # Créer un répertoire pour l'application
@@ -357,7 +362,9 @@ npm install -g pm2
 apt install -y postgresql postgresql-contrib
 
 # Créer la base de données
-sudo -u postgres psql
+# Se connecter en tant qu'utilisateur postgres
+su - postgres
+psql
 ```
 
 Dans PostgreSQL :
