@@ -75,12 +75,34 @@ app.get('/', (req, res) => {
 
 // Route de santé pour les healthchecks
 app.get('/api/health', (req, res) => {
-  res.status(200).json({ 
-    status: 'ok', 
+  res.status(200).json({
+    status: 'ok',
     timestamp: new Date().toISOString(),
     uptime: process.uptime()
   });
 });
+
+// Servir les frontends en production
+if (process.env.NODE_ENV === 'production') {
+  const adminDist = path.join(__dirname, '../../admin-panel/dist');
+  const userDist = path.join(__dirname, '../../user-panel/dist');
+
+  // Admin panel sur /admin
+  app.use('/admin', express.static(adminDist));
+  app.get('/admin/*', (req, res) => {
+    res.sendFile(path.join(adminDist, 'index.html'));
+  });
+
+  // User panel à la racine
+  app.use(express.static(userDist));
+  app.get('*', (req, res) => {
+    // Si c'est une route API qui n'existe pas, on laisse passer (déjà géré par les routes au-dessus)
+    if (req.path.startsWith('/api')) {
+      return res.status(404).json({ error: 'Route API non trouvée' });
+    }
+    res.sendFile(path.join(userDist, 'index.html'));
+  });
+}
 
 // Error handler
 app.use(require('./middleware/errorHandler'));

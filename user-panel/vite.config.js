@@ -45,7 +45,7 @@ export default defineConfig({
       }
     }
   },
-  base: process.env.NODE_ENV === 'production' ? '/app/' : '/',
+  base: '/',
   server: {
     port: 3001,
     proxy: {

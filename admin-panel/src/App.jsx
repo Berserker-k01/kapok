@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+const basename = import.meta.env.MODE === 'production' ? '/admin' : '/';
 import axios from 'axios'
 import { useEffect } from 'react'
 import { Toaster } from 'react-hot-toast'
@@ -30,7 +31,7 @@ function App() {
 
   if (!isAuthenticated) {
     return (
-      <Router>
+      <Router basename={basename}>
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="*" element={<Navigate to="/login" replace />} />
@@ -41,7 +42,7 @@ function App() {
   }
 
   return (
-    <Router>
+    <Router basename={basename}>
       <Layout>
         <Routes>
           <Route path="/" element={<Dashboard />} />

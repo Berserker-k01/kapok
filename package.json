@@ -20,12 +20,9 @@
     "build:user-panel": "cd user-panel && npm run build",
     "build:admin-panel": "cd admin-panel && npm run build",
     "start:server": "cd server && npm start",
-    "start:server:pm2": "cd server && pm2 start ecosystem.config.js --env production",
-    "stop:server:pm2": "cd server && pm2 stop lesigne-api",
-    "restart:server:pm2": "cd server && pm2 restart lesigne-api",
-    "logs:server": "cd server && pm2 logs lesigne-api",
-    "setup:production": "npm run install:all && npm run build:all",
-    "deploy": "npm run setup:production && npm run start:server:pm2"
+    "build:prod": "npm run install:all && npm run build:all",
+    "setup:production": "npm run build:prod",
+    "deploy": "npm run build:prod && npm run start:server"
   },
   "keywords": [
     "ecommerce",
