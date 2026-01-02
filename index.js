@@ -1,37 +1,25 @@
 /**
- * Point d'entrée pour Hostinger Auto-Deploy
- * Ce fichier permet à Hostinger de détecter et démarrer l'application Node.js
+ * Point d'entrée pour Hostinger Node.js Selector
  */
-
 const path = require('path');
 const fs = require('fs');
 
-// Chemin vers le dossier server
-const serverPath = path.join(__dirname, 'server');
+// Charger les variables d'environnement
+require('dotenv').config({ path: path.join(__dirname, 'server', '.env') });
+require('dotenv').config(); // Fallback à la racine
 
-// Vérifier que le dossier server existe
-if (!fs.existsSync(serverPath)) {
-  console.error('❌ Erreur: Le dossier server/ n\'existe pas');
-  process.exit(1);
+// Charger l'application backend directement
+// Note: On utilise le chemin relatif sans process.chdir pour éviter les effets de bord sur Hostinger
+const app = require('./server/src/index.js');
+
+const PORT = process.env.PORT || 5000;
+
+// En production sur Hostinger, le serveur doit écouter sur le port fourni par l'environnement
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`🚀 Serveur Assimε démarré sur le port ${PORT}`);
+  });
 }
 
-// Charger les variables d'environnement depuis server/.env si existe
-const envPath = path.join(serverPath, '.env');
-if (fs.existsSync(envPath)) {
-  require('dotenv').config({ path: envPath });
-} else {
-  // Essayer de charger depuis la racine
-  require('dotenv').config();
-}
-
-// Changer le répertoire de travail vers server/
-process.chdir(serverPath);
-
-// Démarrer l'application
-try {
-  require('./src/index.js');
-} catch (error) {
-  console.error('❌ Erreur lors du démarrage:', error);
-  process.exit(1);
-}
+module.exports = app;
 
