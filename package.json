@@ -10,19 +10,17 @@
   },
   "scripts": {
     "start": "node index.js",
-    "install": "cd server && npm install --production",
+    "build": "npm run build:prod",
     "postinstall": "npm run install:all",
     "install:all": "npm run install:server && npm run install:user-panel && npm run install:admin-panel",
-    "install:server": "cd server && npm install --production",
-    "install:user-panel": "cd user-panel && npm install",
-    "install:admin-panel": "cd admin-panel && npm install",
+    "install:server": "npm install --prefix server --production",
+    "install:user-panel": "npm install --prefix user-panel --include=dev",
+    "install:admin-panel": "npm install --prefix admin-panel --include=dev",
     "build:all": "npm run build:user-panel && npm run build:admin-panel",
-    "build:user-panel": "cd user-panel && npm run build",
-    "build:admin-panel": "cd admin-panel && npm run build",
-    "start:server": "cd server && npm start",
-    "build:prod": "npm run install:all && npm run build:all",
-    "setup:production": "npm run build:prod",
-    "deploy": "npm run build:prod && npm run start:server"
+    "build:user-panel": "npm run build --prefix user-panel",
+    "build:admin-panel": "npm run build --prefix admin-panel",
+    "build:prod": "npm run build:all",
+    "deploy": "npm run build:prod && npm start"
   },
   "keywords": [
     "ecommerce",
