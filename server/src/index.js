@@ -69,9 +69,18 @@ app.use('/api/admin/payment-numbers', paymentConfigRoutes);
 app.use('/api/ai', require('./routes/ai')); // Import direct pour l'IA
 
 // Route de santé pour les healthchecks (Toujours accessible)
-app.get('/api/health', (req, res) => {
+app.get('/api/health', async (req, res) => {
+  let dbStatus = 'ok';
+  try {
+    const db = require('./config/database');
+    await db.query('SELECT 1');
+  } catch (error) {
+    dbStatus = 'error: ' + error.message;
+  }
+
   res.status(200).json({
     status: 'ok',
+    database: dbStatus,
     timestamp: new Date().toISOString(),
     uptime: process.uptime()
   });
