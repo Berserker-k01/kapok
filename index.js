@@ -12,6 +12,16 @@ require('dotenv').config(); // Fallback à la racine
 // Note: On utilise le chemin relatif sans process.chdir pour éviter les effets de bord sur Hostinger
 const app = require('./server/src/index.js');
 
+// Route de diagnostic directe à la racine pour forcer Hostinger à rafraîchir
+app.get('/root-health', (req, res) => {
+  res.json({
+    source: 'root-index',
+    version: 'ROOT-V1',
+    env_db: !!process.env.DATABASE_URL,
+    timestamp: new Date().toISOString()
+  });
+});
+
 const PORT = process.env.PORT || 5000;
 
 // En production sur Hostinger, le serveur doit écouter sur le port fourni par l'environnement
