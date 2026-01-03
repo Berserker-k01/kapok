@@ -30,6 +30,10 @@ app.get('/api/health-v4', (req, res) => {
   });
 });
 
+app.get('/root-check-v4', (req, res) => {
+  res.send('CHECK-V4-SUCCESS');
+});
+
 app.get('/root-check', (req, res) => {
   res.send('SERVER IS UPDATED - V4');
 });
@@ -112,7 +116,11 @@ if (process.env.NODE_ENV === 'production') {
     // Si c'est une route /api qui n'existe pas, 404
     if (req.path.startsWith('/api')) {
       console.log(`❌ [Routing] Route API non trouvée: ${req.path}`);
-      return res.status(404).json({ error: 'Route API non trouvée' });
+      return res.status(404).json({
+        error: 'Route API non trouvée',
+        path: req.path,
+        env: process.env.NODE_ENV
+      });
     }
 
     // Sinon, on sert le panel utilisateur
