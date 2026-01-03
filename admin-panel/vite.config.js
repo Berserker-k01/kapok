@@ -9,7 +9,7 @@ export default defineConfig({
     sourcemap: false,
     minify: 'terser'
   },
-  base: process.env.NODE_ENV === 'production' ? '/admin/' : '/',
+  base: '/admin/',
   server: {
     port: 3002,
     proxy: {

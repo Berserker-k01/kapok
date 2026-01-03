@@ -88,7 +88,8 @@ if (process.env.NODE_ENV === 'production') {
 
   // Admin panel sur /admin
   app.use('/admin', express.static(adminDist));
-  app.get('/admin/*', (req, res) => {
+  app.get(['/admin', '/admin/*'], (req, res) => {
+    console.log(`💼 [Routing] Servir Admin Panel pour: ${req.path}`);
     res.sendFile(path.join(adminDist, 'index.html'));
   });
 
@@ -97,11 +98,16 @@ if (process.env.NODE_ENV === 'production') {
 
   // Catch-all pour React Router (doit être le DERNIER)
   app.get('*', (req, res) => {
+    console.log(`🔍 [Routing] Catch-all pour: ${req.path}`);
+
     // Si c'est une route /api qui n'existe pas, 404
     if (req.path.startsWith('/api')) {
+      console.log(`❌ [Routing] Route API non trouvée: ${req.path}`);
       return res.status(404).json({ error: 'Route API non trouvée' });
     }
+
     // Sinon, on sert le panel utilisateur
+    console.log(`📄 [Routing] Envoi de index.html pour: ${req.path}`);
     res.sendFile(path.join(userDist, 'index.html'));
   });
 } else {

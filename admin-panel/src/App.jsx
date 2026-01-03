@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
-const basename = import.meta.env.MODE === 'production' ? '/admin' : '/';
+const basename = '/admin';
 import axios from 'axios'
 import { useEffect } from 'react'
 import { Toaster } from 'react-hot-toast'
