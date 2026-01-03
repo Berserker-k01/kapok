@@ -110,16 +110,27 @@ if (process.env.NODE_ENV === 'production') {
   app.use(express.static(userDist));
 
   // Catch-all pour React Router (doit être le DERNIER)
-  app.get('*', (req, res) => {
-    console.log(`🔍 [Routing] Catch-all pour: ${req.path}`);
-
-    // Si c'est une route /api qui n'existe pas, 404
+  app.get('*', async (req, res) => {
+    // Diagnostic API pour comprendre pourquoi la DB échoue en production
     if (req.path.startsWith('/api')) {
-      console.log(`❌ [Routing] Route API non trouvée: ${req.path}`);
+      let dbStatus = 'testing...';
+      let dbDetail = null;
+      try {
+        const db = require('./config/database');
+        await db.pool.query('SELECT 1');
+        dbStatus = 'ok';
+      } catch (err) {
+        dbStatus = 'error';
+        dbDetail = err.message;
+      }
+
       return res.status(404).json({
-        error: 'Route API non trouvée',
+        error: 'Diagnostic API Automatique',
         path: req.path,
-        env: process.env.NODE_ENV
+        env: process.env.NODE_ENV,
+        database: dbStatus,
+        db_error: dbDetail,
+        has_db_url: !!process.env.DATABASE_URL
       });
     }
 
