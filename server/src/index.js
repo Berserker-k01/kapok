@@ -19,6 +19,22 @@ const path = require('path')
 const app = express()
 const PORT = process.env.PORT || 5000
 
+// --- ROUTES DE DIAGNOSTIC PRIORITAIRES ---
+app.get('/api/health-v4', (req, res) => {
+  res.json({
+    status: 'ok',
+    version: 'V4-FORCE-REFRESH',
+    time: '19:05', // Marqueur temporel manuel
+    env_db: !!process.env.DATABASE_URL,
+    uptime: process.uptime()
+  });
+});
+
+app.get('/root-check', (req, res) => {
+  res.send('SERVER IS UPDATED - V4');
+});
+// ----------------------------------------
+
 // Trust Proxy pour Vercel/Heroku
 app.set('trust proxy', 1);
 
@@ -68,30 +84,7 @@ app.use('/api/admin/plans', planConfigRoutes);
 app.use('/api/admin/payment-numbers', paymentConfigRoutes);
 app.use('/api/ai', require('./routes/ai')); // Import direct pour l'IA
 
-// Route de santé pour les healthchecks (Toujours accessible)
-app.get('/api/health', async (req, res) => {
-  let dbStatus = 'ok';
-  let dbDetail = null;
-
-  try {
-    const db = require('./config/database');
-    await db.query('SELECT 1');
-  } catch (error) {
-    dbStatus = 'error';
-    dbDetail = error.message || error.code || 'Unknown error';
-  }
-
-  res.status(200).json({
-    status: 'ok',
-    version: 'V3-Diagnostic', // Pour être SÛR que c'est la nouvelle version
-    database: dbStatus,
-    db_detail: dbDetail,
-    env_db: !!process.env.DATABASE_URL,
-    db_url_start: process.env.DATABASE_URL ? process.env.DATABASE_URL.substring(0, 15) + '...' : 'AUCUNE',
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime()
-  });
-});
+// Les routes seront déplacées au début...
 
 // Servir les frontends en production
 if (process.env.NODE_ENV === 'production') {
