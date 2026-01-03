@@ -28,12 +28,12 @@ const sendErrorProd = (err, res) => {
             error: err.message
         });
     }
-    // Programming or other unknown error: don't leak error details
+    // Programming or other unknown error: don't leak stack, but show message for debugging setup
     else {
         console.error('ERROR 💥', err);
         res.status(500).json({
             success: false,
-            error: 'Une erreur est survenue, veuillez réessayer plus tard.'
+            error: err.message || 'Une erreur système est survenue. Vérifiez la connexion à la base de données.'
         });
     }
 };

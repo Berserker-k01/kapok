@@ -61,7 +61,7 @@ router.post('/register', async (req, res) => {
 
   } catch (error) {
     console.error('Erreur inscription:', error)
-    res.status(500).json({ error: 'Erreur lors de l\'inscription' })
+    res.status(500).json({ error: 'Erreur lors de l\'inscription : ' + error.message })
   }
 })
 
@@ -115,7 +115,7 @@ router.post('/login', async (req, res) => {
 
   } catch (error) {
     console.error('Erreur connexion:', error)
-    res.status(500).json({ error: 'Erreur lors de la connexion' })
+    res.status(500).json({ error: 'Erreur lors de la connexion : ' + error.message })
   }
 })
 
@@ -184,7 +184,7 @@ router.post('/admin/login', async (req, res) => {
 
   } catch (error) {
     console.error('Erreur connexion admin:', error)
-    res.status(500).json({ error: 'Erreur lors de la connexion administrateur' })
+    res.status(500).json({ error: 'Erreur lors de la connexion administrateur : ' + error.message })
   }
 })
 
