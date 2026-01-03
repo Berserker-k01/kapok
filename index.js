@@ -12,6 +12,13 @@ require('dotenv').config(); // Fallback à la racine
 // Note: On utilise le chemin relatif sans process.chdir pour éviter les effets de bord sur Hostinger
 const app = require('./server/src/index.js');
 
+// --- TEST NUCLÉAIRE ---
+// Si ce lien affiche "NUCLEAR-SUCCESS", alors le serveur est ENFIN à jour.
+app.get('/nuclear-test', (req, res) => {
+  res.send(`NUCLEAR-SUCCESS - Mis à jour à : ${new Date().toISOString()}`);
+});
+// ----------------------
+
 // Route de diagnostic directe à la racine pour forcer Hostinger à rafraîchir
 app.get('/root-health', (req, res) => {
   res.json({
