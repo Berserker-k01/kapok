@@ -83,9 +83,11 @@ app.get('/api/health', async (req, res) => {
 
   res.status(200).json({
     status: 'ok',
+    version: 'V3-Diagnostic', // Pour être SÛR que c'est la nouvelle version
     database: dbStatus,
     db_detail: dbDetail,
     env_db: !!process.env.DATABASE_URL,
+    db_url_start: process.env.DATABASE_URL ? process.env.DATABASE_URL.substring(0, 15) + '...' : 'AUCUNE',
     timestamp: new Date().toISOString(),
     uptime: process.uptime()
   });
