@@ -71,16 +71,21 @@ app.use('/api/ai', require('./routes/ai')); // Import direct pour l'IA
 // Route de santé pour les healthchecks (Toujours accessible)
 app.get('/api/health', async (req, res) => {
   let dbStatus = 'ok';
+  let dbDetail = null;
+
   try {
     const db = require('./config/database');
     await db.query('SELECT 1');
   } catch (error) {
-    dbStatus = 'error: ' + error.message;
+    dbStatus = 'error';
+    dbDetail = error.message || error.code || 'Unknown error';
   }
 
   res.status(200).json({
     status: 'ok',
     database: dbStatus,
+    db_detail: dbDetail,
+    env_db: !!process.env.DATABASE_URL,
     timestamp: new Date().toISOString(),
     uptime: process.uptime()
   });
