@@ -68,12 +68,7 @@ app.use('/api/admin/plans', planConfigRoutes);
 app.use('/api/admin/payment-numbers', paymentConfigRoutes);
 app.use('/api/ai', require('./routes/ai')); // Import direct pour l'IA
 
-// Route racine pour vérifier que l'API tourne
-app.get('/', (req, res) => {
-  res.send('API Assimε est en ligne ! 🚀');
-});
-
-// Route de santé pour les healthchecks
+// Route de santé pour les healthchecks (Toujours accessible)
 app.get('/api/health', (req, res) => {
   res.status(200).json({
     status: 'ok',
@@ -87,6 +82,10 @@ if (process.env.NODE_ENV === 'production') {
   const adminDist = path.join(__dirname, '../../admin-panel/dist');
   const userDist = path.join(__dirname, '../../user-panel/dist');
 
+  console.log('📦 Mode Production : Chargement des frontends...');
+  console.log(`- Admin: ${adminDist}`);
+  console.log(`- User: ${userDist}`);
+
   // Admin panel sur /admin
   app.use('/admin', express.static(adminDist));
   app.get('/admin/*', (req, res) => {
@@ -95,12 +94,20 @@ if (process.env.NODE_ENV === 'production') {
 
   // User panel à la racine
   app.use(express.static(userDist));
+
+  // Catch-all pour React Router (doit être le DERNIER)
   app.get('*', (req, res) => {
-    // Si c'est une route API qui n'existe pas, on laisse passer (déjà géré par les routes au-dessus)
+    // Si c'est une route /api qui n'existe pas, 404
     if (req.path.startsWith('/api')) {
       return res.status(404).json({ error: 'Route API non trouvée' });
     }
+    // Sinon, on sert le panel utilisateur
     res.sendFile(path.join(userDist, 'index.html'));
+  });
+} else {
+  // En développement, une petite route root pour tester
+  app.get('/', (req, res) => {
+    res.send('API Assimε est en ligne ! 🚀 (Mode Développement)');
   });
 }
 
