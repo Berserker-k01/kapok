@@ -2,32 +2,13 @@
  * Point d'entrée pour Hostinger Node.js Selector
  */
 const path = require('path');
-const fs = require('fs');
 
 // Charger les variables d'environnement
 require('dotenv').config({ path: path.join(__dirname, 'server', '.env') });
 require('dotenv').config(); // Fallback à la racine
 
 // Charger l'application backend directement
-// Note: On utilise le chemin relatif sans process.chdir pour éviter les effets de bord sur Hostinger
 const app = require('./server/src/index.js');
-
-// --- TEST NUCLÉAIRE ---
-// Si ce lien affiche "NUCLEAR-SUCCESS", alors le serveur est ENFIN à jour.
-app.get('/nuclear-test', (req, res) => {
-  res.send(`NUCLEAR-SUCCESS - Mis à jour à : ${new Date().toISOString()}`);
-});
-// ----------------------
-
-// Route de diagnostic directe à la racine pour forcer Hostinger à rafraîchir
-app.get('/root-health', (req, res) => {
-  res.json({
-    source: 'root-index',
-    version: 'ROOT-V1',
-    env_db: !!process.env.DATABASE_URL,
-    timestamp: new Date().toISOString()
-  });
-});
 
 const PORT = process.env.PORT || 5000;
 
@@ -39,4 +20,3 @@ if (require.main === module) {
 }
 
 module.exports = app;
-

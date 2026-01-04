@@ -3,13 +3,13 @@
   "version": "1.0.0",
   "description": "Plateforme e-commerce multi-tenant Lesigne",
   "private": true,
-  "main": "server.js",
+  "main": "index.js",
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=9.0.0"
   },
   "scripts": {
-    "start": "node server.js",
+    "start": "node index.js",
     "build": "npm run build:prod",
     "postinstall": "npm run install:all",
     "install:all": "npm run install:server && npm run install:user-panel && npm run install:admin-panel",
