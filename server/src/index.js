@@ -124,13 +124,24 @@ if (process.env.NODE_ENV === 'production') {
         dbDetail = err.message;
       }
 
+      const fs = require('fs');
+      const rootEnvPath = path.join(process.cwd(), '.env');
+      const dirnameEnvPath = path.join(__dirname, '../../.env');
+
       return res.status(404).json({
         error: 'Diagnostic API Automatique',
         path: req.path,
         env: process.env.NODE_ENV,
         database: dbStatus,
         db_error: dbDetail,
-        has_db_url: !!process.env.DATABASE_URL
+        has_db_url: !!process.env.DATABASE_URL,
+        debug: {
+          cwd: process.cwd(),
+          dirname: __dirname,
+          root_env_exists: fs.existsSync(rootEnvPath),
+          dirname_env_exists: fs.existsSync(dirnameEnvPath),
+          env_vars_found: Object.keys(process.env).filter(k => k.includes('DB') || k.includes('URL'))
+        }
       });
     }
 
