@@ -42,3 +42,4 @@ echo "Les fichiers sont dans:"
 echo "  - $PROJECT_DIR/user-panel/dist"
 echo "  - $PROJECT_DIR/admin-panel/dist"
 
+
