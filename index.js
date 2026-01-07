@@ -9,6 +9,20 @@ require('dotenv').config(); // Fallback à la racine
 
 // Charger l'application backend directement
 const app = require('./server/src/index.js');
+const fs = require('fs');
+
+// --- DEBUG ENVIRONNEMENT (V6) ---
+app.get('/env-debug', (req, res) => {
+  const cwd = process.cwd();
+  const files = fs.readdirSync(cwd);
+  res.json({
+    message: 'V6-ENV-DEBUG',
+    cwd: cwd,
+    files_in_root: files,
+    has_env: fs.existsSync('.env'),
+    env_db_url: process.env.DATABASE_URL ? 'PRESENT' : 'MISSING'
+  });
+});
 
 const PORT = process.env.PORT || 5000;
 
