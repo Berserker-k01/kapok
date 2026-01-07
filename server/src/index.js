@@ -19,6 +19,24 @@ const path = require('path')
 const app = express()
 const PORT = process.env.PORT || 5000
 
+// --- DEBUG ENVIRONNEMENT (V7 - PRIORITAIRE) ---
+const fs = require('fs');
+app.get('/env-debug', (req, res) => {
+  const cwd = process.cwd();
+  let files = [];
+  try { files = fs.readdirSync(cwd); } catch (e) { }
+
+  res.json({
+    message: 'V7-DEBUG-PRIORITY',
+    cwd: cwd,
+    files_in_root: files,
+    has_env_root: fs.existsSync(path.join(cwd, '.env')),
+    has_env_dirname: fs.existsSync(path.join(__dirname, '../../.env')),
+    env_db_url: process.env.DATABASE_URL ? 'PRESENT' : 'MISSING'
+  });
+});
+// ----------------------------------------------
+
 // --- ROUTES DE DIAGNOSTIC PRIORITAIRES ---
 app.get('/api/health-v4', (req, res) => {
   res.json({
