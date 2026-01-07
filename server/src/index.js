@@ -19,44 +19,6 @@ const path = require('path')
 const app = express()
 const PORT = process.env.PORT || 5000
 
-// --- DEBUG ENVIRONNEMENT (V7 - PRIORITAIRE) ---
-const fs = require('fs');
-app.get('/env-debug', (req, res) => {
-  const cwd = process.cwd();
-  let files = [];
-  try { files = fs.readdirSync(cwd); } catch (e) { }
-
-  res.json({
-    message: 'V7-DEBUG-PRIORITY',
-    cwd: cwd,
-    files_in_root: files,
-    has_env_root: fs.existsSync(path.join(cwd, '.env')),
-    has_env_dirname: fs.existsSync(path.join(__dirname, '../../.env')),
-    env_db_url: process.env.DATABASE_URL ? 'PRESENT' : 'MISSING'
-  });
-});
-// ----------------------------------------------
-
-// --- ROUTES DE DIAGNOSTIC PRIORITAIRES ---
-app.get('/api/health-v4', (req, res) => {
-  res.json({
-    status: 'ok',
-    version: 'V4-FORCE-REFRESH',
-    time: '19:05', // Marqueur temporel manuel
-    env_db: !!process.env.DATABASE_URL,
-    uptime: process.uptime()
-  });
-});
-
-app.get('/root-check-v4', (req, res) => {
-  res.send('CHECK-V4-SUCCESS');
-});
-
-app.get('/root-check', (req, res) => {
-  res.send('SERVER IS UPDATED - V4');
-});
-// ----------------------------------------
-
 // Trust Proxy pour Vercel/Heroku
 app.set('trust proxy', 1);
 
@@ -106,73 +68,19 @@ app.use('/api/admin/plans', planConfigRoutes);
 app.use('/api/admin/payment-numbers', paymentConfigRoutes);
 app.use('/api/ai', require('./routes/ai')); // Import direct pour l'IA
 
-// Les routes seront déplacées au début...
+// Route racine pour vérifier que l'API tourne
+app.get('/', (req, res) => {
+  res.send('API Assimε est en ligne ! 🚀');
+});
 
-// Servir les frontends en production
-if (process.env.NODE_ENV === 'production') {
-  const adminDist = path.join(__dirname, '../../admin-panel/dist');
-  const userDist = path.join(__dirname, '../../user-panel/dist');
-
-  console.log('📦 Mode Production : Chargement des frontends...');
-  console.log(`- Admin: ${adminDist}`);
-  console.log(`- User: ${userDist}`);
-
-  // Admin panel sur /admin
-  app.use('/admin', express.static(adminDist));
-  app.get(['/admin', '/admin/*'], (req, res) => {
-    console.log(`💼 [Routing] Servir Admin Panel pour: ${req.path}`);
-    res.sendFile(path.join(adminDist, 'index.html'));
+// Route de santé pour les healthchecks
+app.get('/api/health', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
   });
-
-  // User panel à la racine
-  app.use(express.static(userDist));
-
-  // Catch-all pour React Router (doit être le DERNIER)
-  app.get('*', async (req, res) => {
-    // Diagnostic API pour comprendre pourquoi la DB échoue en production
-    if (req.path.startsWith('/api')) {
-      let dbStatus = 'testing...';
-      let dbDetail = null;
-      try {
-        const db = require('./config/database');
-        await db.pool.query('SELECT 1');
-        dbStatus = 'ok';
-      } catch (err) {
-        dbStatus = 'error';
-        dbDetail = err.message;
-      }
-
-      const fs = require('fs');
-      const rootEnvPath = path.join(process.cwd(), '.env');
-      const dirnameEnvPath = path.join(__dirname, '../../.env');
-
-      return res.status(404).json({
-        error: 'Diagnostic API Automatique',
-        path: req.path,
-        env: process.env.NODE_ENV,
-        database: dbStatus,
-        db_error: dbDetail,
-        has_db_url: !!process.env.DATABASE_URL,
-        debug: {
-          cwd: process.cwd(),
-          dirname: __dirname,
-          root_env_exists: fs.existsSync(rootEnvPath),
-          dirname_env_exists: fs.existsSync(dirnameEnvPath),
-          env_vars_found: Object.keys(process.env).filter(k => k.includes('DB') || k.includes('URL'))
-        }
-      });
-    }
-
-    // Sinon, on sert le panel utilisateur
-    console.log(`📄 [Routing] Envoi de index.html pour: ${req.path}`);
-    res.sendFile(path.join(userDist, 'index.html'));
-  });
-} else {
-  // En développement, une petite route root pour tester
-  app.get('/', (req, res) => {
-    res.send('API Assimε est en ligne ! 🚀 (Mode Développement)');
-  });
-}
+});
 
 // Error handler
 app.use(require('./middleware/errorHandler'));
