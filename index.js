@@ -4,8 +4,15 @@
 const path = require('path');
 
 // Charger les variables d'environnement
+// Charger les variables d'environnement
 require('dotenv').config({ path: path.join(__dirname, 'server', '.env') });
-require('dotenv').config(); // Fallback à la racine
+// FORCE LOAD: Essayer de charger le .env à la racine d'exécution (public_html)
+const rootEnv = path.join(process.cwd(), '.env');
+const dotenv = require('dotenv');
+if (require('fs').existsSync(rootEnv)) {
+  const result = dotenv.config({ path: rootEnv });
+  if (result.error) console.error("ERREUR CHARGEMENT ENV:", result.error);
+}
 
 // Charger l'application backend directement
 const app = require('./server/src/index.js');
