@@ -136,3 +136,4 @@ echo "   sudo systemctl restart postgresql"
 echo "   cd /var/www/lesigne/server && node diagnose-db.js"
 echo "   pm2 logs lesigne-server"
 
+

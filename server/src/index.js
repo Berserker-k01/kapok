@@ -68,10 +68,8 @@ app.use('/api/admin/plans', planConfigRoutes);
 app.use('/api/admin/payment-numbers', paymentConfigRoutes);
 app.use('/api/ai', require('./routes/ai')); // Import direct pour l'IA
 
-// Route racine pour vérifier que l'API tourne
-app.get('/', (req, res) => {
-  res.send('API Assimε est en ligne ! 🚀');
-});
+// Route racine retirée pour laisser React gérer le '/'
+// app.get('/', ...);
 
 // Route de santé pour les healthchecks
 app.get('/api/health', (req, res) => {

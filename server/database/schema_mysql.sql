@@ -284,3 +284,4 @@ INSERT INTO payment_config (provider_name, phone_number, provider_type, is_activ
 ('Moov Money', '+225 01 XX XX XX XX', 'mobile_money', TRUE, 3, 'Effectuez le paiement et téléversez la capture d''écran de confirmation')
 ON DUPLICATE KEY UPDATE provider_name=provider_name;
 
+
