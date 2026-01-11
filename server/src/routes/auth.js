@@ -40,10 +40,14 @@ router.post('/register', catchAsync(async (req, res, next) => {
   const insertQuery = `
     INSERT INTO users (id, name, email, password, role, status, created_at)
     VALUES ($1, $2, $3, $4, 'user', 'active', NOW())
-    RETURNING id, name, email, role, created_at
   `
 
-  const result = await db.query(insertQuery, [userId, name, email, hashedPassword])
+  // 1. Insérer (MySQL ne supporte pas RETURNING dans la même requête via le driver standard)
+  await db.query(insertQuery, [userId, name, email, hashedPassword])
+
+  // 2. Récupérer l'utilisateur créé
+  const selectQuery = 'SELECT id, name, email, role, created_at FROM users WHERE id = $1'
+  const result = await db.query(selectQuery, [userId])
   const user = result.rows[0]
 
   // Générer le token

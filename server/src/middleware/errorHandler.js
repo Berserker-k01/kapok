@@ -4,21 +4,22 @@ const handleDBError = err => {
     // Erreurs PostgreSQL communes (Codes d'état SQL)
     // https://www.postgresql.org/docs/current/errcodes-appendix.html
 
-    if (err.code === '23505') {
-        const value = err.detail ? err.detail.match(/\((.*?)\)=\((.*?)\)/)[2] : 'inconnue';
-        return new AppError(`La valeur "${value}" existe déjà. Veuillez en utiliser une autre.`, 400);
+    if (err.code === '23505' || err.code === 'ER_DUP_ENTRY' || err.errno === 1062) {
+        // MySQL donne souvent le message dans err.sqlMessage
+        const value = err.detail ? err.detail : 'inconnue';
+        return new AppError(`Une entrée existe déjà (Doublon).`, 400);
     }
 
-    if (err.code === '28P01' || err.code === '28000') {
-        return new AppError('Erreur d\'authentification à la base de données. Vérifiez votre mot de passe Supabase dans DATABASE_URL.', 500);
+    if (err.code === '28P01' || err.code === '28000' || err.code === 'ER_ACCESS_DENIED_ERROR') {
+        return new AppError('Erreur d\'authentification à la base de données.', 500);
     }
 
-    if (err.code === 'ECONNREFUSED' || err.code === 'ETIMEDOUT' || err.code === '08001' || err.code === '08004' || err.code === '08006') {
-        return new AppError('Impossible de se connecter à Supabase. Vérifiez l\'URL de la base de données ou si Supabase est en ligne.', 500);
+    if (err.code === 'ECONNREFUSED' || err.code === 'ETIMEDOUT' || err.code === 'PROTOCOL_CONNECTION_LOST') {
+        return new AppError('Impossible de se connecter à la base de données.', 500);
     }
 
-    if (err.code === '3D000') {
-        return new AppError('La base de données spécifiée n\'existe pas. Vérifiez le nom dans DATABASE_URL.', 500);
+    if (err.code === '3D000' || err.code === 'ER_BAD_DB_ERROR') {
+        return new AppError('La base de données spécifiée n\'existe pas.', 500);
     }
 
     // Erreurs de schéma ou de colonnes (souvent pendant le dev/migration)
