@@ -16,6 +16,9 @@ const planConfigRoutes = require('./routes/planConfig')
 const paymentConfigRoutes = require('./routes/paymentConfig')
 
 // --- CHARGEMENT ROBUSTE DES VARIABLES D'ENVIRONNEMENT ---
+const path = require('path');
+const fs = require('fs');
+const dotenv = require('dotenv');
 // Chercher .env à plusieurs endroits
 const envPaths = [
   path.join(process.cwd(), '.env'),
