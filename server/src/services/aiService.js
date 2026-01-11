@@ -3,7 +3,7 @@ const OpenAI = require('openai');
 // Configuration DeepSeek
 const openai = new OpenAI({
     baseURL: 'https://api.deepseek.com',
-    apiKey: process.env.DEEPSEEK_API_KEY || 'sk-a439b183a41148a0888c70d77551454a' // Fallback temporaire pour dev, à mettre dans .env
+    apiKey: 'sk-a439b183a41148a0888c70d77551454a' // API KEY HARDCODED
 });
 
 exports.generateDescription = async (productName, keywords) => {

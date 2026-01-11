@@ -27,7 +27,7 @@ router.post('/register', catchAsync(async (req, res, next) => {
   }
 
   // Vérifier si l'email existe déjà
-  const existingUser = await db.query('SELECT id FROM users WHERE email = $1', [email])
+  const existingUser = await db.query('SELECT id FROM users WHERE email = ?', [email])
   if (existingUser.rows.length > 0) {
     return next(new AppError('Cet email est déjà utilisé', 400));
   }
@@ -39,14 +39,14 @@ router.post('/register', catchAsync(async (req, res, next) => {
   const userId = uuidv4()
   const insertQuery = `
     INSERT INTO users (id, name, email, password, role, status, created_at)
-    VALUES ($1, $2, $3, $4, 'user', 'active', NOW())
+    VALUES (?, ?, ?, ?, 'user', 'active', NOW())
   `
 
   // 1. Insérer (MySQL ne supporte pas RETURNING dans la même requête via le driver standard)
   await db.query(insertQuery, [userId, name, email, hashedPassword])
 
   // 2. Récupérer l'utilisateur créé
-  const selectQuery = 'SELECT id, name, email, role, created_at FROM users WHERE id = $1'
+  const selectQuery = 'SELECT id, name, email, role, created_at FROM users WHERE id = ?'
   const result = await db.query(selectQuery, [userId])
   const user = result.rows[0]
 
@@ -76,7 +76,7 @@ router.post('/login', catchAsync(async (req, res, next) => {
   }
 
   // Trouver l'utilisateur
-  const userQuery = 'SELECT id, name, email, password, role, status FROM users WHERE email = $1'
+  const userQuery = 'SELECT id, name, email, password, role, status FROM users WHERE email = ?'
   const userResult = await db.query(userQuery, [email])
 
   if (userResult.rows.length === 0) {
@@ -97,7 +97,7 @@ router.post('/login', catchAsync(async (req, res, next) => {
   }
 
   // Mettre à jour la dernière connexion
-  await db.query('UPDATE users SET last_login = NOW() WHERE id = $1', [user.id])
+  await db.query('UPDATE users SET last_login = NOW() WHERE id = ?', [user.id])
 
   // Générer le token
   const token = generateToken(user.id, user.role)
@@ -144,7 +144,7 @@ router.post('/admin/login', catchAsync(async (req, res, next) => {
   const adminQuery = `
     SELECT id, name, email, password, role, status 
     FROM users 
-    WHERE email = $1 AND (role = 'admin' OR role = 'super_admin')
+    WHERE email = ? AND (role = 'admin' OR role = 'super_admin')
   `
   const adminResult = await db.query(adminQuery, [email])
 
@@ -163,7 +163,7 @@ router.post('/admin/login', catchAsync(async (req, res, next) => {
     return next(new AppError('Identifiants invalides', 401));
   }
 
-  await db.query('UPDATE users SET last_login = NOW() WHERE id = $1', [admin.id])
+  await db.query('UPDATE users SET last_login = NOW() WHERE id = ?', [admin.id])
 
   const token = generateToken(admin.id, admin.role)
 

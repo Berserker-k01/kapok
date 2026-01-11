@@ -7,33 +7,31 @@ class ProductService {
         const { page = 1, limit = 20, category, search } = queryParams;
         const offset = (page - 1) * limit;
 
-        let query = 'SELECT * FROM products WHERE shop_id = $1';
+        let query = 'SELECT * FROM products WHERE shop_id = ?';
         let sqlParams = [shopId];
-        let paramCount = 1;
 
         if (category) {
-            paramCount++;
-            query += ` AND category = $${paramCount}`;
+            query += ` AND category = ?`;
             sqlParams.push(category);
         }
 
         if (search) {
-            paramCount++;
-            query += ` AND (name ILIKE $${paramCount} OR description ILIKE $${paramCount})`;
-            sqlParams.push(`%${search}%`);
+            // MySQL est insensible à la casse par défaut avec utf8mb4_unicode_ci
+            query += ` AND (name LIKE ? OR description LIKE ?)`;
+            sqlParams.push(`%${search}%`, `%${search}%`);
         }
 
-        query += ` ORDER BY created_at DESC LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}`;
-        sqlParams.push(limit, offset);
+        query += ` ORDER BY created_at DESC LIMIT ? OFFSET ?`;
+        sqlParams.push(parseInt(limit), parseInt(offset));
 
         const result = await db.query(query, sqlParams);
 
         // Compter le total
-        let countQuery = 'SELECT COUNT(*) FROM products WHERE shop_id = $1';
+        let countQuery = 'SELECT COUNT(*) FROM products WHERE shop_id = ?';
         let countParams = [shopId];
 
         if (category) {
-            countQuery += ' AND category = $2';
+            countQuery += ' AND category = ?';
             countParams.push(category);
         }
 
@@ -62,7 +60,7 @@ class ProductService {
         }
 
         // Vérifier que l'utilisateur possède cette boutique
-        const shopCheck = await db.query('SELECT id FROM shops WHERE id = $1 AND owner_id = $2', [shopId, userId]);
+        const shopCheck = await db.query('SELECT id FROM shops WHERE id = ? AND owner_id = ?', [shopId, userId]);
         if (shopCheck.rows.length === 0) {
             throw new AppError('Accès non autorisé à cette boutique', 403);
         }
@@ -73,21 +71,23 @@ class ProductService {
         id, name, description, price, category, shop_id, 
         images, inventory, sku, weight, dimensions, status, created_at, updated_at
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 'active', NOW(), NOW())
-      RETURNING *
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', NOW(), NOW())
     `;
 
-        const result = await db.query(insertQuery, [
+        await db.query(insertQuery, [
             productId, name, description || '', parseFloat(price), category || 'general',
             shopId, JSON.stringify(images || []), inventory || 0, sku || '',
             weight || 0, JSON.stringify(dimensions || {}),
         ]);
 
+        // FETCH AFTER INSERT
+        const result = await db.query('SELECT * FROM products WHERE id = ?', [productId]);
+
         return result.rows[0];
     }
 
     async getProductById(productId) {
-        const query = 'SELECT * FROM products WHERE id = $1';
+        const query = 'SELECT * FROM products WHERE id = ?';
         const result = await db.query(query, [productId]);
 
         if (result.rows.length === 0) {
@@ -104,7 +104,7 @@ class ProductService {
         const ownershipCheck = await db.query(`
       SELECT p.id FROM products p 
       JOIN shops s ON p.shop_id = s.id 
-      WHERE p.id = $1 AND s.owner_id = $2
+      WHERE p.id = ? AND s.owner_id = ?
     `, [productId, userId]);
 
         if (ownershipCheck.rows.length === 0) {
@@ -114,25 +114,27 @@ class ProductService {
         const updateQuery = `
       UPDATE products 
       SET 
-        name = COALESCE($1, name),
-        description = COALESCE($2, description),
-        price = COALESCE($3, price),
-        category = COALESCE($4, category),
-        images = COALESCE($5, images),
-        inventory = COALESCE($6, inventory),
-        sku = COALESCE($7, sku),
-        weight = COALESCE($8, weight),
-        dimensions = COALESCE($9, dimensions),
+        name = COALESCE(?, name),
+        description = COALESCE(?, description),
+        price = COALESCE(?, price),
+        category = COALESCE(?, category),
+        images = COALESCE(?, images),
+        inventory = COALESCE(?, inventory),
+        sku = COALESCE(?, sku),
+        weight = COALESCE(?, weight),
+        dimensions = COALESCE(?, dimensions),
         updated_at = NOW()
-      WHERE id = $10
-      RETURNING *
+      WHERE id = ?
     `;
 
-        const result = await db.query(updateQuery, [
+        await db.query(updateQuery, [
             name, description, price ? parseFloat(price) : null, category,
             images ? JSON.stringify(images) : null, inventory, sku, weight,
             dimensions ? JSON.stringify(dimensions) : null, productId
         ]);
+
+        // FETCH AFTER UPDATE
+        const result = await db.query('SELECT * FROM products WHERE id = ?', [productId]);
 
         return result.rows[0];
     }
@@ -142,14 +144,14 @@ class ProductService {
         const ownershipCheck = await db.query(`
       SELECT p.id FROM products p 
       JOIN shops s ON p.shop_id = s.id 
-      WHERE p.id = $1 AND s.owner_id = $2
+      WHERE p.id = ? AND s.owner_id = ?
     `, [productId, userId]);
 
         if (ownershipCheck.rows.length === 0) {
             throw new AppError('Accès non autorisé à ce produit', 403);
         }
 
-        await db.query('DELETE FROM products WHERE id = $1', [productId]);
+        await db.query('DELETE FROM products WHERE id = ?', [productId]);
     }
 }
 

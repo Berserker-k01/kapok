@@ -5,8 +5,8 @@ const fs = require('fs');
 // Chemin vers le fichier credentials.json
 const CREDENTIALS_PATH = path.join(__dirname, '../../credentials.json');
 
-// ID du Google Sheet (à récupérer depuis les variables d'environnement ou la DB)
-const SPREADSHEET_ID = process.env.GOOGLE_SHEET_ID;
+// ID du Google Sheet (Null = désactivé car pas de .env)
+const SPREADSHEET_ID = null; // Anciennement process.env.GOOGLE_SHEET_ID
 
 const getAuthClient = () => {
     if (!fs.existsSync(CREDENTIALS_PATH)) {

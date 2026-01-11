@@ -8,33 +8,32 @@ exports.getOrdersByShop = async (req, res) => {
         const offset = (page - 1) * limit
 
         // Vérifier que l'utilisateur possède cette boutique
-        const shopCheck = await db.query('SELECT id FROM shops WHERE id = $1 AND owner_id = $2', [req.params.shopId, req.user.id])
+        const shopCheck = await db.query('SELECT id FROM shops WHERE id = ? AND owner_id = ?', [req.params.shopId, req.user.id])
         if (shopCheck.rows.length === 0) {
             return res.status(403).json({ error: 'Accès non autorisé à cette boutique' })
         }
 
         let query = `
       SELECT o.*, 
-             json_build_object(
+             JSON_OBJECT(
                'name', c.name,
                'email', c.email,
                'phone', c.phone
              ) as customer
       FROM orders o
       LEFT JOIN customers c ON o.customer_id = c.id
-      WHERE o.shop_id = $1
+      WHERE o.shop_id = ?
     `
         let queryParams = [req.params.shopId]
         let paramCount = 1
 
         if (status && status !== 'all') {
-            paramCount++
-            query += ` AND o.status = $${paramCount}`
+            query += ` AND o.status = ?`
             queryParams.push(status)
         }
 
-        query += ` ORDER BY o.created_at DESC LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}`
-        queryParams.push(limit, offset)
+        query += ` ORDER BY o.created_at DESC LIMIT ? OFFSET ?`
+        queryParams.push(parseInt(limit), parseInt(offset))
 
         const result = await db.query(query, queryParams)
 
@@ -66,7 +65,7 @@ exports.updateOrderStatus = async (req, res) => {
         const ownershipCheck = await db.query(`
       SELECT o.id FROM orders o 
       JOIN shops s ON o.shop_id = s.id 
-      WHERE o.id = $1 AND s.owner_id = $2
+      WHERE o.id = ? AND s.owner_id = ?
     `, [orderId, req.user.id])
 
         if (ownershipCheck.rows.length === 0) {
@@ -75,12 +74,14 @@ exports.updateOrderStatus = async (req, res) => {
 
         const updateQuery = `
       UPDATE orders 
-      SET status = $1, updated_at = NOW()
-      WHERE id = $2
-      RETURNING *
+      SET status = ?, updated_at = NOW()
+      WHERE id = ?
     `
 
-        const result = await db.query(updateQuery, [status, orderId])
+        await db.query(updateQuery, [status, orderId])
+
+        // FETCH AFTER UPDATE
+        const result = await db.query('SELECT * FROM orders WHERE id = ?', [orderId])
 
         res.json({
             message: 'Statut de commande mis à jour',
@@ -101,7 +102,7 @@ exports.getOrderPublic = async (req, res) => {
       SELECT o.id, o.order_number, o.total_amount, o.currency, o.created_at, s.name as shop_name
       FROM orders o
       JOIN shops s ON o.shop_id = s.id
-      WHERE o.id = $1
+      WHERE o.id = ?
     `
         const result = await db.query(query, [orderId])
 
@@ -123,11 +124,13 @@ exports.validateOrder = async (req, res) => {
         const updateQuery = `
       UPDATE orders 
       SET status = 'validated_by_customer', updated_at = NOW()
-      WHERE id = $1 AND status = 'delivered'
-      RETURNING *
+      WHERE id = ? AND status = 'delivered'
     `
 
-        const result = await db.query(updateQuery, [orderId])
+        await db.query(updateQuery, [orderId])
+
+        // FETCH AFTER UPDATE
+        const result = await db.query('SELECT * FROM orders WHERE id = ?', [orderId])
 
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Commande non trouvée ou statut incorrect (doit être livrée)' })
@@ -153,7 +156,7 @@ exports.createPublicOrder = async (req, res) => {
             SELECT p.*, s.currency 
             FROM products p 
             JOIN shops s ON p.shop_id = s.id 
-            WHERE p.id = $1
+            WHERE p.id = ?
         `
         const productResult = await db.query(productQuery, [productId])
 
@@ -167,17 +170,26 @@ exports.createPublicOrder = async (req, res) => {
         // 2. Créer ou récupérer le client (simplifié pour COD)
         // On cherche par téléphone pour éviter les doublons
         let customerId
-        const customerCheck = await db.query('SELECT id FROM customers WHERE phone = $1', [phone])
+        const customerCheck = await db.query('SELECT id FROM customers WHERE phone = ?', [phone])
 
         if (customerCheck.rows.length > 0) {
             customerId = customerCheck.rows[0].id
         } else {
             const newCustomer = await db.query(`
                 INSERT INTO customers (name, phone, address, city, created_at)
-                VALUES ($1, $2, $3, $4, NOW())
-                RETURNING id
+                VALUES (?, ?, ?, ?, NOW())
             `, [`${firstName} ${lastName}`, phone, address, city])
-            customerId = newCustomer.rows[0].id
+
+            // FETCH CUSTOMER ID (using SELECT because no INSERT RETURNING in MySQL for simple queries either if we want to be safe, though LAST_INSERT_ID() works for auto-increment. Assuming UUID or AI? Customers usually have UUID in this app?)
+            // Wait, schema says customers id is integer? Or UUID? Schema mysql file says customers id is CHAR(36).
+            // So we need to generate UUID or find it.
+            // Ah, the original code used RETURNING id.
+            // If ID is auto-generated by DB (default UUID()), we can't get it easily without SELECT query on phone.
+            // BUT, if we generate it here? The original code didn't generate it.
+            // Let's assume we need to query it back.
+
+            const fetchedCustomer = await db.query('SELECT id FROM customers WHERE phone = ?', [phone])
+            customerId = fetchedCustomer.rows[0].id
         }
 
         // 3. Créer la commande
@@ -187,16 +199,18 @@ exports.createPublicOrder = async (req, res) => {
                 shop_id, customer_id, total_amount, currency, status, 
                 payment_status, payment_method, order_number, created_at, updated_at
             )
-            VALUES ($1, $2, $3, $4, 'pending', 'pending', 'cod', $5, NOW(), NOW())
-            RETURNING *
+            VALUES (?, ?, ?, ?, 'pending', 'pending', 'cod', ?, NOW(), NOW())
         `, [product.shop_id, customerId, totalAmount, product.currency, orderNumber])
 
-        const order = newOrder.rows[0]
+        // FETCH AFTER INSERT
+        const fetchedOrder = await db.query('SELECT * FROM orders WHERE order_number = ?', [orderNumber])
+
+        const order = fetchedOrder.rows[0]
 
         // 4. Ajouter les items
         await db.query(`
             INSERT INTO order_items (order_id, product_id, quantity, price)
-            VALUES ($1, $2, $3, $4)
+            VALUES (?, ?, ?, ?)
         `, [order.id, product.id, quantity, product.price])
 
         // 5. Enrichir l'objet commande pour le Sheet

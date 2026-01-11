@@ -12,7 +12,7 @@ class ShopService {
       FROM shops s
       LEFT JOIN products p ON s.id = p.shop_id
       LEFT JOIN orders o ON s.id = o.shop_id
-      WHERE s.owner_id = $1
+      WHERE s.owner_id = ?
       GROUP BY s.id
       ORDER BY s.created_at DESC
     `;
@@ -25,7 +25,8 @@ class ShopService {
     const PLANS = require('../config/plans');
 
     // Récupérer le plan de l'utilisateur
-    const userQuery = 'SELECT plan FROM users WHERE id = $1';
+    // Récupérer le plan de l'utilisateur
+    const userQuery = 'SELECT plan FROM users WHERE id = ?';
     const userResult = await db.query(userQuery, [userId]);
 
     if (userResult.rows.length === 0) {
@@ -49,7 +50,8 @@ class ShopService {
     }
 
     // Vérifier la limite de boutiques
-    const countQuery = 'SELECT COUNT(*) FROM shops WHERE owner_id = $1';
+    // Vérifier la limite de boutiques
+    const countQuery = 'SELECT COUNT(*) FROM shops WHERE owner_id = ?';
     const countResult = await db.query(countQuery, [userId]);
     const shopCount = parseInt(countResult.rows[0].count);
 
@@ -65,7 +67,8 @@ class ShopService {
       .replace(/^-|-$/g, '');
 
     // Vérifier l'unicité du slug
-    const slugQuery = 'SELECT id FROM shops WHERE slug = $1';
+    // Vérifier l'unicité du slug
+    const slugQuery = 'SELECT id FROM shops WHERE slug = ?';
     const slugResult = await db.query(slugQuery, [slug]);
 
     if (slugResult.rows.length > 0) {
@@ -78,14 +81,19 @@ class ShopService {
         id, name, description, category, theme, slug, owner_id, 
         status, created_at, updated_at
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, 'active', NOW(), NOW())
-      RETURNING *
+      VALUES (?, ?, ?, ?, ?, ?, ?, 'active', NOW(), NOW())
     `;
 
-    const result = await db.query(insertQuery, [
+    await db.query(insertQuery, [
       shopId, name, description || '', category || 'general',
       theme || 'default', slug, userId
     ]);
+
+    // FETCH AFTER INSERT (MySQL Manual RETURNING)
+    const selectQuery = 'SELECT * FROM shops WHERE id = ?';
+    const result = await db.query(selectQuery, [shopId]);
+
+    return result.rows[0];
 
     return result.rows[0];
   }
@@ -100,7 +108,7 @@ class ShopService {
       FROM shops s
       LEFT JOIN products p ON s.id = p.shop_id
       LEFT JOIN orders o ON s.id = o.shop_id AND o.status = 'completed'
-      WHERE s.id = $1
+      WHERE s.id = ?
       GROUP BY s.id
     `;
 
@@ -115,12 +123,13 @@ class ShopService {
 
   async getShopBySlug(slug) {
     const query = `
-      SELECT s.*, json_build_object(
-        'facebookPixelId', s.settings->>'facebookPixelId',
-        'googleAnalyticsId', s.settings->>'googleAnalyticsId'
+      SELECT s.*, 
+      JSON_OBJECT(
+        'facebookPixelId', JSON_UNQUOTE(JSON_EXTRACT(s.settings, '$.facebookPixelId')),
+        'googleAnalyticsId', JSON_UNQUOTE(JSON_EXTRACT(s.settings, '$.googleAnalyticsId'))
       ) as tracking
       FROM shops s
-      WHERE slug = $1
+      WHERE slug = ?
     `;
     const result = await db.query(query, [slug]);
     return result.rows[0];
@@ -132,20 +141,22 @@ class ShopService {
     const updateQuery = `
       UPDATE shops 
       SET 
-        name = COALESCE($1, name),
-        description = COALESCE($2, description),
-        category = COALESCE($3, category),
-        theme = COALESCE($4, theme),
-        settings = COALESCE($5, settings),
+        name = COALESCE(?, name),
+        description = COALESCE(?, description),
+        category = COALESCE(?, category),
+        theme = COALESCE(?, theme),
+        settings = COALESCE(?, settings),
         updated_at = NOW()
-      WHERE id = $6
-      RETURNING *
+      WHERE id = ?
     `;
 
-    const result = await db.query(updateQuery, [
+    await db.query(updateQuery, [
       name, description, category, theme,
       settings ? JSON.stringify(settings) : null, shopId
     ]);
+
+    // FETCH AFTER UPDATE
+    const result = await db.query('SELECT * FROM shops WHERE id = ?', [shopId]);
 
     if (result.rows.length === 0) {
       throw new AppError('Boutique non trouvée', 404);
@@ -158,7 +169,7 @@ class ShopService {
     // Vérifier s'il y a des commandes en cours
     const ordersQuery = `
       SELECT COUNT(*) FROM orders 
-      WHERE shop_id = $1 AND status IN ('pending', 'processing', 'shipped')
+      WHERE shop_id = ? AND status IN ('pending', 'processing', 'shipped')
     `;
     const ordersResult = await db.query(ordersQuery, [shopId]);
     const pendingOrders = parseInt(ordersResult.rows[0].count);
@@ -167,7 +178,7 @@ class ShopService {
       throw new AppError('Impossible de supprimer la boutique : commandes en cours', 400);
     }
 
-    await db.query('DELETE FROM shops WHERE id = $1', [shopId]);
+    await db.query('DELETE FROM shops WHERE id = ?', [shopId]);
   }
 
   async getShopStats(shopId) {

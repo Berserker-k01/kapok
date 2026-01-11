@@ -1,7 +1,8 @@
 const jwt = require('jsonwebtoken')
 const db = require('../config/database')
 
-const JWT_SECRET = process.env.JWT_SECRET || 'lesigne_secret_key_2024'
+// SECRET HARDCODÉ POUR INTEGRATION DIRECTE (CLIENT REQUEST)
+const JWT_SECRET = 'lesigne_secret_key_2024';
 
 // Middleware d'authentification générique
 const authenticateToken = async (req, res, next) => {

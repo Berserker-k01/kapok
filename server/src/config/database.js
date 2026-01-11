@@ -22,12 +22,15 @@ const parseDatabaseUrl = (url) => {
   }
 }
 
-// --- CONFIGURATION MANUELLE (EMERGENCY MODE) ---
+// --- CONFIGURATION HYBRIDE (DOCKER / HOSTINGER) ---
 const poolConfig = {
-  host: '127.0.0.1', // Force IPv4 pour éviter l'erreur ::1
+  // CONFIGURATION HARDCODÉE (Mode Hostinger)
+  // Plus de dépendance à process.env
+  host: '127.0.0.1',
   user: 'u980915146_admin',
   password: 'Daniel2005k@ssi',
   database: 'u980915146_assimedb',
+  port: 3306,
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,

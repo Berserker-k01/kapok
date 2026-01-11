@@ -28,13 +28,13 @@ router.get('/dashboard', async (req, res) => {
     // Croissance mensuelle
     const growthQuery = `
       SELECT 
-        DATE_TRUNC('month', created_at) as month,
+        DATE_FORMAT(created_at, '%Y-%m-01') as month,
         COUNT(CASE WHEN role = 'user' THEN 1 END) as new_users,
-        (SELECT COUNT(*) FROM shops WHERE DATE_TRUNC('month', created_at) = DATE_TRUNC('month', u.created_at)) as new_shops,
-        (SELECT COALESCE(SUM(total_amount), 0) FROM orders WHERE status = 'completed' AND DATE_TRUNC('month', created_at) = DATE_TRUNC('month', u.created_at)) as total_revenue
+        (SELECT COUNT(*) FROM shops WHERE DATE_FORMAT(created_at, '%Y-%m-01') = DATE_FORMAT(u.created_at, '%Y-%m-01')) as new_shops,
+        (SELECT COALESCE(SUM(total_amount), 0) FROM orders WHERE status = 'completed' AND DATE_FORMAT(created_at, '%Y-%m-01') = DATE_FORMAT(u.created_at, '%Y-%m-01')) as total_revenue
       FROM users u
       WHERE created_at >= CURRENT_DATE - INTERVAL '6 months'
-      GROUP BY DATE_TRUNC('month', created_at)
+      GROUP BY DATE_FORMAT(created_at, '%Y-%m-01')
       ORDER BY month DESC
     `
 
@@ -82,7 +82,7 @@ router.put('/settings', requireSuperAdmin, async (req, res) => {
 
     for (const key of keys) {
       await db.query(
-        'INSERT INTO platform_settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = $2, updated_at = NOW()',
+        'INSERT INTO platform_settings (`key`, `value`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `value` = VALUES(`value`), updated_at = NOW()',
         [key, String(settings[key])]
       )
     }
@@ -111,22 +111,21 @@ router.get('/users', async (req, res) => {
       WHERE u.role = 'user'
     `
     let queryParams = []
-    let paramCount = 0
+
+    // MySQL: pas de paramCount, juste l'ordre
 
     if (status) {
-      paramCount++
-      query += ` AND u.status = $${paramCount}`
+      query += ` AND u.status = ?`
       queryParams.push(status)
     }
 
     if (search) {
-      paramCount++
-      query += ` AND (u.name ILIKE $${paramCount} OR u.email ILIKE $${paramCount})`
-      queryParams.push(`%${search}%`)
+      query += ` AND (u.name LIKE ? OR u.email LIKE ?)`
+      queryParams.push(`%${search}%`, `%${search}%`)
     }
 
-    query += ` GROUP BY u.id ORDER BY u.created_at DESC LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}`
-    queryParams.push(limit, offset)
+    query += ` GROUP BY u.id ORDER BY u.created_at DESC LIMIT ? OFFSET ?`
+    queryParams.push(parseInt(limit), parseInt(offset))
 
     const result = await db.query(query, queryParams)
 
@@ -167,13 +166,12 @@ router.get('/shops', async (req, res) => {
     let paramCount = 0
 
     if (status) {
-      paramCount++
-      query += ` WHERE s.status = $${paramCount}`
+      query += ` WHERE s.status = ?`
       queryParams.push(status)
     }
 
-    query += ` GROUP BY s.id, u.name, u.email ORDER BY s.created_at DESC LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}`
-    queryParams.push(limit, offset)
+    query += ` GROUP BY s.id, u.name, u.email ORDER BY s.created_at DESC LIMIT ? OFFSET ?`
+    queryParams.push(parseInt(limit), parseInt(offset))
 
     const result = await db.query(query, queryParams)
 
@@ -204,12 +202,14 @@ router.put('/users/:userId/status', requireSuperAdmin, async (req, res) => {
 
     const updateQuery = `
       UPDATE users 
-      SET status = $1, updated_at = NOW()
-      WHERE id = $2 AND role = 'user'
-      RETURNING id, name, email, status
+      SET status = ?, updated_at = NOW()
+      WHERE id = ? AND role = 'user'
     `
 
-    const result = await db.query(updateQuery, [status, userId])
+    await db.query(updateQuery, [status, userId])
+
+    // FETCH AFTER UPDATE
+    const result = await db.query('SELECT id, name, email, status FROM users WHERE id = ?', [userId])
 
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Utilisateur non trouvé' })

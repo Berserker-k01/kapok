@@ -2,7 +2,8 @@ const express = require('express')
 const cors = require('cors')
 const helmet = require('helmet')
 const rateLimit = require('express-rate-limit')
-require('dotenv').config()
+const rateLimit = require('express-rate-limit')
+// require('dotenv').config() // Désactivé
 
 const authRoutes = require('./routes/auth')
 const userRoutes = require('./routes/users')
@@ -15,35 +16,13 @@ const subscriptionPaymentRoutes = require('./routes/subscriptionPayments')
 const planConfigRoutes = require('./routes/planConfig')
 const paymentConfigRoutes = require('./routes/paymentConfig')
 
-// --- CHARGEMENT ROBUSTE DES VARIABLES D'ENVIRONNEMENT ---
-const path = require('path');
-const fs = require('fs');
-const dotenv = require('dotenv');
-// Chercher .env à plusieurs endroits
-const envPaths = [
-  path.join(process.cwd(), '.env'),
-  path.join(__dirname, '../../.env'), // Racine depuis src
-  path.join(__dirname, '../.env'),    // Dossier server
-  path.join(__dirname, '.env')        // Dossier src
-];
-
-let envLoaded = false;
-let envPathFound = null;
-
-for (const p of envPaths) {
-  if (fs.existsSync(p)) {
-    dotenv.config({ path: p });
-    envLoaded = true;
-    envPathFound = p;
-    break;
-  }
-}
-
-// Fallback: Chargeur par défaut si rien trouvé spécifique
-if (!envLoaded) dotenv.config();
+// --- CONFIGURATION STATIQUE (PLUS DE .ENV) ---
+// Le client a demandé d'intégrer la configuration directement dans l'application
+process.env.NODE_ENV = 'production';
+const PORT = 5000;
 
 const app = express()
-const PORT = process.env.PORT || 5000
+// const PORT = process.env.PORT || 5000 // Déjà défini plus haut
 
 // Trust Proxy pour Vercel/Heroku
 app.set('trust proxy', 1);
@@ -59,148 +38,152 @@ app.get('/env-debug', (req, res) => {
     env: process.env.NODE_ENV,
     cwd: cwd,
     has_env_root: fs.existsSync(path.join(cwd, '.env')),
-    build_user_exists: fs.existsSync(userDistPath),
-    build_admin_exists: fs.existsSync(adminDistPath),
-    user_dist_path_checked: userDistPath
-  });
-});
+    // --- DEBUG ENVIRONNEMENT (SIMPLIFIÉ) ---
+    app.get('/env-debug', (req, res) => {
+      res.json({
+        message: 'HARDCODED-CONFIG-CHECK',
+        env: process.env.NODE_ENV,
+        port: PORT,
+        cwd: process.cwd()
+      });
+    });
 
-// Trust Proxy pour Vercel/Heroku
-app.set('trust proxy', 1);
+    // Trust Proxy pour Vercel/Heroku
+    app.set('trust proxy', 1);
 
-// Middleware de sécurité
-app.use(helmet())
+    // Middleware de sécurité
+    app.use(helmet())
 
 // Rate limiting
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limite chaque IP à 100 requêtes par windowMs
-  message: 'Trop de requêtes depuis cette IP, réessayez plus tard.'
-})
+      windowMs: 15 * 60 * 1000, // 15 minutes
+      max: 100, // limite chaque IP à 100 requêtes par windowMs
+      message: 'Trop de requêtes depuis cette IP, réessayez plus tard.'
+    })
 app.use('/api/', limiter)
 
 // CORS configuration
 app.use(cors({
-  origin: [
-    'http://localhost:3000', // client
-    'http://localhost:3001', // user-panel
-    'http://localhost:3002', // admin-panel
-    process.env.FRONTEND_URL, // URL Vercel
-    process.env.USER_PANEL_URL, // User Panel URL
-    process.env.ADMIN_PANEL_URL, // Admin Panel URL
-    /\.vercel\.app$/, // Tous les sous-domaines Vercel
-    /\.fly\.dev$/ // Tous les sous-domaines Fly.io
-  ],
-  credentials: true
-}))
+      origin: [
+        'http://localhost:3000',
+        'http://localhost:3001',
+        'http://localhost:3002',
+        'https://e-assime.com',
+        'https://admin.e-assime.com',
+        'https://www.e-assime.com',
+        /\.vercel\.app$/,
+        /\.fly\.dev$/
+      ],
+      credentials: true
+    }))
 
 // Middleware de parsing
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+    app.use(express.urlencoded({ extended: true }));
 
-// Servir les fichiers statiques (images uploadées)
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+    // Servir les fichiers statiques (images uploadées)
+    app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/shops', shopRoutes);
-app.use('/api/products', productRoutes);
-app.use('/api/orders', orderRoutes);
-app.use('/api/admin', adminRoutes);
-app.use('/api/subscriptions', subscriptionRoutes);
-app.use('/api/subscription-payments', subscriptionPaymentRoutes);
-app.use('/api/admin/plans', planConfigRoutes);
-app.use('/api/admin/payment-numbers', paymentConfigRoutes);
-app.use('/api/ai', require('./routes/ai')); // Import direct pour l'IA
+    // Routes
+    app.use('/api/auth', authRoutes);
+    app.use('/api/users', userRoutes);
+    app.use('/api/shops', shopRoutes);
+    app.use('/api/products', productRoutes);
+    app.use('/api/orders', orderRoutes);
+    app.use('/api/admin', adminRoutes);
+    app.use('/api/subscriptions', subscriptionRoutes);
+    app.use('/api/subscription-payments', subscriptionPaymentRoutes);
+    app.use('/api/admin/plans', planConfigRoutes);
+    app.use('/api/admin/payment-numbers', paymentConfigRoutes);
+    app.use('/api/ai', require('./routes/ai')); // Import direct pour l'IA
 
-// Route racine retirée pour laisser React gérer le '/'
-// app.get('/', ...);
+    // Route racine retirée pour laisser React gérer le '/'
+    // app.get('/', ...);
 
-// Route de santé pour les healthchecks
-// Route de santé pour les healthchecks (Test connexion MySQL)
-app.get('/api/health', async (req, res) => {
-  let dbStatus = 'disconnect';
-  let error = null;
-  try {
-    const db = require('./config/database');
-    await db.pool.execute('SELECT 1');
-    dbStatus = 'connected';
-  } catch (e) {
-    dbStatus = 'error';
-    error = e.message;
-  }
+    // Route de santé pour les healthchecks
+    // Route de santé pour les healthchecks (Test connexion MySQL)
+    app.get('/api/health', async (req, res) => {
+      let dbStatus = 'disconnect';
+      let error = null;
+      try {
+        const db = require('./config/database');
+        await db.pool.execute('SELECT 1');
+        dbStatus = 'connected';
+      } catch (e) {
+        dbStatus = 'error';
+        error = e.message;
+      }
 
-  res.status(dbStatus === 'connected' ? 200 : 500).json({
-    status: dbStatus === 'connected' ? 'ok' : 'error',
-    database_connection: dbStatus,
-    db_test_error: error,
-    env_debug: {
-      loaded: envLoaded,
-      path: envPathFound ? envPathFound : 'NONE',
-      has_db_url: !!process.env.DATABASE_URL
-    },
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime()
-  });
-});
-
-// Error handler
-app.use(require('./middleware/errorHandler'));
-
-// --- PRODUCTION: SERVIR LES FRONTENDS ---
-if (process.env.NODE_ENV === 'production') {
-  const adminDist = path.join(__dirname, '../../admin-panel/dist');
-  const userDist = path.join(__dirname, '../../user-panel/dist');
-
-  // 1. Admin Panel (/admin)
-  app.use('/admin', express.static(adminDist));
-  app.get(['/admin', '/admin/*'], (req, res) => {
-    res.sendFile(path.join(adminDist, 'index.html'));
-  });
-
-  // 2. User Panel (/)
-  app.use(express.static(userDist));
-  app.get('*', (req, res) => {
-    // Ne pas intercepter les API ou uploads qui ont échoué
-    if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) {
-      return res.status(404).json({ error: 'Not Found' });
-    }
-    res.sendFile(path.join(userDist, 'index.html'));
-  });
-}
-
-// --- ROUTE DIAGNOSTIC SCHEMA (V9) ---
-app.get('/api/debug-schema', async (req, res) => {
-  try {
-    const db = require('./config/database');
-    const [tables] = await db.pool.execute('SHOW TABLES');
-
-    let usersInfo = { status: 'missing', error: null };
-    try {
-      const [rows] = await db.pool.execute('SELECT count(*) as count FROM users');
-      const [columns] = await db.pool.execute('DESCRIBE users');
-      usersInfo = { status: 'exists', count: rows[0].count, columns: columns.map(c => c.Field) };
-    } catch (e) { usersInfo.error = e.message; }
-
-    res.json({
-      message: 'V9-SCHEMA-CHECK',
-      tables: tables,
-      users_check: usersInfo
+      res.status(dbStatus === 'connected' ? 200 : 500).json({
+        status: dbStatus === 'connected' ? 'ok' : 'error',
+        database_connection: dbStatus,
+        db_test_error: error,
+        env_debug: {
+          loaded: envLoaded,
+          path: envPathFound ? envPathFound : 'NONE',
+          has_db_url: !!process.env.DATABASE_URL
+        },
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime()
+      });
     });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
+
+    // Error handler
+    app.use(require('./middleware/errorHandler'));
+
+    // --- PRODUCTION: SERVIR LES FRONTENDS ---
+    if(process.env.NODE_ENV === 'production') {
+    const adminDist = path.join(__dirname, '../../admin-panel/dist');
+    const userDist = path.join(__dirname, '../../user-panel/dist');
+
+    // 1. Admin Panel (/admin)
+    app.use('/admin', express.static(adminDist));
+    app.get(['/admin', '/admin/*'], (req, res) => {
+      res.sendFile(path.join(adminDist, 'index.html'));
+    });
+
+    // 2. User Panel (/)
+    app.use(express.static(userDist));
+    app.get('*', (req, res) => {
+      // Ne pas intercepter les API ou uploads qui ont échoué
+      if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) {
+        return res.status(404).json({ error: 'Not Found' });
+      }
+      res.sendFile(path.join(userDist, 'index.html'));
+    });
   }
-});
 
-// Export pour Vercel (Serverless)
-module.exports = app;
+  // --- ROUTE DIAGNOSTIC SCHEMA (V9) ---
+  app.get('/api/debug-schema', async (req, res) => {
+    try {
+      const db = require('./config/database');
+      const [tables] = await db.pool.execute('SHOW TABLES');
 
-// Démarrage serveur (Local uniquement)
-if (require.main === module) {
-  app.listen(PORT, () => {
-    console.log(`🚀 Serveur Assimε démarré sur le port ${PORT}`)
-    console.log(`📊 Mode: ${process.env.NODE_ENV || 'development'}`)
-    console.log(`🔗 API disponible sur: http://localhost:${PORT}/api`)
-  })
-}
+      let usersInfo = { status: 'missing', error: null };
+      try {
+        const [rows] = await db.pool.execute('SELECT count(*) as count FROM users');
+        const [columns] = await db.pool.execute('DESCRIBE users');
+        usersInfo = { status: 'exists', count: rows[0].count, columns: columns.map(c => c.Field) };
+      } catch (e) { usersInfo.error = e.message; }
+
+      res.json({
+        message: 'V9-SCHEMA-CHECK',
+        tables: tables,
+        users_check: usersInfo
+      });
+    } catch (e) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  // Export pour Vercel (Serverless)
+  module.exports = app;
+
+  // Démarrage serveur (Local uniquement)
+  if (require.main === module) {
+    app.listen(PORT, () => {
+      console.log(`🚀 Serveur Assimε démarré sur le port ${PORT}`)
+      console.log(`📊 Mode: ${process.env.NODE_ENV || 'development'}`)
+      console.log(`🔗 API disponible sur: http://localhost:${PORT}/api`)
+    })
+  }

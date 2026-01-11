@@ -39,11 +39,13 @@ router.put('/:id/plan', authenticateToken, requireAdmin, async (req, res) => {
 
     const updateQuery = `
       UPDATE users 
-      SET plan = $1, updated_at = NOW()
-      WHERE id = $2
-      RETURNING id, name, email, plan
+      SET plan = ?, updated_at = NOW()
+      WHERE id = ?
     `
-    const result = await db.query(updateQuery, [plan, userId])
+    await db.query(updateQuery, [plan, userId])
+
+    // FETCH AFTER UPDATE
+    const result = await db.query('SELECT id, name, email, plan FROM users WHERE id = ?', [userId])
 
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Utilisateur non trouvé' })
@@ -74,7 +76,7 @@ router.get('/profile', authenticateToken, async (req, res) => {
       LEFT JOIN shops s ON u.id = s.owner_id
       LEFT JOIN products p ON s.id = p.shop_id
       LEFT JOIN orders o ON s.id = o.shop_id
-      WHERE u.id = $1
+      WHERE u.id = ?
       GROUP BY u.id
     `
 
@@ -104,7 +106,7 @@ router.put('/profile', authenticateToken, async (req, res) => {
 
     // Vérifier si l'email est déjà utilisé par un autre utilisateur
     if (email !== req.user.email) {
-      const emailCheck = await db.query('SELECT id FROM users WHERE email = $1 AND id != $2', [email, userId])
+      const emailCheck = await db.query('SELECT id FROM users WHERE email = ? AND id != ?', [email, userId])
       if (emailCheck.rows.length > 0) {
         return res.status(400).json({ error: 'Cet email est déjà utilisé' })
       }
@@ -112,12 +114,14 @@ router.put('/profile', authenticateToken, async (req, res) => {
 
     const updateQuery = `
       UPDATE users 
-      SET name = $1, email = $2, updated_at = NOW()
-      WHERE id = $3
-      RETURNING id, name, email, role, status
+      SET name = ?, email = ?, updated_at = NOW()
+      WHERE id = ?
     `
 
-    const result = await db.query(updateQuery, [name, email, userId])
+    await db.query(updateQuery, [name, email, userId])
+
+    // FETCH AFTER UPDATE
+    const result = await db.query('SELECT id, name, email, role, status FROM users WHERE id = ?', [userId])
 
     res.json({
       message: 'Profil mis à jour avec succès',
@@ -145,7 +149,7 @@ router.put('/password', authenticateToken, async (req, res) => {
     }
 
     // Vérifier le mot de passe actuel
-    const userQuery = 'SELECT password FROM users WHERE id = $1'
+    const userQuery = 'SELECT password FROM users WHERE id = ?'
     const userResult = await db.query(userQuery, [userId])
 
     const isValidPassword = await bcrypt.compare(currentPassword, userResult.rows[0].password)
@@ -157,7 +161,7 @@ router.put('/password', authenticateToken, async (req, res) => {
     const hashedPassword = await bcrypt.hash(newPassword, 12)
 
     // Mettre à jour
-    await db.query('UPDATE users SET password = $1, updated_at = NOW() WHERE id = $2', [hashedPassword, userId])
+    await db.query('UPDATE users SET password = ?, updated_at = NOW() WHERE id = ?', [hashedPassword, userId])
 
     res.json({ message: 'Mot de passe mis à jour avec succès' })
 
@@ -172,10 +176,10 @@ router.get('/stats', authenticateToken, async (req, res) => {
   try {
     const statsQuery = `
       SELECT 
-        (SELECT COUNT(*) FROM shops WHERE owner_id = $1) as total_shops,
-        (SELECT COUNT(*) FROM products p JOIN shops s ON p.shop_id = s.id WHERE s.owner_id = $1) as total_products,
-        (SELECT COUNT(*) FROM orders o JOIN shops s ON o.shop_id = s.id WHERE s.owner_id = $1) as total_orders,
-        (SELECT COALESCE(SUM(o.total_amount), 0) FROM orders o JOIN shops s ON o.shop_id = s.id WHERE s.owner_id = $1 AND o.status = 'completed') as total_revenue
+        (SELECT COUNT(*) FROM shops WHERE owner_id = ?) as total_shops,
+        (SELECT COUNT(*) FROM products p JOIN shops s ON p.shop_id = s.id WHERE s.owner_id = ?) as total_products,
+        (SELECT COUNT(*) FROM orders o JOIN shops s ON o.shop_id = s.id WHERE s.owner_id = ?) as total_orders,
+        (SELECT COALESCE(SUM(o.total_amount), 0) FROM orders o JOIN shops s ON o.shop_id = s.id WHERE s.owner_id = ? AND o.status = 'completed') as total_revenue
     `
 
     const result = await db.query(statsQuery, [req.user.id])
