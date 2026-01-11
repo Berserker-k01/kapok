@@ -101,6 +101,28 @@ app.get('/api/health', (req, res) => {
 // Error handler
 app.use(require('./middleware/errorHandler'));
 
+// --- PRODUCTION: SERVIR LES FRONTENDS ---
+if (process.env.NODE_ENV === 'production') {
+  const adminDist = path.join(__dirname, '../../admin-panel/dist');
+  const userDist = path.join(__dirname, '../../user-panel/dist');
+
+  // 1. Admin Panel (/admin)
+  app.use('/admin', express.static(adminDist));
+  app.get(['/admin', '/admin/*'], (req, res) => {
+    res.sendFile(path.join(adminDist, 'index.html'));
+  });
+
+  // 2. User Panel (/)
+  app.use(express.static(userDist));
+  app.get('*', (req, res) => {
+    // Ne pas intercepter les API ou uploads qui ont échoué
+    if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) {
+      return res.status(404).json({ error: 'Not Found' });
+    }
+    res.sendFile(path.join(userDist, 'index.html'));
+  });
+}
+
 // Export pour Vercel (Serverless)
 module.exports = app;
 
