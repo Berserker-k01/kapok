@@ -11,12 +11,16 @@ NODE_ENV=production
 PORT=5000
 
 # ============================================
-# BASE DE DONNÉES POSTGRESQL
+# BASE DE DONNÉES MYSQL
 # ============================================
+# Option 1: Utiliser DATABASE_URL (recommandé pour Hostinger phpMyAdmin)
+# DATABASE_URL=mysql://user:password@host:3306/database_name
+
+# Option 2: Utiliser les variables séparées
 DB_HOST=localhost
-DB_PORT=5432
+DB_PORT=3306
 DB_NAME=lesigne_db
-DB_USER=lesigne_user
+DB_USER=root
 DB_PASSWORD=CHANGEZ_MOI_AVEC_UN_MOT_DE_PASSE_SECURISE
 
 # ============================================

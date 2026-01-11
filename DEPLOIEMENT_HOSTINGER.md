@@ -9,6 +9,11 @@ Guide pour déployer votre SaaS Lesigne sur Hostinger Cloud Startup (3 déploiem
 - ✅ Accès SSH root à votre VPS Hostinger
 - ✅ 3 domaines configurés : `api.votre-domaine.com`, `app.votre-domaine.com`, `admin.votre-domaine.com`
 
+**🔑 Informations de connexion SSH :**
+```bash
+ssh -p 65002 u980915146@77.37.38.143
+```
+
 ---
 
 ## 🔧 Partie 1 : Backend API
@@ -310,7 +315,12 @@ tail -f /var/log/nginx/error.log
 
 ### ❌ Problème de connexion à la base de données PostgreSQL
 
-Si vous n'arrivez pas à communiquer avec la base de données, suivez ces étapes :
+Si vous n'arrivez pas à communiquer avec la base de données, suivez ces étapes **en vous connectant au serveur** :
+
+```bash
+# Connexion SSH
+ssh -p 65002 u980915146@77.37.38.143
+```
 
 #### Étape 1 : Vérifier que PostgreSQL est installé et démarré
 
@@ -319,9 +329,10 @@ Si vous n'arrivez pas à communiquer avec la base de données, suivez ces étape
 psql --version
 
 # Vérifier le statut du service
-systemctl status postgresql
-# ou
-systemctl status postgresql@14-main  # selon votre version
+sudo systemctl status postgresql
+# ou selon votre système
+sudo systemctl status postgresql@14-main
+sudo systemctl status postgresql@15-main
 
 # Démarrer PostgreSQL si nécessaire
 sudo systemctl start postgresql
@@ -345,13 +356,17 @@ sudo -u postgres psql -c "SHOW port;"
 #### Étape 3 : Vérifier les permissions d'authentification (pg_hba.conf)
 
 ```bash
-# Localiser le fichier pg_hba.conf
+# Localiser le fichier pg_hba.conf (généralement dans /etc/postgresql/)
 sudo find /etc -name pg_hba.conf 2>/dev/null
-# ou
-sudo find /var/lib/postgresql -name pg_hba.conf 2>/dev/null
 
-# Éditer le fichier (généralement dans /etc/postgresql/14/main/pg_hba.conf)
+# Trouver la version PostgreSQL installée
+ls -la /etc/postgresql/
+
+# Éditer le fichier (remplacez X.X par votre version, ex: 14, 15, etc.)
+sudo nano /etc/postgresql/X.X/main/pg_hba.conf
+# ou essayez directement
 sudo nano /etc/postgresql/14/main/pg_hba.conf
+sudo nano /etc/postgresql/15/main/pg_hba.conf
 ```
 
 **Vérifiez que ces lignes existent pour permettre les connexions locales :**
@@ -363,7 +378,8 @@ host    all             all             127.0.0.1/32            md5
 host    all             all             ::1/128                 md5
 ```
 
-**Après modification, redémarrer PostgreSQL :**
+**Si les lignes avec "md5" n'existent pas, ajoutez-les. Ensuite, redémarrer PostgreSQL :**
+
 ```bash
 sudo systemctl restart postgresql
 ```
@@ -384,7 +400,7 @@ sudo -u postgres psql
 
 # Tester la connexion avec l'utilisateur
 \q
-psql -U lesigne_user -d lesigne_db
+psql -U lesigne_user -d lesigne_db -h localhost
 # Entrer le mot de passe si demandé
 ```
 
@@ -424,6 +440,9 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO lesigne_user
 ```bash
 cd /var/www/lesigne/server
 cat .env | grep DB_
+
+# Ou voir tout le fichier (attention aux secrets)
+cat .env
 ```
 
 **Vérifiez que ces variables sont correctes :**
@@ -435,7 +454,10 @@ DB_USER=lesigne_user
 DB_PASSWORD=votre_mot_de_passe_secure  # Doit correspondre au mot de passe créé
 ```
 
-**ATTENTION :** Si votre `.env` utilise `DB_HOST=127.0.0.1` au lieu de `localhost`, les deux devraient fonctionner, mais essayez `localhost` d'abord.
+**ATTENTION :** 
+- Si votre `.env` utilise `DB_HOST=127.0.0.1` au lieu de `localhost`, les deux devraient fonctionner, mais essayez `localhost` d'abord.
+- Vérifiez qu'il n'y a pas d'espaces autour du `=` dans le fichier `.env`
+- Vérifiez que les valeurs ne sont pas entre guillemets (ex: `DB_PASSWORD="motdepasse"` → `DB_PASSWORD=motdepasse`)
 
 #### Étape 6 : Tester la connexion avec le script de diagnostic
 
@@ -452,12 +474,13 @@ node diagnose-db.js
 #### Étape 7 : Vérifier les logs PostgreSQL
 
 ```bash
-# Voir les logs récents
-sudo tail -f /var/log/postgresql/postgresql-14-main.log
-# ou selon votre version
+# Voir les logs récents (remplacez X.X par votre version)
+sudo tail -f /var/log/postgresql/postgresql-X.X-main.log
+
+# Ou utiliser journalctl
 sudo journalctl -u postgresql -f
 
-# Tenter une connexion depuis votre application et observer les logs
+# Dans un autre terminal, tenter une connexion depuis votre application et observer les logs
 ```
 
 #### Étape 8 : Vérifier que le port 5432 n'est pas bloqué
@@ -512,6 +535,10 @@ psql -h localhost -U lesigne_user -d lesigne_db
 - L'utilisateur n'a pas les bonnes permissions
 - Solution : Donner les permissions (étape 4, partie GRANT)
 
+**Erreur : "FATAL: no pg_hba.conf entry for host"**
+- PostgreSQL refuse la connexion depuis cette adresse IP
+- Solution : Modifier pg_hba.conf pour autoriser localhost (étape 3)
+
 #### Après résolution : Réinitialiser la base de données
 
 Une fois la connexion établie, réinitialiser le schéma :
@@ -525,7 +552,7 @@ psql -U lesigne_user -d lesigne_db -f database/migration_subscription_payments.s
 **Redémarrer PM2 :**
 ```bash
 pm2 restart lesigne-server
-pm2 logs lesigne-server  # Pour voir les logs
+pm2 logs lesigne-server  # Pour voir les logs en temps réel
 ```
 
 ---
@@ -549,6 +576,40 @@ ls -la /var/www/lesigne/user-panel/dist
 ls -la /var/www/lesigne/admin-panel/dist
 
 # Rebuild si nécessaire
+```
+
+---
+
+## 🔍 Script de diagnostic rapide
+
+Exécutez ces commandes sur le serveur pour un diagnostic complet :
+
+```bash
+#!/bin/bash
+echo "=== DIAGNOSTIC BASE DE DONNÉES ==="
+echo ""
+echo "1. Statut PostgreSQL:"
+sudo systemctl status postgresql --no-pager -l
+echo ""
+echo "2. Version PostgreSQL:"
+psql --version
+echo ""
+echo "3. Port d'écoute:"
+sudo netstat -tlnp | grep 5432 || sudo ss -tlnp | grep 5432
+echo ""
+echo "4. Variables d'environnement DB:"
+cd /var/www/lesigne/server 2>/dev/null && cat .env | grep DB_ || echo "Dossier /var/www/lesigne/server non trouvé"
+echo ""
+echo "5. Test de connexion:"
+cd /var/www/lesigne/server 2>/dev/null && node diagnose-db.js || echo "Impossible d'exécuter le diagnostic"
+```
+
+**Copiez et collez ce script dans un fichier :**
+```bash
+nano ~/diagnose.sh
+# Collez le script, puis :
+chmod +x ~/diagnose.sh
+~/diagnose.sh
 ```
 
 ---
