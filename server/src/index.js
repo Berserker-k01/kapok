@@ -90,9 +90,23 @@ app.use('/api/ai', require('./routes/ai')); // Import direct pour l'IA
 // app.get('/', ...);
 
 // Route de santé pour les healthchecks
-app.get('/api/health', (req, res) => {
-  res.status(200).json({
-    status: 'ok',
+// Route de santé pour les healthchecks (Test connexion MySQL)
+app.get('/api/health', async (req, res) => {
+  let dbStatus = 'disconnect';
+  let error = null;
+  try {
+    const db = require('./config/database');
+    await db.pool.execute('SELECT 1');
+    dbStatus = 'connected';
+  } catch (e) {
+    dbStatus = 'error';
+    error = e.message;
+  }
+
+  res.status(dbStatus === 'connected' ? 200 : 500).json({
+    status: dbStatus === 'connected' ? 'ok' : 'error',
+    database_connection: dbStatus,
+    db_test_error: error,
     timestamp: new Date().toISOString(),
     uptime: process.uptime()
   });
@@ -122,6 +136,29 @@ if (process.env.NODE_ENV === 'production') {
     res.sendFile(path.join(userDist, 'index.html'));
   });
 }
+
+// --- ROUTE DIAGNOSTIC SCHEMA (V9) ---
+app.get('/api/debug-schema', async (req, res) => {
+  try {
+    const db = require('./config/database');
+    const [tables] = await db.pool.execute('SHOW TABLES');
+
+    let usersInfo = { status: 'missing', error: null };
+    try {
+      const [rows] = await db.pool.execute('SELECT count(*) as count FROM users');
+      const [columns] = await db.pool.execute('DESCRIBE users');
+      usersInfo = { status: 'exists', count: rows[0].count, columns: columns.map(c => c.Field) };
+    } catch (e) { usersInfo.error = e.message; }
+
+    res.json({
+      message: 'V9-SCHEMA-CHECK',
+      tables: tables,
+      users_check: usersInfo
+    });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
 
 // Export pour Vercel (Serverless)
 module.exports = app;
