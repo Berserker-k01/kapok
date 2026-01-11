@@ -36,6 +36,24 @@ const handleDBError = err => {
 };
 
 const sendErrorProd = (err, res) => {
+    // Mode Debug temporaire : On renvoie TOUT pour que l'utilisateur puisse voir l'erreur SQL
+    console.error('ERROR 💥', err);
+
+    // Si c'est une erreur de base de données, on l'affiche clairement
+    if (err.sqlMessage || err.code) {
+        return res.status(500).json({
+            success: false,
+            status: 'error',
+            message: 'Erreur SQL (Debug)',
+            error: {
+                code: err.code,
+                sqlMessage: err.sqlMessage,
+                errno: err.errno,
+                sql: err.sql
+            }
+        });
+    }
+
     // Operational, trusted error: send message to client
     if (err.isOperational) {
         res.status(err.statusCode).json({
@@ -45,10 +63,10 @@ const sendErrorProd = (err, res) => {
     }
     // Programming or other unknown error
     else {
-        console.error('ERROR 💥', err);
         res.status(500).json({
             success: false,
-            error: `Une erreur système est survenue : ${err.message}`
+            error: `Une erreur système est survenue : ${err.message}`,
+            details: err.stack // Ajouté pour le debug
         });
     }
 };
