@@ -22,7 +22,8 @@ function App() {
   // Configuration Axios
   useEffect(() => {
     // Relative URL pour passer par le Proxy (Nginx ou Vite)
-    axios.defaults.baseURL = import.meta.env.VITE_API_URL || '/api';
+    // HARDCODED HOSTINGER PRODUCTION
+    axios.defaults.baseURL = 'https://e-assime.com/api';
     const token = useAuthStore.getState().token;
     if (token) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;

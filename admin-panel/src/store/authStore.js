@@ -8,7 +8,7 @@ export const useAuthStore = create((set, get) => ({
 
   login: async (credentials) => {
     try {
-      const response = await axios.post('/api/auth/admin/login', credentials);
+      const response = await axios.post('/auth/admin/login', credentials);
 
       if (response.data) {
         set({

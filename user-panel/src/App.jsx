@@ -30,7 +30,8 @@ function App() {
     // Configuration de l'URL de base pour Axios
     // En Docker/Prod, on utilise le proxy Nginx (relatif)
     // En Dev local, Vite proxy s'en charge aussi
-    axios.defaults.baseURL = import.meta.env.VITE_API_URL || '/api';
+    // Configuration de l'URL de base pour Axios (HARDCODED HOSTINGER)
+    axios.defaults.baseURL = 'https://e-assime.com/api';
 
     if (token) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`

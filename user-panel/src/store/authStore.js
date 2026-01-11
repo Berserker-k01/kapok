@@ -11,7 +11,7 @@ export const useAuthStore = create(persist((set, get) => ({
     // Connexion normale via API
     try {
       // API call réelle
-      const response = await axios.post('/api/auth/login', credentials);
+      const response = await axios.post('/auth/login', credentials);
 
       if (response.data) {
         set({
@@ -28,7 +28,7 @@ export const useAuthStore = create(persist((set, get) => ({
 
   register: async (userData) => {
     try {
-      const response = await axios.post('/api/auth/register', userData);
+      const response = await axios.post('/auth/register', userData);
 
       if (response.data) {
         set({
