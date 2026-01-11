@@ -19,6 +19,24 @@ const path = require('path')
 const app = express()
 const PORT = process.env.PORT || 5000
 
+// --- DEBUG ENVIRONNEMENT (V8 - BUILD CHECK) ---
+const fs = require('fs');
+app.get('/env-debug', (req, res) => {
+  const cwd = process.cwd();
+  const userDistPath = path.join(__dirname, '../../user-panel/dist/index.html');
+  const adminDistPath = path.join(__dirname, '../../admin-panel/dist/index.html');
+
+  res.json({
+    message: 'V8-BUILD-CHECK',
+    env: process.env.NODE_ENV,
+    cwd: cwd,
+    has_env_root: fs.existsSync(path.join(cwd, '.env')),
+    build_user_exists: fs.existsSync(userDistPath),
+    build_admin_exists: fs.existsSync(adminDistPath),
+    user_dist_path_checked: userDistPath
+  });
+});
+
 // Trust Proxy pour Vercel/Heroku
 app.set('trust proxy', 1);
 
