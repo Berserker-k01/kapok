@@ -24,7 +24,7 @@ const parseDatabaseUrl = (url) => {
 
 // --- CONFIGURATION MANUELLE (EMERGENCY MODE) ---
 const poolConfig = {
-  host: 'localhost',
+  host: '127.0.0.1', // Force IPv4 pour éviter l'erreur ::1
   user: 'u980915146_admin',
   password: 'Daniel2005k@ssi',
   database: 'u980915146_assimedb',
