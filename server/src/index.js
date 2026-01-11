@@ -14,13 +14,38 @@ const subscriptionRoutes = require('./routes/subscriptions')
 const subscriptionPaymentRoutes = require('./routes/subscriptionPayments')
 const planConfigRoutes = require('./routes/planConfig')
 const paymentConfigRoutes = require('./routes/paymentConfig')
-const path = require('path')
+
+// --- CHARGEMENT ROBUSTE DES VARIABLES D'ENVIRONNEMENT ---
+// Chercher .env à plusieurs endroits
+const envPaths = [
+  path.join(process.cwd(), '.env'),
+  path.join(__dirname, '../../.env'), // Racine depuis src
+  path.join(__dirname, '../.env'),    // Dossier server
+  path.join(__dirname, '.env')        // Dossier src
+];
+
+let envLoaded = false;
+let envPathFound = null;
+
+for (const p of envPaths) {
+  if (fs.existsSync(p)) {
+    dotenv.config({ path: p });
+    envLoaded = true;
+    envPathFound = p;
+    break;
+  }
+}
+
+// Fallback: Chargeur par défaut si rien trouvé spécifique
+if (!envLoaded) dotenv.config();
 
 const app = express()
 const PORT = process.env.PORT || 5000
 
+// Trust Proxy pour Vercel/Heroku
+app.set('trust proxy', 1);
+
 // --- DEBUG ENVIRONNEMENT (V8 - BUILD CHECK) ---
-const fs = require('fs');
 app.get('/env-debug', (req, res) => {
   const cwd = process.cwd();
   const userDistPath = path.join(__dirname, '../../user-panel/dist/index.html');
@@ -107,6 +132,11 @@ app.get('/api/health', async (req, res) => {
     status: dbStatus === 'connected' ? 'ok' : 'error',
     database_connection: dbStatus,
     db_test_error: error,
+    env_debug: {
+      loaded: envLoaded,
+      path: envPathFound ? envPathFound : 'NONE',
+      has_db_url: !!process.env.DATABASE_URL
+    },
     timestamp: new Date().toISOString(),
     uptime: process.uptime()
   });
