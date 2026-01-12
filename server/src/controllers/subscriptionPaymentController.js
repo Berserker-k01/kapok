@@ -2,6 +2,7 @@ const db = require('../config/database')
 const multer = require('multer')
 const path = require('path')
 const fs = require('fs')
+const { v4: uuidv4 } = require('uuid')
 const { AppError } = require('../utils/AppError')
 const catchAsync = require('../utils/catchAsync')
 
@@ -99,7 +100,7 @@ exports.createPaymentRequest = catchAsync(async (req, res) => {
   }
 
   // Créer la demande de paiement
-  const paymentId = require('uuid').v4(); // Generate UUID manually for MySQL INSERT
+  const paymentId = uuidv4(); // Generate UUID manually for MySQL INSERT
   const insertQuery = `
     INSERT INTO subscription_payments 
     (id, user_id, plan_key, plan_name, amount, currency, payment_provider, payment_phone, status, created_at, updated_at)
