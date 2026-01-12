@@ -1,60 +1,135 @@
-require('dotenv').config();
-const { Pool } = require('pg');
+const db = require('./src/config/database');
+const { v4: uuidv4 } = require('uuid');
 
-console.log('--- DIAGNOSTIC BASE DE DONNÉES ---');
-console.log('NODE_ENV:', process.env.NODE_ENV);
-console.log('DATABASE_URL présente:', process.env.DATABASE_URL ? 'OUI (Masquée pour sécurité)' : 'NON');
-
-const poolConfig = process.env.DATABASE_URL
-    ? {
-        connectionString: process.env.DATABASE_URL,
-        ssl: { rejectUnauthorized: false }
-    }
-    : {
-        user: process.env.DB_USER || 'postgres',
-        host: process.env.DB_HOST || 'localhost',
-        database: process.env.DB_NAME || 'lesigne_db',
-        password: process.env.DB_PASSWORD ? '******' : 'NON DÉFI',
-        port: process.env.DB_PORT || 5432,
-        ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+async function runDiagnosis() {
+    const report = [];
+    const log = (step, status, message, details = null) => {
+        console.log(`[${status}] ${step}: ${message}`);
+        report.push({ step, status, message, details });
+        if (status === 'ERROR') console.error(details);
     };
 
-if (!process.env.DATABASE_URL) {
-    console.log('Détails Config (sans DATABASE_URL):', {
-        host: poolConfig.host,
-        user: poolConfig.user,
-        database: poolConfig.database,
-        port: poolConfig.port
-    });
-}
+    log('INIT', 'INFO', 'Démarrage du diagnostic complet...');
 
-const pool = new Pool(poolConfig);
+    let testUserId = uuidv4();
+    let testShopId = uuidv4();
+    let testProductId = uuidv4();
 
-async function testConnection() {
-    console.log('\nTentative de connexion...');
     try {
-        const start = Date.now();
-        const res = await pool.query('SELECT NOW()');
-        const duration = Date.now() - start;
-        console.log('✅ SUCCÈS ! Connexion établie en', duration, 'ms');
-        console.log('Heure du serveur DB:', res.rows[0].now);
+        // 1. TEST CONNEXION
+        try {
+            await db.pool.execute('SELECT 1');
+            log('1. Database Connection', 'SUCCESS', 'Connexion MySQL établie');
+        } catch (e) {
+            log('1. Database Connection', 'ERROR', 'Echec connexion', e.message);
+            throw e; // Stop si pas de DB
+        }
 
-        // Vérifier les tables
-        const tables = await pool.query("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'");
-        console.log('\nTables trouvées:', tables.rows.map(r => r.table_name).join(', '));
+        // 2. TEST PLANS CONFIG (Lecture)
+        try {
+            // Simule ce que le controlleur fait
+            const query = 'SELECT * FROM plans_config ORDER BY display_order ASC';
+            const result = await db.query(query);
+            if (result.rows.length > 0) {
+                log('2. Fetch Plans', 'SUCCESS', `${result.rows.length} plans trouvés`);
+            } else {
+                log('2. Fetch Plans', 'WARNING', 'Table plans_config vide');
+            }
+        } catch (e) {
+            log('2. Fetch Plans', 'ERROR', 'Crash SQL sur lecture plans', e);
+        }
 
-        process.exit(0);
-    } catch (err) {
-        console.error('\n❌ ERREUR DE CONNEXION :');
-        console.error('Code:', err.code);
-        console.error('Message:', err.message);
-        console.error('\nCONSEIL :');
-        if (err.code === '28P01') console.log('Vérifiez votre MOT DE PASSE dans DATABASE_URL.');
-        if (err.code === 'ENOTFOUND' || err.code === 'ECONNREFUSED') console.log('Vérifiez l\'HÔTE (URL) de votre base de données.');
-        if (!process.env.DATABASE_URL) console.log('DATABASE_URL n\'est pas définie. Le serveur essaie de se connecter en local (localhost).');
+        // 3. TEST USERS (Création)
+        try {
+            const email = `diag-${Date.now()}@test.com`;
+            const insertQuery = `
+        INSERT INTO users (id, name, email, password, role, status, created_at)
+        VALUES (?, ?, ?, 'hash', 'user', 'active', NOW())
+      `;
+            await db.query(insertQuery, [testUserId, 'Diag User', email]);
 
-        process.exit(1);
+            const check = await db.query('SELECT * FROM users WHERE id = ?', [testUserId]);
+            if (check.rows.length > 0) {
+                log('3. Create User', 'SUCCESS', 'Utilisateur créé et relu');
+            } else {
+                log('3. Create User', 'ERROR', 'Utilisateur créé mais introuvable (INSERT silencieux ?)');
+            }
+        } catch (e) {
+            log('3. Create User', 'ERROR', 'Crash création user', e);
+        }
+
+        // 4. TEST SHOPS (Création + Lecture Stats)
+        try {
+            const slug = `shop-${Date.now()}`;
+            const insertShop = `
+        INSERT INTO shops (id, name, description, slug, owner_id, status, created_at)
+        VALUES (?, 'Test Shop', 'Desc', ?, ?, 'active', NOW())
+      `;
+            await db.query(insertShop, [testShopId, slug, testUserId]);
+            log('4.1 Create Shop', 'SUCCESS', 'Boutique créée');
+
+            // Test Stats (Souvent la cause des erreurs)
+            try {
+                const statsQuery = `
+          SELECT 
+            (SELECT COUNT(*) FROM products WHERE shop_id = ?) as total_products,
+            (SELECT COUNT(*) FROM orders WHERE shop_id = ?) as total_orders
+        `;
+                // Noter l'usage des ? multiples comme corrigé
+                await db.query(statsQuery, [testShopId, testShopId]);
+                log('4.2 Shop Stats (Basic)', 'SUCCESS', 'Requête stats simple OK');
+            } catch (e) {
+                log('4.2 Shop Stats (Basic)', 'ERROR', 'Crash stats simple', e);
+            }
+
+            // Test Date Logic (MySQL vs PG)
+            try {
+                const salesQuery = `
+          SELECT DATE_FORMAT(created_at, '%Y-%m-01') as month
+          FROM shops WHERE id = ?
+        `;
+                await db.query(salesQuery, [testShopId]);
+                log('4.3 Date Functions', 'SUCCESS', 'Fonctions date MySQL OK');
+            } catch (e) {
+                log('4.3 Date Functions', 'ERROR', 'Problème syntaxe Date (PG functions?)', e);
+            }
+
+        } catch (e) {
+            log('4. Create Shop', 'ERROR', 'Crash global boutique', e);
+        }
+
+        // 5. TEST PRODUCTS
+        try {
+            const insertProd = `
+        INSERT INTO products (id, name, price, shop_id, status, created_at)
+        VALUES (?, 'Product Test', 1000, ?, 'active', NOW())
+      `;
+            await db.query(insertProd, [testProductId, testShopId]);
+            log('5. Create Product', 'SUCCESS', 'Produit créé');
+        } catch (e) {
+            log('5. Create Product', 'ERROR', 'Crash création produit', e);
+        }
+
+        // CLEANUP
+        try {
+            await db.query('DELETE FROM users WHERE id = ?', [testUserId]); // Cascade devrait tout nettoyer
+            log('6. Cleanup', 'SUCCESS', 'Données test nettoyées');
+        } catch (e) {
+            log('6. Cleanup', 'WARNING', 'Echec nettoyage', e.message);
+        }
+
+    } catch (error) {
+        log('GLOBAL', 'FATAL', 'Erreur inattendue du script', error);
+    } finally {
+        console.log('--- RAPPORT FINAL TERMINÉ ---');
+        // Si exécuté via require dans une route API, on pourrait retourner 'report'
+        return report;
     }
 }
 
-testConnection();
+// Si exécuté directement : node diagnose-db.js
+if (require.main === module) {
+    runDiagnosis().then(() => process.exit());
+}
+
+module.exports = runDiagnosis;

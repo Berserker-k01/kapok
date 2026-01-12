@@ -185,6 +185,13 @@ app.get('/api/debug-data', async (req, res) => {
   }
 });
 
+// --- ROUTE DIAGNOSTIC COMPLET (TEST DB & LOGIC) ---
+app.get('/api/diagnose', async (req, res) => {
+  const runDiagnosis = require('../diagnose-db');
+  const report = await runDiagnosis();
+  res.json({ report });
+});
+
 // Import Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/users', require('./routes/users'));
