@@ -56,7 +56,7 @@ router.get('/dashboard', async (req, res) => {
 // Récupérer les paramètres
 router.get('/settings', async (req, res) => {
   try {
-    const query = 'SELECT key, value FROM platform_settings'
+    const query = 'SELECT `key`, value FROM platform_settings'
     const result = await db.query(query)
 
     // Convertir en objet { key: value }

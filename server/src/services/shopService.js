@@ -38,7 +38,8 @@ class ShopService {
     let planLimit = 2; // Fallback
 
     if (userPlan === 'free') {
-      const settingsQuery = "SELECT value FROM platform_settings WHERE key = 'free_plan_shops_limit'";
+      // FIX: 'key' est un mot clé réservé en MySQL -> `key`
+      const settingsQuery = "SELECT value FROM platform_settings WHERE `key` = 'free_plan_shops_limit'";
       const settingsResult = await db.query(settingsQuery);
       if (settingsResult.rows.length > 0) {
         planLimit = parseInt(settingsResult.rows[0].value);
