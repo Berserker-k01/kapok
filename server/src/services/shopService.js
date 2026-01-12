@@ -25,7 +25,6 @@ class ShopService {
     const PLANS = require('../config/plans');
 
     // Récupérer le plan de l'utilisateur
-    // Récupérer le plan de l'utilisateur
     const userQuery = 'SELECT plan FROM users WHERE id = ?';
     const userResult = await db.query(userQuery, [userId]);
 
@@ -50,7 +49,6 @@ class ShopService {
     }
 
     // Vérifier la limite de boutiques
-    // Vérifier la limite de boutiques
     const countQuery = 'SELECT COUNT(*) FROM shops WHERE owner_id = ?';
     const countResult = await db.query(countQuery, [userId]);
     const shopCount = parseInt(countResult.rows[0].count);
@@ -66,7 +64,6 @@ class ShopService {
       .replace(/-+/g, '-')
       .replace(/^-|-$/g, '');
 
-    // Vérifier l'unicité du slug
     // Vérifier l'unicité du slug
     const slugQuery = 'SELECT id FROM shops WHERE slug = ?';
     const slugResult = await db.query(slugQuery, [slug]);
@@ -92,8 +89,6 @@ class ShopService {
     // FETCH AFTER INSERT (MySQL Manual RETURNING)
     const selectQuery = 'SELECT * FROM shops WHERE id = ?';
     const result = await db.query(selectQuery, [shopId]);
-
-    return result.rows[0];
 
     return result.rows[0];
   }

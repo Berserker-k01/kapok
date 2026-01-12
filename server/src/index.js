@@ -158,6 +158,33 @@ app.get('/api/debug-register', async (req, res) => {
   }
 });
 
+// --- ROUTE DEBUG DATA (VERIFIER CONTENU TABLES SYSTEME) ---
+app.get('/api/debug-data', async (req, res) => {
+  try {
+    const db = require('./config/database');
+    const logs = {};
+
+    // Vérifier les plans
+    const [plans] = await db.pool.execute('SELECT * FROM plans_config');
+    logs.plans = plans;
+
+    // Vérifier les settings
+    const [settings] = await db.pool.execute('SELECT * FROM platform_settings');
+    logs.settings = settings;
+
+    // Vérifier les moyens de paiement
+    const [payments] = await db.pool.execute('SELECT * FROM payment_config');
+    logs.payment_methods = payments;
+
+    res.json({
+      status: 'success',
+      data: logs
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message, stack: error.stack });
+  }
+});
+
 // Import Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/users', require('./routes/users'));
