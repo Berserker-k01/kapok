@@ -22,6 +22,10 @@ const Products = () => {
     stock: '',
     shopId: ''
   })
+  const [imageFile, setImageFile] = useState(null)
+  const [imagePreview, setImagePreview] = useState(null)
+  const [isEditing, setIsEditing] = useState(false)
+  const [editingId, setEditingId] = useState(null)
   const { token } = useAuthStore()
 
   // Configuration Axios
@@ -72,27 +76,75 @@ const Products = () => {
     fetchProducts()
   }, [selectedShop])
 
-  const handleCreateProduct = async (e) => {
-    e.preventDefault()
-    try {
-      await axios.post('/products', {
-        ...newProduct,
-        shopId: selectedShop,
-        price: parseFloat(newProduct.price),
-        stock: parseInt(newProduct.stock)
-      })
+  const handleImageChange = (e) => {
+    const file = e.target.files[0]
+    if (file) {
+      setImageFile(file)
+      setImagePreview(URL.createObjectURL(file))
+    }
+  }
 
-      toast.success('Produit créé avec succès')
+  const handleEditProduct = (product) => {
+    setNewProduct({
+      name: product.name,
+      price: product.price,
+      description: product.description || '',
+      category: product.category || 'Vêtements',
+      stock: product.inventory || product.stock || 0, // Fallback naming
+      shopId: product.shop_id
+    })
+    setImagePreview(product.image_url)
+    setEditingId(product.id)
+    setIsEditing(true)
+    setShowAddModal(true)
+  }
+
+  const handleSaveProduct = async (e) => {
+    e.preventDefault()
+
+    const formData = new FormData()
+    formData.append('name', newProduct.name)
+    formData.append('price', newProduct.price)
+    formData.append('description', newProduct.description)
+    formData.append('category', newProduct.category)
+    formData.append('stock', newProduct.stock)
+    formData.append('shopId', selectedShop)
+
+    if (imageFile) {
+      formData.append('image', imageFile)
+    }
+
+    try {
+      if (isEditing) {
+        await axios.put(`/products/${editingId}`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        })
+        toast.success('Produit modifié avec succès')
+      } else {
+        await axios.post('/products', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        })
+        toast.success('Produit créé avec succès')
+      }
+
       setShowAddModal(false)
-      setNewProduct({ name: '', price: '', description: '', category: 'Vêtements', stock: '', shopId: '' })
+      resetForm()
 
       // Recharger la liste
       const response = await axios.get(`/products/shop/${selectedShop}`)
       setProducts(response.data.products)
     } catch (error) {
-      console.error('Erreur création produit:', error)
-      toast.error('Erreur lors de la création du produit')
+      console.error('Erreur sauvegarde produit:', error)
+      toast.error('Erreur lors de la sauvegarde du produit')
     }
+  }
+
+  const resetForm = () => {
+    setNewProduct({ name: '', price: '', description: '', category: 'Vêtements', stock: '', shopId: '' })
+    setImageFile(null)
+    setImagePreview(null)
+    setIsEditing(false)
+    setEditingId(null)
   }
 
   const handleDeleteProduct = async (productId) => {
@@ -163,7 +215,7 @@ const Products = () => {
           )}
 
           <Button
-            onClick={() => setShowAddModal(true)}
+            onClick={() => { resetForm(); setShowAddModal(true); }}
             disabled={shops.length === 0}
             className="flex items-center"
           >
@@ -275,8 +327,14 @@ const Products = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button
+                        onClick={() => handleEditProduct(product)}
+                        className="text-gray-400 hover:text-blue-600 transition-colors mr-2 p-2 hover:bg-blue-50 rounded-full"
+                      >
+                        <FiEdit className="h-4 w-4" />
+                      </button>
+                      <button
                         onClick={() => handleDeleteProduct(product.id)}
-                        className="text-gray-400 hover:text-red-600 transition-colors ml-4 p-2 hover:bg-red-50 rounded-full"
+                        className="text-gray-400 hover:text-red-600 transition-colors p-2 hover:bg-red-50 rounded-full"
                       >
                         <FiTrash2 className="h-4 w-4" />
                       </button>
@@ -309,7 +367,7 @@ const Products = () => {
                 className="relative bg-white rounded-xl shadow-2xl max-w-2xl w-full p-6 z-10"
               >
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-bold text-gray-900">Ajouter un produit</h3>
+                  <h3 className="text-xl font-bold text-gray-900">{isEditing ? 'Modifier le produit' : 'Ajouter un produit'}</h3>
                   <button
                     onClick={() => setShowAddModal(false)}
                     className="text-gray-400 hover:text-gray-500 p-1 rounded-full hover:bg-gray-100"
@@ -318,7 +376,28 @@ const Products = () => {
                   </button>
                 </div>
 
-                <form onSubmit={handleCreateProduct} className="space-y-6">
+                <form onSubmit={handleSaveProduct} className="space-y-6">
+                  {/* Image Upload */}
+                  <div className="flex justify-center">
+                    <div className="relative">
+                      <div className="h-32 w-32 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300">
+                        {imagePreview ? (
+                          <img src={imagePreview} alt="Preview" className="h-full w-full object-cover" />
+                        ) : (
+                          <FiImage className="h-10 w-10 text-gray-400" />
+                        )}
+                      </div>
+                      <label className="absolute bottom-0 right-0 bg-white rounded-full p-2 shadow-md cursor-pointer hover:bg-gray-50">
+                        <FiEdit className="h-4 w-4 text-primary-600" />
+                        <input
+                          type="file"
+                          className="hidden"
+                          accept="image/*"
+                          onChange={handleImageChange}
+                        />
+                      </label>
+                    </div>
+                  </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Nom du produit *</label>
@@ -407,7 +486,7 @@ const Products = () => {
                       type="submit"
                       className="flex-1"
                     >
-                      Ajouter le produit
+                      {isEditing ? 'Sauvegarder' : 'Ajouter le produit'}
                     </Button>
                   </div>
                 </form>

@@ -16,7 +16,7 @@ const Settings = () => {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const response = await axios.get('/api/admin/settings')
+        const response = await axios.get('/admin/settings')
         setSettings(prev => ({ ...prev, ...response.data.settings }))
       } catch (error) {
         console.error('Erreur chargement paramètres:', error)
@@ -32,7 +32,7 @@ const Settings = () => {
     e.preventDefault()
     setSaving(true)
     try {
-      await axios.put('/api/admin/settings', settings)
+      await axios.put('/admin/settings', settings)
       toast.success('Paramètres sauvegardés avec succès')
     } catch (error) {
       console.error('Erreur sauvegarde:', error)

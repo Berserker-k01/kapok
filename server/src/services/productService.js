@@ -38,8 +38,13 @@ class ProductService {
         const countResult = await db.query(countQuery, countParams);
         const total = parseInt(countResult.rows[0].count);
 
+        const products = result.rows.map(p => ({
+            ...p,
+            image_url: (p.images && p.images.length > 0) ? p.images[0] : null
+        }));
+
         return {
-            products: result.rows,
+            products: products,
             pagination: {
                 page: parseInt(page),
                 limit: parseInt(limit),
@@ -52,8 +57,11 @@ class ProductService {
     async createProduct(userId, productData) {
         const {
             name, description, price, category, shopId,
-            images, inventory, sku, weight, dimensions
+            image_url, inventory, sku, weight, dimensions
         } = productData;
+
+        // DB Alignment: image_url -> images JSON
+        const images = productData.images || (image_url ? [image_url] : []);
 
         if (!name || !price || !shopId) {
             throw new AppError('Nom, prix et boutique requis', 400);
@@ -98,7 +106,12 @@ class ProductService {
     }
 
     async updateProduct(userId, productId, updateData) {
-        const { name, description, price, category, images, inventory, sku, weight, dimensions } = updateData;
+        const { name, description, price, category, image_url, inventory, sku, weight, dimensions } = updateData;
+
+        let { images } = updateData;
+        if (image_url) {
+            images = [image_url];
+        }
 
         // Vérifier que l'utilisateur possède ce produit
         const ownershipCheck = await db.query(`
