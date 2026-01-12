@@ -3,11 +3,11 @@ const mysql = require('mysql2/promise')
 // Fonction pour parser DATABASE_URL
 const parseDatabaseUrl = (url) => {
   if (!url) return null
-
+  
   // Format: mysql://user:password@host:port/database
   const match = url.match(/mysql:\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/(.+)/)
   if (!match) return null
-
+  
   return {
     host: match[3],
     user: match[1],
@@ -22,21 +22,31 @@ const parseDatabaseUrl = (url) => {
   }
 }
 
-// --- CONFIGURATION HYBRIDE (DOCKER / HOSTINGER) ---
-const poolConfig = {
-  // CONFIGURATION HARDCODÉE (Mode Hostinger)
-  // Plus de dépendance à process.env
-  host: '127.0.0.1',
-  user: 'u980915146_admin',
-  password: 'Daniel2005k@ssi',
-  database: 'u980915146_assimedb',
-  port: 3306,
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0,
-  charset: 'utf8mb4',
-  timezone: '+00:00'
-};
+const poolConfig = process.env.DATABASE_URL
+  ? parseDatabaseUrl(process.env.DATABASE_URL) || {
+    host: process.env.DB_HOST || 'localhost',
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || '',
+    database: process.env.DB_NAME || 'lesigne_db',
+    port: parseInt(process.env.DB_PORT || '3306'),
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0,
+    charset: 'utf8mb4',
+    timezone: '+00:00'
+  }
+  : {
+    host: process.env.DB_HOST || 'localhost',
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || '',
+    database: process.env.DB_NAME || 'lesigne_db',
+    port: parseInt(process.env.DB_PORT || '3306'),
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0,
+    charset: 'utf8mb4',
+    timezone: '+00:00'
+  }
 
 const pool = mysql.createPool(poolConfig)
 
@@ -53,30 +63,30 @@ pool.getConnection()
 // Fonction pour convertir les placeholders PostgreSQL ($1, $2, ...) en MySQL (?)
 const convertPlaceholders = (sql, params) => {
   if (!params || params.length === 0) return { sql, params: [] }
-
+  
   // Extraire tous les placeholders $1, $2, etc.
   const placeholderRegex = /\$(\d+)/g
   const matches = [...sql.matchAll(placeholderRegex)]
-
+  
   if (matches.length === 0) {
     // Pas de placeholders, retourner tel quel
     return { sql, params: params || [] }
   }
-
+  
   // Trouver le placeholder maximum
   const placeholders = matches.map(m => parseInt(m[1]))
   const maxPlaceholder = Math.max(...placeholders)
-
+  
   if (params.length < maxPlaceholder) {
     throw new Error(`Pas assez de paramètres fournis. Placeholder max: ${maxPlaceholder}, paramètres: ${params.length}`)
   }
-
+  
   // Remplacer tous les $N par ?
   let convertedSql = sql.replace(/\$\d+/g, '?')
-
+  
   // Réorganiser les paramètres dans l'ordre d'apparition
   const orderedParams = matches.map(m => params[parseInt(m[1]) - 1])
-
+  
   return { sql: convertedSql, params: orderedParams }
 }
 
@@ -90,7 +100,7 @@ const query = async (text, params) => {
     let finalParams = params || []
     let needsReturning = false
     let returnTable = null
-
+    
     // Gérer RETURNING (PostgreSQL spécifique)
     if (text.includes(' RETURNING ')) {
       needsReturning = true
@@ -101,46 +111,28 @@ const query = async (text, params) => {
       // Retirer RETURNING de la requête
       finalSql = text.replace(/RETURNING .+$/i, '').trim()
     }
-
+    
     // Convertir les placeholders PostgreSQL ($1, $2...) en MySQL (?)
     const { sql, params: convertedParams } = convertPlaceholders(finalSql, finalParams)
-
+    
     // Exécuter la requête
-    const [result, fields] = await pool.execute(sql, convertedParams)
-
-    let rows = [];
-    let rowCount = 0;
-    let rowsAffected = 0;
-    let insertId = null;
-
-    // Détecter si c'est un ResultSetHeader (INSERT/UPDATE) ou un tableau (SELECT)
-    if (result && !Array.isArray(result)) {
-      // C'est un INSERT/UPDATE/DELETE
-      rowsAffected = result.affectedRows || 0;
-      insertId = result.insertId || null;
-      rowCount = 0;
-    } else {
-      // C'est un SELECT
-      rows = result;
-      rowCount = result.length;
-      rowsAffected = 0; // standard postgres behavior for select
-    }
-
-    // Si c'était un INSERT avec RETURNING artificiel
-    if (needsReturning && returnTable && insertId) {
-      const [returnedRows] = await pool.execute(`SELECT * FROM ${returnTable} WHERE id = ?`, [insertId])
+    const [rows, fields] = await pool.execute(sql, convertedParams)
+    
+    // Si c'était un INSERT avec RETURNING, récupérer l'enregistrement inséré
+    if (needsReturning && returnTable && fields.insertId) {
+      const [returnedRows] = await pool.execute(`SELECT * FROM ${returnTable} WHERE id = ?`, [fields.insertId])
       return {
         rows: returnedRows,
         rowCount: returnedRows.length,
-        rowsAffected: rowsAffected
+        rowsAffected: fields.affectedRows || 0
       }
     }
-
+    
     // Retourner au format PostgreSQL pour compatibilité
     return {
       rows: rows,
-      rowCount: rowCount,
-      rowsAffected: rowsAffected || rowCount
+      rowCount: rows.length,
+      rowsAffected: fields.affectedRows || rows.length
     }
   } catch (error) {
     throw error

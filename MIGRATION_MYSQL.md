@@ -189,4 +189,3 @@ FLUSH PRIVILEGES;
 **Version MySQL** : 8.0+ recommandée
 **Compatibilité** : Code existant fonctionne sans modification grâce aux wrappers
 
-
