@@ -25,7 +25,8 @@ const Shops = () => {
   const fetchShops = async () => {
     try {
       const response = await axios.get('/shops')
-      setShops(response.data.data.shops)
+      // CORRECTION ROBUSTE: Gérer les deux formats (Admin vs User)
+      setShops(response.data.shops || response.data.data?.shops || [])
     } catch (error) {
       console.error('Erreur chargement boutiques:', error)
       toast.error('Impossible de charger vos boutiques')

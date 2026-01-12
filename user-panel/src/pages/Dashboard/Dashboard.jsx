@@ -76,9 +76,8 @@ const Dashboard = () => {
         // 1. Récupérer les boutiques
         const shopsRes = await axios.get('/shops');
 
-        // CORRECTION: La structure retournée par shopController est { status, results, data: { shops } }
-        // Donc axios donne response.data.data.shops
-        const shopsData = shopsRes.data.data?.shops || [];
+        // CORRECTION ROBUSTE: Gérer les deux formats (Admin vs User)
+        const shopsData = shopsRes.data.shops || shopsRes.data.data?.shops || [];
         setShops(shopsData);
 
         if (shopsData.length > 0) {
