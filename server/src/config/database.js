@@ -106,23 +106,41 @@ const query = async (text, params) => {
     const { sql, params: convertedParams } = convertPlaceholders(finalSql, finalParams)
 
     // Exécuter la requête
-    const [rows, fields] = await pool.execute(sql, convertedParams)
+    const [result, fields] = await pool.execute(sql, convertedParams)
 
-    // Si c'était un INSERT avec RETURNING, récupérer l'enregistrement inséré
-    if (needsReturning && returnTable && fields.insertId) {
-      const [returnedRows] = await pool.execute(`SELECT * FROM ${returnTable} WHERE id = ?`, [fields.insertId])
+    let rows = [];
+    let rowCount = 0;
+    let rowsAffected = 0;
+    let insertId = null;
+
+    // Détecter si c'est un ResultSetHeader (INSERT/UPDATE) ou un tableau (SELECT)
+    if (result && !Array.isArray(result)) {
+      // C'est un INSERT/UPDATE/DELETE
+      rowsAffected = result.affectedRows || 0;
+      insertId = result.insertId || null;
+      rowCount = 0;
+    } else {
+      // C'est un SELECT
+      rows = result;
+      rowCount = result.length;
+      rowsAffected = 0; // standard postgres behavior for select
+    }
+
+    // Si c'était un INSERT avec RETURNING artificiel
+    if (needsReturning && returnTable && insertId) {
+      const [returnedRows] = await pool.execute(`SELECT * FROM ${returnTable} WHERE id = ?`, [insertId])
       return {
         rows: returnedRows,
         rowCount: returnedRows.length,
-        rowsAffected: fields.affectedRows || 0
+        rowsAffected: rowsAffected
       }
     }
 
     // Retourner au format PostgreSQL pour compatibilité
     return {
       rows: rows,
-      rowCount: rows.length,
-      rowsAffected: fields.affectedRows || rows.length
+      rowCount: rowCount,
+      rowsAffected: rowsAffected || rowCount
     }
   } catch (error) {
     throw error
