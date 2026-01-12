@@ -110,6 +110,24 @@ async function runDiagnosis() {
             log('5. Create Product', 'ERROR', 'Crash création produit', e);
         }
 
+        // 6. TEST PAYMENT REQUEST (Critical Check)
+        try {
+            const paymentId = uuidv4();
+            const insertPayment = `
+        INSERT INTO subscription_payments 
+        (id, user_id, plan_key, plan_name, amount, currency, payment_provider, payment_phone, status, created_at, updated_at)
+        VALUES (?, ?, 'pro', 'Pro Plan', 5000, 'XOF', 'TMoney', '90909090', 'pending', NOW(), NOW())
+      `;
+            await db.query(insertPayment, [paymentId, testUserId]);
+            log('6. Create Payment', 'SUCCESS', 'Paiement créé avec succès');
+
+            // Select back
+            const payCheck = await db.query('SELECT * FROM subscription_payments WHERE id = ?', [paymentId]);
+            if (payCheck.rows.length > 0) log('6.1 Payment Check', 'SUCCESS', 'Paiement relu OK');
+        } catch (e) {
+            log('6. Create Payment', 'ERROR', 'CRASH CRÉATION PAIEMENT', e);
+        }
+
         // CLEANUP
         try {
             await db.query('DELETE FROM users WHERE id = ?', [testUserId]); // Cascade devrait tout nettoyer
