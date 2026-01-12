@@ -11,6 +11,7 @@ import Shops from './pages/Shops/Shops'
 import PaymentRequests from './pages/PaymentRequests/PaymentRequests'
 import Plans from './pages/Plans/Plans'
 import PaymentNumbers from './pages/PaymentNumbers/PaymentNumbers'
+import Settings from './pages/Settings/Settings'
 import { useAuthStore } from './store/authStore'
 import { useState } from 'react'
 
@@ -27,8 +28,10 @@ function App() {
     const token = useAuthStore.getState().token;
     if (token) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    } else {
+      delete axios.defaults.headers.common['Authorization'];
     }
-  }, []);
+  }, [useAuthStore.getState().token]); // Re-run on token change
 
   if (!isAuthenticated) {
     return (
@@ -53,6 +56,7 @@ function App() {
           <Route path="/payment-requests" element={<PaymentRequests />} />
           <Route path="/plans" element={<Plans />} />
           <Route path="/payment-numbers" element={<PaymentNumbers />} />
+          <Route path="/settings" element={<Settings />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Layout>
