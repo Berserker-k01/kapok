@@ -31,26 +31,32 @@ app.use(helmet())
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// --- DEBUG LOGGER (Capture les 20 dernières requêtes) ---
-// PLACÉ APRÈS LE BODY PARSER POUR VOIR LES DONNÉES
+// --- DEBUG LOGGER (Capture les 20 dernières requêtes ET RÉPONSES) ---
 const debugLogs = [];
 app.use((req, res, next) => {
-  const log = {
-    time: new Date().toISOString(),
-    method: req.method,
-    url: req.url,
-    ip: req.ip,
-    bodyKeys: Object.keys(req.body || {}), // Devrait maintenant voir les clés
-    headers: {
-      origin: req.headers.origin,
-      referer: req.headers.referer,
-      contentType: req.headers['content-type']
-    }
+  const oldJson = res.json;
+
+  res.json = function (body) {
+    const log = {
+      time: new Date().toISOString(),
+      method: req.method,
+      url: req.url,
+      ip: req.ip,
+      status: res.statusCode, // CODE HTTP (200, 400, 500...)
+      reqBody: req.body,      // CE QU'ON REÇOIT
+      resBody: body           // CE QU'ON RENVOIE (Erreur ?)
+    };
+
+    // Garder seulement les 20 derniers logs
+    debugLogs.unshift(log);
+    if (debugLogs.length > 20) debugLogs.pop();
+
+    return oldJson.call(this, body);
   };
-  debugLogs.unshift(log);
-  if (debugLogs.length > 20) debugLogs.pop();
+
   next();
 });
+
 app.get('/api/debug-requests', (req, res) => res.json(debugLogs));
 
 // Servir les fichiers statiques (images uploadées)
