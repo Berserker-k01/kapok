@@ -164,6 +164,34 @@ async function runDiagnosis() {
             log('6. Cleanup', 'WARNING', 'Echec nettoyage', e.message);
         }
 
+
+        // 7. TEST AUTH MIDDLEWARE (Simulation)
+        try {
+            const { generateToken, authenticateToken } = require('./src/middleware/auth');
+
+            // Créer un user temporaire pour le test
+            const authUserId = uuidv4();
+            await db.query(`INSERT INTO users (id, name, email, password, role, status, created_at) VALUES (?, 'Auth Test', ?, 'pass', 'user', 'active', NOW())`, [authUserId, `auth-${Date.now()}@test.com`]);
+
+            const token = generateToken(authUserId, 'user');
+
+            // Mock Request/Response
+            const req = { headers: { 'authorization': `Bearer ${token}` } };
+            const res = {
+                status: (code) => ({ json: (data) => log('7. Auth Middleware', 'ERROR', `Auth Refusé: ${code}`, data) }),
+                json: (data) => log('7. Auth Middleware', 'ERROR', 'Auth JSON called directly', data)
+            };
+            const next = () => log('7. Auth Middleware', 'SUCCESS', 'Middleware passed (next() called)');
+
+            await authenticateToken(req, res, next);
+
+            // Cleanup Auth User
+            await db.query('DELETE FROM users WHERE id = ?', [authUserId]);
+
+        } catch (e) {
+            log('7. Auth Middleware', 'ERROR', 'Crash Auth Test', e);
+        }
+
     } catch (error) {
         log('GLOBAL', 'FATAL', 'Erreur inattendue du script', error);
     } finally {
