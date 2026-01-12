@@ -27,7 +27,12 @@ app.use(helmet())
 // })
 // app.use('/api/', limiter)
 
+// Middleware de parsing
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 // --- DEBUG LOGGER (Capture les 20 dernières requêtes) ---
+// PLACÉ APRÈS LE BODY PARSER POUR VOIR LES DONNÉES
 const debugLogs = [];
 app.use((req, res, next) => {
   const log = {
@@ -35,7 +40,7 @@ app.use((req, res, next) => {
     method: req.method,
     url: req.url,
     ip: req.ip,
-    bodyKeys: Object.keys(req.body || {}), // Ne pas logger les mots de passe !
+    bodyKeys: Object.keys(req.body || {}), // Devrait maintenant voir les clés
     headers: {
       origin: req.headers.origin,
       referer: req.headers.referer,
@@ -47,25 +52,6 @@ app.use((req, res, next) => {
   next();
 });
 app.get('/api/debug-requests', (req, res) => res.json(debugLogs));
-
-// CORS configuration
-app.use(cors({
-  origin: [
-    'http://localhost:3000',
-    'http://localhost:3001',
-    'http://localhost:3002',
-    'https://e-assime.com',
-    'https://admin.e-assime.com',
-    'https://www.e-assime.com',
-    /\.vercel\.app$/, // Tous les sous-domaines Vercel
-    /\.fly\.dev$/ // Tous les sous-domaines Fly.io
-  ],
-  credentials: true
-}))
-
-// Middleware de parsing
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
 // Servir les fichiers statiques (images uploadées)
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));

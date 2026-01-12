@@ -35,7 +35,7 @@ const Products = () => {
   useEffect(() => {
     const fetchShops = async () => {
       try {
-        const response = await axios.get('/api/shops')
+        const response = await axios.get('/shops')
         const shopsData = response.data.data?.shops || []
         setShops(shopsData)
         if (shopsData.length > 0) {
@@ -59,7 +59,7 @@ const Products = () => {
 
       setLoading(true)
       try {
-        const response = await axios.get(`/api/products/shop/${selectedShop}`)
+        const response = await axios.get(`/products/shop/${selectedShop}`)
         setProducts(response.data.products)
       } catch (error) {
         console.error('Erreur chargement produits:', error)
@@ -75,7 +75,7 @@ const Products = () => {
   const handleCreateProduct = async (e) => {
     e.preventDefault()
     try {
-      await axios.post('/api/products', {
+      await axios.post('/products', {
         ...newProduct,
         shopId: selectedShop,
         price: parseFloat(newProduct.price),
@@ -87,7 +87,7 @@ const Products = () => {
       setNewProduct({ name: '', price: '', description: '', category: 'Vêtements', stock: '', shopId: '' })
 
       // Recharger la liste
-      const response = await axios.get(`/api/products/shop/${selectedShop}`)
+      const response = await axios.get(`/products/shop/${selectedShop}`)
       setProducts(response.data.products)
     } catch (error) {
       console.error('Erreur création produit:', error)
@@ -99,7 +99,7 @@ const Products = () => {
     if (!window.confirm('Êtes-vous sûr de vouloir supprimer ce produit ?')) return
 
     try {
-      await axios.delete(`/api/products/${productId}`)
+      await axios.delete(`/products/${productId}`)
       toast.success('Produit supprimé')
       setProducts(products.filter(p => p.id !== productId))
     } catch (error) {
@@ -116,7 +116,7 @@ const Products = () => {
 
     const toastId = toast.loading('Génération de la description...')
     try {
-      const response = await axios.post('/api/ai/generate-description', {
+      const response = await axios.post('/ai/generate-description', {
         productName: newProduct.name,
         keywords: [newProduct.category, 'qualité', 'tendance']
       })

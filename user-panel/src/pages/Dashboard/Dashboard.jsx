@@ -74,7 +74,7 @@ const Dashboard = () => {
     const fetchInitialData = async () => {
       try {
         // 1. Récupérer les boutiques
-        const shopsRes = await axios.get('/api/shops');
+        const shopsRes = await axios.get('/shops');
 
         // CORRECTION: La structure retournée par shopController est { status, results, data: { shops } }
         // Donc axios donne response.data.data.shops
@@ -101,12 +101,12 @@ const Dashboard = () => {
     setLoading(true);
     try {
       // Stats Produits
-      const productsRes = await axios.get(`/api/products/shop/${shopId}`);
+      const productsRes = await axios.get(`/products/shop/${shopId}`);
       // CORRECTION: productsRes.data.products (comme dans Products.jsx)
       const products = productsRes.data?.products || [];
 
       // Stats Commandes
-      const ordersRes = await axios.get(`/api/orders/shop/${shopId}`);
+      const ordersRes = await axios.get(`/orders/shop/${shopId}`);
       // CORRECTION: ordersRes.data.orders (comme dans Orders.jsx)
       const orders = ordersRes.data?.orders || [];
 

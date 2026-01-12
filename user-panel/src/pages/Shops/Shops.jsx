@@ -24,7 +24,7 @@ const Shops = () => {
 
   const fetchShops = async () => {
     try {
-      const response = await axios.get('/api/shops')
+      const response = await axios.get('/shops')
       setShops(response.data.data.shops)
     } catch (error) {
       console.error('Erreur chargement boutiques:', error)
@@ -41,7 +41,7 @@ const Shops = () => {
   const handleCreateShop = async (e) => {
     e.preventDefault()
     try {
-      await axios.post('/api/shops', newShop)
+      await axios.post('/shops', newShop)
       toast.success('Boutique créée avec succès !')
       setShowCreateModal(false)
       setNewShop({ name: '', slug: '', category: 'Mode & Vêtements' })
@@ -55,7 +55,7 @@ const Shops = () => {
   const handleToggleStatus = async (shop) => {
     const newStatus = shop.status === 'active' ? 'suspended' : 'active' // 'suspended' comme inactif temporaire
     try {
-      await axios.put(`/api/shops/${shop.id}`, { status: newStatus })
+      await axios.put(`/shops/${shop.id}`, { status: newStatus })
       toast.success(`Boutique ${newStatus === 'active' ? 'activée' : 'désactivée'}`)
       fetchShops()
     } catch (error) {
