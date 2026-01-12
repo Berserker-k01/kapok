@@ -19,13 +19,34 @@ app.set('trust proxy', 1);
 // Middleware de sécurité
 app.use(helmet())
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  message: 'Trop de requêtes depuis cette IP, réessayez plus tard.'
-})
-app.use('/api/', limiter)
+// Rate limiting (DÉSACTIVÉ TEMPORAIREMENT POUR DEBUG)
+// const limiter = rateLimit({
+//   windowMs: 15 * 60 * 1000,
+//   max: 100,
+//   message: 'Trop de requêtes depuis cette IP, réessayez plus tard.'
+// })
+// app.use('/api/', limiter)
+
+// --- DEBUG LOGGER (Capture les 20 dernières requêtes) ---
+const debugLogs = [];
+app.use((req, res, next) => {
+  const log = {
+    time: new Date().toISOString(),
+    method: req.method,
+    url: req.url,
+    ip: req.ip,
+    bodyKeys: Object.keys(req.body || {}), // Ne pas logger les mots de passe !
+    headers: {
+      origin: req.headers.origin,
+      referer: req.headers.referer,
+      contentType: req.headers['content-type']
+    }
+  };
+  debugLogs.unshift(log);
+  if (debugLogs.length > 20) debugLogs.pop();
+  next();
+});
+app.get('/api/debug-requests', (req, res) => res.json(debugLogs));
 
 // CORS configuration
 app.use(cors({
