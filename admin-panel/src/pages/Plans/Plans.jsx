@@ -31,7 +31,7 @@ const Plans = () => {
 
   const fetchPlans = async () => {
     try {
-      const response = await axios.get('/api/admin/plans')
+      const response = await axios.get('/admin/plans')
       setPlans(response.data.plans)
     } catch (error) {
       toast.error('Erreur lors du chargement des plans')
@@ -44,10 +44,10 @@ const Plans = () => {
   const handleOpenModal = (plan = null) => {
     if (plan) {
       setEditingPlan(plan)
-      const features = Array.isArray(plan.features) 
+      const features = Array.isArray(plan.features)
         ? plan.features.join('\n')
         : (typeof plan.features === 'string' ? JSON.parse(plan.features).join('\n') : '')
-      
+
       setFormData({
         plan_key: plan.plan_key,
         name: plan.name,
@@ -80,7 +80,7 @@ const Plans = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
+
     try {
       const featuresArray = formData.features
         .split('\n')
@@ -156,10 +156,10 @@ const Plans = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {plans.map((plan) => {
-          const features = Array.isArray(plan.features) 
-            ? plan.features 
+          const features = Array.isArray(plan.features)
+            ? plan.features
             : (typeof plan.features === 'string' ? JSON.parse(plan.features) : [])
-          
+
           const finalPrice = plan.discount_percent > 0
             ? plan.price * (1 - plan.discount_percent / 100)
             : plan.price
@@ -192,7 +192,7 @@ const Plans = () => {
                     {plan.description}
                   </p>
                 )}
-                
+
                 <div className="mb-4">
                   <p className="text-sm font-medium text-secondary-700 mb-2">Fonctionnalités:</p>
                   <ul className="space-y-1">

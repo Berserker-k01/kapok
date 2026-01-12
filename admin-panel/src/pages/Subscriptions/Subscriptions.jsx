@@ -29,7 +29,7 @@ const Subscriptions = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await axios.get('/api/users')
+      const response = await axios.get('/users')
       setUsers(response.data.users)
     } catch (error) {
       toast.error("Erreur lors du chargement des utilisateurs")
