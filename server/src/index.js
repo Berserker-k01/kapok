@@ -31,6 +31,14 @@ app.use(helmet())
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// SÉCURITÉ DOUBLE API PATH: Strip /api/api/ -> /api/
+app.use((req, res, next) => {
+  if (req.url.startsWith('/api/api/')) {
+    req.url = req.url.replace('/api/api/', '/api/');
+  }
+  next();
+});
+
 // --- DEBUG LOGGER (Capture les 20 dernières requêtes ET RÉPONSES) ---
 // Patch pour gérer BigInt (MySQL COUNT retourne BigInt)
 BigInt.prototype.toJSON = function () { return this.toString() }

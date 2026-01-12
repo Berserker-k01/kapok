@@ -2,6 +2,8 @@ const shopService = require('../services/shopService');
 const catchAsync = require('../utils/catchAsync');
 
 exports.getAllShops = catchAsync(async (req, res, next) => {
+    // DEBUG: Log user ID to verify coherence
+    console.log(`[ShopController] Getting shops for UserID: ${req.user.id}`);
     const shops = await shopService.getAllShops(req.user.id);
 
     res.status(200).json({
