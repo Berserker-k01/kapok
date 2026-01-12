@@ -101,6 +101,63 @@ app.get('/api/debug-schema', async (req, res) => {
   }
 });
 
+// --- ROUTE DEBUG REGISTER (SIMULATION INSCRIPTION) ---
+app.get('/api/debug-register', async (req, res) => {
+  const logs = [];
+  const log = (msg, data) => logs.push({ msg, data: data || null });
+
+  try {
+    const db = require('./config/database');
+    const bcrypt = require('bcryptjs');
+    const { v4: uuidv4 } = require('uuid');
+
+    log('1. Début du test d\'inscription');
+
+    // Génération données test
+    const email = `debug-${Date.now()}@test.com`;
+    const password = 'password123';
+    const name = 'Debug User';
+    const userId = uuidv4();
+
+    log('2. Données générées', { email, userId });
+
+    // Hachage
+    const hashedPassword = await bcrypt.hash(password, 12);
+    log('3. Mot de passe haché OK');
+
+    const insertQuery = `
+      INSERT INTO users (id, name, email, password, role, status, created_at)
+      VALUES (?, ?, ?, ?, 'user', 'active', NOW())
+    `;
+
+    log('4. Tentative INSERT...');
+    await db.query(insertQuery, [userId, name, email, hashedPassword]);
+    log('5. INSERT terminé');
+
+    log('6. Vérification SELECT...');
+    const result = await db.query('SELECT id, email, created_at FROM users WHERE id = ?', [userId]);
+
+    if (result.rows && result.rows.length > 0) {
+      log('✅ EXTRACT: Utilisateur retrouvé en base !', result.rows[0]);
+    } else {
+      log('❌ FATAL: Utilisateur introuvable après insert (problème transaction ?)');
+    }
+
+    res.json({
+      status: 'success',
+      logs: logs
+    });
+
+  } catch (error) {
+    log('❌ ERREUR CRITIQUE', error.message);
+    res.status(500).json({
+      status: 'error',
+      logs: logs,
+      stack: error.stack
+    });
+  }
+});
+
 // Import Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/users', require('./routes/users'));
