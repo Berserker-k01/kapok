@@ -21,7 +21,7 @@ const Users = () => {
   const fetchUsers = async () => {
     setLoading(true)
     try {
-      const response = await axios.get('/api/admin/users', {
+      const response = await axios.get('/admin/users', {
         params: { search: searchTerm }
       })
       setUsers(response.data.users)
@@ -45,7 +45,7 @@ const Users = () => {
     if (!window.confirm(`Êtes-vous sûr de vouloir ${newStatus === 'banned' ? 'bannir' : 'activer'} cet utilisateur ?`)) return
 
     try {
-      await axios.put(`/api/admin/users/${userId}/status`, { status: newStatus })
+      await axios.put(`/admin/users/${userId}/status`, { status: newStatus })
       toast.success(`Utilisateur ${newStatus === 'banned' ? 'banni' : 'activé'}`)
       fetchUsers()
     } catch (error) {

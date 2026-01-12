@@ -23,7 +23,7 @@ const Shops = () => {
     try {
       // Note: Le backend ne supporte pas encore le filtrage par nom de boutique dans /api/admin/shops
       // On récupère tout et on filtrera côté client pour l'instant, ou on mettra à jour l'API plus tard
-      const response = await axios.get('/api/admin/shops')
+      const response = await axios.get('/admin/shops')
       setShops(response.data.shops)
     } catch (error) {
       console.error('Erreur chargement boutiques:', error)

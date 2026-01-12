@@ -18,7 +18,7 @@ const PlanSelection = () => {
 
   const fetchPlans = async () => {
     try {
-      const response = await axios.get('/api/subscription-payments/plans')
+      const response = await axios.get('/subscription-payments/plans')
       setPlans(response.data.plans)
     } catch (error) {
       toast.error('Erreur lors du chargement des plans')
@@ -60,17 +60,17 @@ const PlanSelection = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {plans.map((plan) => {
-            const features = Array.isArray(plan.features) 
-              ? plan.features 
+            const features = Array.isArray(plan.features)
+              ? plan.features
               : (typeof plan.features === 'string' ? JSON.parse(plan.features) : [])
-            
+
             const finalPrice = plan.discount_percent > 0
               ? plan.price * (1 - plan.discount_percent / 100)
               : plan.price
 
             return (
-              <Card 
-                key={plan.id} 
+              <Card
+                key={plan.id}
                 className={`relative ${plan.plan_key === 'pro' ? 'ring-2 ring-primary-500 scale-105' : ''}`}
               >
                 {plan.discount_percent > 0 && (
@@ -78,7 +78,7 @@ const PlanSelection = () => {
                     -{plan.discount_percent}%
                   </div>
                 )}
-                
+
                 <CardHeader>
                   <div className="text-center">
                     <h3 className="text-2xl font-bold text-secondary-900 mb-2">
@@ -123,7 +123,7 @@ const PlanSelection = () => {
                         </span>
                       </li>
                     )}
-                    
+
                     {features.map((feature, index) => (
                       <li key={index} className="flex items-start">
                         <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" />

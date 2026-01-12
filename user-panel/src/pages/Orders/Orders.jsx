@@ -25,7 +25,7 @@ const Orders = () => {
   useEffect(() => {
     const fetchShops = async () => {
       try {
-        const response = await axios.get('/api/shops')
+        const response = await axios.get('/shops')
         const shopsData = response.data.data?.shops || []
         setShops(shopsData)
         if (shopsData.length > 0) {
@@ -48,7 +48,7 @@ const Orders = () => {
 
     setLoading(true)
     try {
-      const response = await axios.get(`/api/orders/shop/${selectedShop}`)
+      const response = await axios.get(`/orders/shop/${selectedShop}`)
       setOrders(response.data.orders)
     } catch (error) {
       console.error('Erreur chargement commandes:', error)
@@ -64,7 +64,7 @@ const Orders = () => {
 
   const handleUpdateStatus = async (orderId, newStatus) => {
     try {
-      await axios.put(`/api/orders/${orderId}/status`, { status: newStatus })
+      await axios.put(`/orders/${orderId}/status`, { status: newStatus })
       toast.success(`Commande ${newStatus === 'confirmed' ? 'confirmée' : newStatus === 'shipped' ? 'expédiée' : 'mise à jour'}`)
       fetchOrders() // Rafraîchir la liste
     } catch (error) {

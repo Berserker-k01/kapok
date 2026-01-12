@@ -43,7 +43,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await axios.get('/api/admin/dashboard');
+        const response = await axios.get('/admin/dashboard');
         setStats(response.data.stats);
       } catch (error) {
         console.error("Erreur chargement dashboard admin:", error);

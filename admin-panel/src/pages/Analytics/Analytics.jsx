@@ -11,7 +11,7 @@ const Analytics = () => {
   useEffect(() => {
     const fetchAnalytics = async () => {
       try {
-        const response = await axios.get('/api/admin/dashboard')
+        const response = await axios.get('/admin/dashboard')
         const growth = response.data.monthlyGrowth
 
         // Formatter les données pour le graphique

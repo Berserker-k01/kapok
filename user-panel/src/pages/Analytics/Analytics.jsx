@@ -17,7 +17,7 @@ const Analytics = () => {
   useEffect(() => {
     const fetchShops = async () => {
       try {
-        const response = await axios.get('/api/shops')
+        const response = await axios.get('/shops')
         const shopsList = response.data.data.shops
         setShops(shopsList)
         if (shopsList.length > 0) {
@@ -40,7 +40,7 @@ const Analytics = () => {
     const fetchStats = async () => {
       setLoading(true)
       try {
-        const response = await axios.get(`/api/shops/${selectedShopId}/stats`)
+        const response = await axios.get(`/shops/${selectedShopId}/stats`)
         setData(response.data.data)
       } catch (error) {
         console.error("Erreur chargement stats", error)
