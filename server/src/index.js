@@ -201,8 +201,8 @@ app.use('/api/orders', require('./routes/orders'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/subscriptions', require('./routes/subscriptions'));
 app.use('/api/subscription-payments', require('./routes/subscriptionPayments'));
-app.use('/api/admin/plans', require('./routes/planConfig'));
-app.use('/api/admin/payment-numbers', require('./routes/paymentConfig'));
+app.use('/api/plans', require('./routes/planConfig')); // CHANGED: Was /api/admin/plans
+app.use('/api/admin/payment-numbers', require('./routes/paymentConfig')); // Admin only
 app.use('/api/ai', require('./routes/ai'));
 
 // Error Handler
