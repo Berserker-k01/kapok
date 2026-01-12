@@ -28,7 +28,7 @@ const authenticateToken = async (req, res, next) => {
     }
 
     // Vérifier si l'utilisateur existe toujours
-    const userQuery = 'SELECT id, email, role, status FROM users WHERE id = $1'
+    const userQuery = 'SELECT id, email, role, status FROM users WHERE id = ?'
     const userResult = await db.query(userQuery, [decoded.userId])
 
     if (userResult.rows.length === 0) {
@@ -75,7 +75,7 @@ const requireShopOwnership = async (req, res, next) => {
     }
 
     // Vérifier si l'utilisateur possède cette boutique
-    const query = 'SELECT id FROM shops WHERE id = $1 AND owner_id = $2'
+    const query = 'SELECT id FROM shops WHERE id = ? AND owner_id = ?'
     const result = await db.query(query, [shopId, req.user.id])
 
     if (result.rows.length === 0) {

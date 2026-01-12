@@ -168,7 +168,7 @@ exports.deletePlan = catchAsync(async (req, res) => {
   // Vérifier s'il y a des paiements ou abonnements actifs avec ce plan
   const checkQuery = `
     SELECT COUNT(*) as count FROM subscription_payments 
-    WHERE plan_key = (SELECT plan_key FROM plans_config WHERE id = $1)
+    WHERE plan_key = (SELECT plan_key FROM plans_config WHERE id = ?)
   `
   const checkResult = await db.query(checkQuery, [planId])
 
