@@ -140,14 +140,14 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-secondary-900">Tableau de bord</h1>
           <p className="text-secondary-500 mt-1">Vue d'ensemble de vos activités</p>
         </div>
         {shops.length > 0 && (
           <select
-            className="border border-gray-300 rounded-md px-3 py-2 bg-white"
+            className="border border-gray-300 rounded-md px-3 py-2 bg-white w-full md:w-auto"
             value={selectedShop?.id}
             onChange={handleShopChange}
           >
