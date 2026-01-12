@@ -28,8 +28,8 @@ const Payment = () => {
   const fetchData = async () => {
     try {
       const [planResponse, paymentNumbersResponse] = await Promise.all([
-        axios.get('/api/subscription-payments/plans'),
-        axios.get('/api/subscription-payments/payment-numbers')
+        axios.get('/subscription-payments/plans'),
+        axios.get('/subscription-payments/payment-numbers')
       ])
 
       const selectedPlan = planResponse.data.plans.find(p => p.plan_key === planKey)
@@ -41,7 +41,7 @@ const Payment = () => {
 
       setPlan(selectedPlan)
       setPaymentNumbers(paymentNumbersResponse.data.paymentNumbers)
-      
+
       if (paymentNumbersResponse.data.paymentNumbers.length > 0) {
         setSelectedProvider(paymentNumbersResponse.data.paymentNumbers[0].id)
         setPaymentPhone(paymentNumbersResponse.data.paymentNumbers[0].phone_number)
@@ -84,8 +84,8 @@ const Payment = () => {
     try {
       setSubmitting(true)
       const selectedPaymentNumber = paymentNumbers.find(p => p.id === selectedProvider)
-      
-      const response = await axios.post('/api/subscription-payments/request', {
+
+      const response = await axios.post('/subscription-payments/request', {
         planKey: plan.plan_key,
         paymentProvider: selectedPaymentNumber.provider_name,
         paymentPhone: paymentPhone

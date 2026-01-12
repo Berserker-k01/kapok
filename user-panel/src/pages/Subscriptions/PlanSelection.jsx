@@ -18,7 +18,7 @@ const PlanSelection = () => {
 
   const fetchPlans = async () => {
     try {
-      const response = await axios.get('/subscription-payments/plans')
+      const response = await axios.get('/plans')
       setPlans(response.data.plans)
     } catch (error) {
       toast.error('Erreur lors du chargement des plans')

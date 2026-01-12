@@ -20,7 +20,7 @@ router.get('/dashboard', async (req, res) => {
         (SELECT COUNT(*) FROM products) as total_products,
         (SELECT COUNT(*) FROM orders) as total_orders,
         (SELECT COALESCE(SUM(total_amount), 0) FROM orders WHERE status = 'completed') as total_revenue,
-        (SELECT COUNT(*) FROM users WHERE created_at >= CURRENT_DATE - INTERVAL '30 days') as new_users_30d
+        (SELECT COUNT(*) FROM users WHERE created_at >= CURRENT_DATE - INTERVAL 30 DAY) as new_users_30d
     `
 
     const result = await db.query(statsQuery)
@@ -33,7 +33,7 @@ router.get('/dashboard', async (req, res) => {
         (SELECT COUNT(*) FROM shops WHERE DATE_FORMAT(created_at, '%Y-%m-01') = DATE_FORMAT(u.created_at, '%Y-%m-01')) as new_shops,
         (SELECT COALESCE(SUM(total_amount), 0) FROM orders WHERE status = 'completed' AND DATE_FORMAT(created_at, '%Y-%m-01') = DATE_FORMAT(u.created_at, '%Y-%m-01')) as total_revenue
       FROM users u
-      WHERE created_at >= CURRENT_DATE - INTERVAL '6 months'
+      WHERE created_at >= CURRENT_DATE - INTERVAL 6 MONTH
       GROUP BY DATE_FORMAT(created_at, '%Y-%m-01')
       ORDER BY month DESC
     `

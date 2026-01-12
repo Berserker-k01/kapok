@@ -22,7 +22,7 @@ const PaymentStatus = () => {
 
   const fetchPayment = async () => {
     try {
-      const response = await axios.get(`/api/subscription-payments/${paymentId}`)
+      const response = await axios.get(`/subscription-payments/status/${paymentId}`)
       setPayment(response.data.payment)
     } catch (error) {
       toast.error('Erreur lors du chargement du statut')

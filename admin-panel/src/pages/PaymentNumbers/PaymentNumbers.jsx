@@ -27,7 +27,7 @@ const PaymentNumbers = () => {
 
   const fetchPaymentNumbers = async () => {
     try {
-      const response = await axios.get('/api/admin/payment-numbers')
+      const response = await axios.get('/admin/payment-numbers')
       setPaymentNumbers(response.data.paymentNumbers)
     } catch (error) {
       toast.error('Erreur lors du chargement des numéros')
@@ -64,7 +64,7 @@ const PaymentNumbers = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
+
     try {
       const payload = {
         ...formData,
@@ -72,10 +72,10 @@ const PaymentNumbers = () => {
       }
 
       if (editingPaymentNumber) {
-        await axios.put(`/api/admin/payment-numbers/${editingPaymentNumber.id}`, payload)
+        await axios.put(`/admin/payment-numbers/${editingPaymentNumber.id}`, payload)
         toast.success('Numéro mis à jour avec succès')
       } else {
-        await axios.post('/api/admin/payment-numbers', payload)
+        await axios.post('/admin/payment-numbers', payload)
         toast.success('Numéro créé avec succès')
       }
 
@@ -93,7 +93,7 @@ const PaymentNumbers = () => {
     }
 
     try {
-      await axios.delete(`/api/admin/payment-numbers/${id}`)
+      await axios.delete(`/admin/payment-numbers/${id}`)
       toast.success('Numéro supprimé avec succès')
       fetchPaymentNumbers()
     } catch (error) {

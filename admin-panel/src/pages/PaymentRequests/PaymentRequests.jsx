@@ -19,7 +19,7 @@ const PaymentRequests = () => {
 
   const fetchPayments = async () => {
     try {
-      const response = await axios.get('/api/subscription-payments/admin/pending')
+      const response = await axios.get('/subscription-payments/admin/pending')
       setPayments(response.data.payments)
     } catch (error) {
       toast.error('Erreur lors du chargement des paiements')
@@ -36,7 +36,7 @@ const PaymentRequests = () => {
 
     try {
       setProcessing(true)
-      await axios.post(`/api/subscription-payments/admin/${paymentId}/approve`, {
+      await axios.post(`/subscription-payments/admin/${paymentId}/approve`, {
         adminNotes: adminNotes || null
       })
       toast.success('Paiement approuvé avec succès')
@@ -63,7 +63,7 @@ const PaymentRequests = () => {
 
     try {
       setProcessing(true)
-      await axios.post(`/api/subscription-payments/admin/${paymentId}/reject`, {
+      await axios.post(`/subscription-payments/admin/${paymentId}/reject`, {
         adminNotes: adminNotes
       })
       toast.success('Paiement rejeté')
