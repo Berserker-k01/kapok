@@ -121,6 +121,29 @@ app.get('*', (req, res) => {
   }
 });
 
+// --- ROUTE DIAGNOSTIC SCHEMA (POUR DEBUGGER HOSTINGER) ---
+app.get('/api/debug-schema', async (req, res) => {
+  try {
+    const db = require('./config/database');
+    const [tables] = await db.pool.execute('SHOW TABLES');
+
+    let usersInfo = { status: 'missing', error: null };
+    try {
+      const [rows] = await db.pool.execute('SELECT count(*) as count FROM users');
+      const [columns] = await db.pool.execute('DESCRIBE users');
+      usersInfo = { status: 'exists', count: rows[0].count, columns: columns.map(c => c.Field) };
+    } catch (e) { usersInfo.error = e.message; }
+
+    res.json({
+      message: 'SCHEMA-CHECK-V2',
+      tables: tables,
+      users_check: usersInfo
+    });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // Export pour Vercel (Serverless)
 module.exports = app;
 
