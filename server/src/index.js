@@ -32,22 +32,33 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // --- DEBUG LOGGER (Capture les 20 dernières requêtes ET RÉPONSES) ---
+// Patch pour gérer BigInt (MySQL COUNT retourne BigInt)
+BigInt.prototype.toJSON = function () { return this.toString() }
+
 const debugLogs = [];
 app.use((req, res, next) => {
   const oldJson = res.json;
 
   res.json = function (body) {
+    // Fonction safe pour éviter "Circular structure"
+    const safeBody = () => {
+      try {
+        return JSON.parse(JSON.stringify(body));
+      } catch (e) {
+        return { error: 'Circular or Unserializable Body', details: e.message };
+      }
+    };
+
     const log = {
       time: new Date().toISOString(),
       method: req.method,
       url: req.url,
       ip: req.ip,
-      status: res.statusCode, // CODE HTTP (200, 400, 500...)
-      reqBody: req.body,      // CE QU'ON REÇOIT
-      resBody: body           // CE QU'ON RENVOIE (Erreur ?)
+      status: res.statusCode,
+      reqBody: req.body,
+      resBody: safeBody()
     };
 
-    // Garder seulement les 20 derniers logs
     debugLogs.unshift(log);
     if (debugLogs.length > 20) debugLogs.pop();
 
