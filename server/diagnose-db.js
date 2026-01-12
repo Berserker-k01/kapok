@@ -98,6 +98,34 @@ async function runDiagnosis() {
             log('4. Create Shop', 'ERROR', 'Crash global boutique', e);
         }
 
+        // 4.X TEST GET ALL SHOPS (Specific User Crash Repro)
+        try {
+            const listQuery = `
+              SELECT 
+                s.*,
+                COUNT(p.id) as product_count,
+                COUNT(o.id) as order_count
+              FROM shops s
+              LEFT JOIN products p ON s.id = p.shop_id
+              LEFT JOIN orders o ON s.id = o.shop_id
+              WHERE s.owner_id = ?
+              GROUP BY s.id
+            `;
+            const listRes = await db.query(listQuery, [testUserId]);
+            log('4.X List Shops', 'SUCCESS', `Récupération liste OK (Rows: ${listRes.rows.length})`);
+
+            // Test Serialisation BigInt
+            try {
+                JSON.stringify(listRes.rows);
+                log('4.X JSON Check', 'SUCCESS', 'Serialisation JSON OK');
+            } catch (jsonErr) {
+                log('4.X JSON Check', 'ERROR', 'ECHEC SERIALISATION JSON (BigInt detected?)', jsonErr.message);
+            }
+
+        } catch (e) {
+            log('4.X List Shops', 'ERROR', 'Crash requête getAllShops', e);
+        }
+
         // 5. TEST PRODUCTS
         try {
             const insertProd = `

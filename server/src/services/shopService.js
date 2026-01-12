@@ -7,8 +7,8 @@ class ShopService {
     const query = `
       SELECT 
         s.*,
-        COUNT(p.id) as product_count,
-        COUNT(o.id) as order_count
+        CAST(COUNT(DISTINCT p.id) AS UNSIGNED) as product_count,
+        CAST(COUNT(DISTINCT o.id) AS UNSIGNED) as order_count
       FROM shops s
       LEFT JOIN products p ON s.id = p.shop_id
       LEFT JOIN orders o ON s.id = o.shop_id
@@ -97,8 +97,8 @@ class ShopService {
     const query = `
       SELECT 
         s.*,
-        COUNT(DISTINCT p.id) as product_count,
-        COUNT(DISTINCT o.id) as order_count,
+        CAST(COUNT(DISTINCT p.id) AS UNSIGNED) as product_count,
+        CAST(COUNT(DISTINCT o.id) AS UNSIGNED) as order_count,
         COALESCE(SUM(o.total_amount), 0) as total_revenue
       FROM shops s
       LEFT JOIN products p ON s.id = p.shop_id
