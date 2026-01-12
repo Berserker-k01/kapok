@@ -180,23 +180,23 @@ class ShopService {
     // Statistiques générales
     const statsQuery = `
       SELECT 
-        (SELECT COUNT(*) FROM products WHERE shop_id = $1) as total_products,
-        (SELECT COUNT(*) FROM orders WHERE shop_id = $1) as total_orders,
-        (SELECT COALESCE(SUM(total_amount), 0) FROM orders WHERE shop_id = $1 AND status = 'completed') as total_revenue,
-        (SELECT COUNT(*) FROM orders WHERE shop_id = $1 AND created_at >= CURRENT_DATE - INTERVAL '30 days') as orders_last_30_days
+        (SELECT COUNT(*) FROM products WHERE shop_id = ?) as total_products,
+        (SELECT COUNT(*) FROM orders WHERE shop_id = ?) as total_orders,
+        (SELECT COALESCE(SUM(total_amount), 0) FROM orders WHERE shop_id = ? AND status = 'completed') as total_revenue,
+        (SELECT COUNT(*) FROM orders WHERE shop_id = ? AND created_at >= CURRENT_DATE - INTERVAL 30 DAY) as orders_last_30_days
     `;
 
-    const statsResult = await db.query(statsQuery, [shopId]);
+    const statsResult = await db.query(statsQuery, [shopId, shopId, shopId, shopId]);
 
     // Ventes par mois (6 derniers mois)
     const salesQuery = `
       SELECT 
-        DATE_TRUNC('month', created_at) as month,
+        DATE_FORMAT(created_at, '%Y-%m-01') as month,
         COUNT(*) as orders,
         COALESCE(SUM(total_amount), 0) as revenue
       FROM orders 
-      WHERE shop_id = $1 AND created_at >= CURRENT_DATE - INTERVAL '6 months'
-      GROUP BY DATE_TRUNC('month', created_at)
+      WHERE shop_id = ? AND created_at >= CURRENT_DATE - INTERVAL 6 MONTH
+      GROUP BY DATE_FORMAT(created_at, '%Y-%m-01')
       ORDER BY month DESC
     `;
 
@@ -211,7 +211,7 @@ class ShopService {
       FROM order_items oi
       JOIN products p ON oi.product_id = p.id
       JOIN orders o ON oi.order_id = o.id
-      WHERE o.shop_id = $1 AND o.status = 'completed'
+      WHERE o.shop_id = ? AND o.status = 'completed'
       GROUP BY p.id, p.name
       ORDER BY revenue DESC
       LIMIT 5
@@ -226,7 +226,7 @@ class ShopService {
       FROM order_items oi
       JOIN products p ON oi.product_id = p.id
       JOIN orders o ON oi.order_id = o.id
-      WHERE o.shop_id = $1 AND o.status = 'completed'
+      WHERE o.shop_id = ? AND o.status = 'completed'
       GROUP BY p.category
     `;
     const categoryResult = await db.query(categoryQuery, [shopId]);
@@ -238,7 +238,7 @@ class ShopService {
         orders.order_number as details,
         orders.created_at as time
       FROM orders
-      WHERE shop_id = $1
+      WHERE shop_id = ?
       ORDER BY created_at DESC
       LIMIT 5
     `;

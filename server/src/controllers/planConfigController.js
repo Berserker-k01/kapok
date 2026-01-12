@@ -6,7 +6,7 @@ const catchAsync = require('../utils/catchAsync')
 exports.getAllPlans = catchAsync(async (req, res) => {
   const query = 'SELECT * FROM plans_config ORDER BY display_order ASC'
   const result = await db.query(query)
-  
+
   res.json({
     success: true,
     plans: result.rows
@@ -16,14 +16,14 @@ exports.getAllPlans = catchAsync(async (req, res) => {
 // Obtenir un plan spécifique
 exports.getPlan = catchAsync(async (req, res) => {
   const { planId } = req.params
-  
-  const query = 'SELECT * FROM plans_config WHERE id = $1'
+
+  const query = 'SELECT * FROM plans_config WHERE id = ?'
   const result = await db.query(query, [planId])
-  
+
   if (result.rows.length === 0) {
     throw new AppError('Plan non trouvé', 404)
   }
-  
+
   res.json({
     success: true,
     plan: result.rows[0]
@@ -46,20 +46,19 @@ exports.createPlan = catchAsync(async (req, res) => {
   } = req.body
 
   // Vérifier que la clé du plan est unique
-  const checkQuery = 'SELECT id FROM plans_config WHERE plan_key = $1'
+  const checkQuery = 'SELECT id FROM plans_config WHERE plan_key = ?'
   const checkResult = await db.query(checkQuery, [planKey])
-  
+
   if (checkResult.rows.length > 0) {
     throw new AppError('Une clé de plan avec ce nom existe déjà', 400)
   }
 
   const insertQuery = `
     INSERT INTO plans_config 
-    (plan_key, name, description, price, currency, max_shops, features, discount_percent, is_active, display_order)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-    RETURNING *
+    (id, plan_key, name, description, price, currency, max_shops, features, discount_percent, is_active, display_order)
+    VALUES (UUID(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `
-  
+
   const result = await db.query(insertQuery, [
     planKey,
     name,
@@ -98,42 +97,41 @@ exports.updatePlan = catchAsync(async (req, res) => {
   // Construire la requête dynamiquement
   const updates = []
   const values = []
-  let paramCount = 1
 
   if (name !== undefined) {
-    updates.push(`name = $${paramCount++}`)
+    updates.push('name = ?')
     values.push(name)
   }
   if (description !== undefined) {
-    updates.push(`description = $${paramCount++}`)
+    updates.push('description = ?')
     values.push(description)
   }
   if (price !== undefined) {
-    updates.push(`price = $${paramCount++}`)
+    updates.push('price = ?')
     values.push(price)
   }
   if (currency !== undefined) {
-    updates.push(`currency = $${paramCount++}`)
+    updates.push('currency = ?')
     values.push(currency)
   }
   if (maxShops !== undefined) {
-    updates.push(`max_shops = $${paramCount++}`)
+    updates.push('max_shops = ?')
     values.push(maxShops)
   }
   if (features !== undefined) {
-    updates.push(`features = $${paramCount++}`)
+    updates.push('features = ?')
     values.push(JSON.stringify(features))
   }
   if (discountPercent !== undefined) {
-    updates.push(`discount_percent = $${paramCount++}`)
+    updates.push('discount_percent = ?')
     values.push(discountPercent)
   }
   if (isActive !== undefined) {
-    updates.push(`is_active = $${paramCount++}`)
+    updates.push('is_active = ?')
     values.push(isActive)
   }
   if (displayOrder !== undefined) {
-    updates.push(`display_order = $${paramCount++}`)
+    updates.push('display_order = ?')
     values.push(displayOrder)
   }
 
@@ -141,16 +139,15 @@ exports.updatePlan = catchAsync(async (req, res) => {
     throw new AppError('Aucune donnée à mettre à jour', 400)
   }
 
-  updates.push(`updated_at = NOW()`)
+  updates.push('updated_at = NOW()')
   values.push(planId)
 
   const query = `
     UPDATE plans_config 
     SET ${updates.join(', ')}
-    WHERE id = $${paramCount}
-    RETURNING *
+    WHERE id = ?
   `
-  
+
   const result = await db.query(query, values)
 
   if (result.rows.length === 0) {
@@ -174,12 +171,12 @@ exports.deletePlan = catchAsync(async (req, res) => {
     WHERE plan_key = (SELECT plan_key FROM plans_config WHERE id = $1)
   `
   const checkResult = await db.query(checkQuery, [planId])
-  
+
   if (parseInt(checkResult.rows[0].count) > 0) {
     throw new AppError('Impossible de supprimer ce plan car il est utilisé', 400)
   }
 
-  const deleteQuery = 'DELETE FROM plans_config WHERE id = $1 RETURNING *'
+  const deleteQuery = 'DELETE FROM plans_config WHERE id = ?'
   const result = await db.query(deleteQuery, [planId])
 
   if (result.rows.length === 0) {

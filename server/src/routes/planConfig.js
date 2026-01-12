@@ -4,11 +4,13 @@ const planConfigController = require('../controllers/planConfigController')
 
 const router = express.Router()
 
-// Toutes les routes nécessitent l'authentification admin
-router.use(authenticateToken, requireAdmin)
-
+// Public routes
 router.get('/', planConfigController.getAllPlans)
 router.get('/:planId', planConfigController.getPlan)
+
+// Protected routes (Admin only)
+router.use(authenticateToken, requireAdmin)
+
 router.post('/', planConfigController.createPlan)
 router.put('/:planId', planConfigController.updatePlan)
 router.delete('/:planId', planConfigController.deletePlan)
