@@ -51,13 +51,33 @@ app.use((req, res, next) => {
 // Patch pour gérer BigInt (MySQL COUNT retourne BigInt)
 BigInt.prototype.toJSON = function () { return this.toString() }
 
+const REQUEST_LOGS = [];
 app.use((req, res, next) => {
-  // Simple console log au lieu de l'intercepteur lourd
-  // console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  const start = Date.now();
+  const logEntry = {
+    id: Math.random().toString(36).substring(7),
+    timestamp: new Date().toISOString(),
+    method: req.method,
+    url: req.url,
+    body: req.body,
+    query: req.query,
+    ip: req.ip
+  };
+
+  // Capture response
+  const oldJson = res.json;
+  res.json = function (data) {
+    logEntry.response = data;
+    logEntry.duration = Date.now() - start;
+    if (REQUEST_LOGS.length > 50) REQUEST_LOGS.shift();
+    REQUEST_LOGS.push(logEntry);
+    return oldJson.apply(res, arguments);
+  };
+
   next();
 });
 
-// app.get('/api/debug-requests', (req, res) => res.json([])); // Désactivé
+app.get('/api/debug-requests', (req, res) => res.json(REQUEST_LOGS));
 
 // Servir les fichiers statiques (images uploadées)
 // Servir les fichiers statiques (images uploadées) - Alias pour accès via API router
