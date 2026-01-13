@@ -38,10 +38,20 @@ class ProductService {
         const countResult = await db.query(countQuery, countParams);
         const total = parseInt(countResult.rows[0].count);
 
-        const products = result.rows.map(p => ({
-            ...p,
-            image_url: (p.images && p.images.length > 0) ? p.images[0] : null
-        }));
+        const products = result.rows.map(p => {
+            let images = p.images;
+            if (typeof images === 'string') {
+                try {
+                    images = JSON.parse(images);
+                } catch (e) {
+                    images = [];
+                }
+            }
+            return {
+                ...p,
+                image_url: (Array.isArray(images) && images.length > 0) ? images[0] : null
+            };
+        });
 
         return {
             products: products,

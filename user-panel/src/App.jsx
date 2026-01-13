@@ -27,19 +27,40 @@ import ReloadPrompt from './components/ReloadPrompt'
 function App() {
   const { isAuthenticated, token } = useAuthStore()
 
+  // Configuration Axios Globale (Interceptor > useEffect pour éviter les race conditions)
   useEffect(() => {
-    // Configuration de l'URL de base pour Axios
-    // En Docker/Prod, on utilise le proxy Nginx (relatif)
-    // En Dev local, Vite proxy s'en charge aussi
-    // Configuration de l'URL de base pour Axios (HARDCODED HOSTINGER)
+    // URL Backend
     axios.defaults.baseURL = 'https://e-assime.com/api';
 
-    if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
-    } else {
-      delete axios.defaults.headers.common['Authorization']
-    }
-  }, [token])
+    // Intercepteur pour injecter le token en temps réel
+    const requestInterceptor = axios.interceptors.request.use(
+      (config) => {
+        const token = useAuthStore.getState().token;
+        if (token) {
+          config.headers['Authorization'] = `Bearer ${token}`;
+        }
+        return config;
+      },
+      (error) => Promise.reject(error)
+    );
+
+    // Intercepteur pour gérer les 401 (Session expirée)
+    const responseInterceptor = axios.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+          // Optionnel : Auto-logout si 401 (Token invalide/expiré)
+          // useAuthStore.getState().logout();
+        }
+        return Promise.reject(error);
+      }
+    );
+
+    return () => {
+      axios.interceptors.request.eject(requestInterceptor);
+      axios.interceptors.response.eject(responseInterceptor);
+    };
+  }, []);
 
   // AUTO-LOGOUT INACTIVITY system (15 minutes)
   useEffect(() => {

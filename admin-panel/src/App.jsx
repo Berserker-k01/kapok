@@ -21,17 +21,36 @@ function App() {
   const { isAuthenticated } = useAuthStore()
 
   // Configuration Axios
+  // Configuration Axios Globale (Interceptor > useEffect pour éviter les race conditions)
   useEffect(() => {
     // Relative URL pour passer par le Proxy (Nginx ou Vite)
     // HARDCODED HOSTINGER PRODUCTION
     axios.defaults.baseURL = 'https://e-assime.com/api';
-    const token = useAuthStore.getState().token;
-    if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    } else {
-      delete axios.defaults.headers.common['Authorization'];
-    }
-  }, [useAuthStore.getState().token]); // Re-run on token change
+
+    // Intercepteur pour injecter le token en temps réel
+    const requestInterceptor = axios.interceptors.request.use(
+      (config) => {
+        const token = useAuthStore.getState().token;
+        if (token) {
+          config.headers['Authorization'] = `Bearer ${token}`;
+        }
+        return config;
+      },
+      (error) => Promise.reject(error)
+    );
+
+    const responseInterceptor = axios.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        return Promise.reject(error);
+      }
+    );
+
+    return () => {
+      axios.interceptors.request.eject(requestInterceptor);
+      axios.interceptors.response.eject(responseInterceptor);
+    };
+  }, []);
 
   // AUTO-LOGOUT INACTIVITY system (15 minutes)
   useEffect(() => {
