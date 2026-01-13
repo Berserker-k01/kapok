@@ -11,6 +11,7 @@ import { ShoppingBag, Truck, CheckCircle, ArrowLeft } from 'lucide-react'
 import { useCart } from '../../context/CartContext'
 import { Link, useNavigate } from 'react-router-dom'
 import { trackInitiateCheckout, trackPurchase, trackAddPaymentInfo, isPixelReady } from '../../utils/facebookPixel'
+import { formatCurrency } from '../../utils/currency'
 
 const checkoutSchema = z.object({
     firstName: z.string().min(2, 'Le prénom est requis'),
@@ -173,18 +174,18 @@ const Checkout = () => {
                                 <div className="mt-6 pt-6 border-t border-gray-200">
                                     <div className="flex justify-between text-lg font-bold text-gray-900">
                                         <p>Total</p>
-                                        <p>{cartTotal.toFixed(2)} €</p>
+                                        <p>{formatCurrency(cartTotal, cartItems[0]?.currency || 'XOF')}</p>
                                     </div>
                                 </div>
                             </CardBody>
                         </Card>
 
-                        <Card className="bg-blue-50 border-blue-100">
+                        <Card className="border border-gray-200">
                             <CardBody className="flex items-start gap-3">
-                                <Truck className="w-5 h-5 text-blue-600 mt-0.5" />
+                                <Truck className="w-5 h-5 text-gray-600 mt-0.5" />
                                 <div>
-                                    <h4 className="font-medium text-blue-900">Paiement à la livraison</h4>
-                                    <p className="text-blue-700 text-sm mt-1">
+                                    <h4 className="font-medium text-gray-900">Paiement à la livraison</h4>
+                                    <p className="text-gray-500 text-sm mt-1">
                                         Aucun paiement en ligne requis. Payez à la réception.
                                     </p>
                                 </div>
@@ -243,7 +244,7 @@ const Checkout = () => {
                                             isLoading={isSubmitting}
                                             className="w-full text-lg py-6"
                                         >
-                                            Confirmer la commande - {cartTotal.toFixed(2)} €
+                                            Confirmer la commande - {formatCurrency(cartTotal, cartItems[0]?.currency || 'XOF')}
                                         </Button>
                                         <p className="text-center text-xs text-gray-500 mt-2">
                                             En commandant, vous acceptez nos conditions générales de vente.

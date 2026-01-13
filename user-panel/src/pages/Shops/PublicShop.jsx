@@ -25,7 +25,12 @@ const PublicShop = () => {
             try {
                 // 1. Fetch Shop
                 const shopRes = await axios.get(`/shops/public/${slug}`)
-                const shopData = shopRes.data.data.shop
+                const shopData = shopRes.data?.data?.shop
+
+                if (!shopData) {
+                    throw new Error("Format de réponse invalide ou boutique introuvable")
+                }
+
                 setShop(shopData)
 
                 // 2. Fetch Products for this shop

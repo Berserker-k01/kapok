@@ -9,6 +9,7 @@ import { Card, CardBody, CardHeader } from '../../components/ui/Card'
 import Input from '../../components/ui/Input'
 import Button from '../../components/ui/Button'
 import { ShoppingBag, Truck, CheckCircle, Loader } from 'lucide-react'
+import { formatCurrency } from '../../utils/currency'
 
 const codSchema = z.object({
     firstName: z.string().min(2, 'Le prénom est requis'),
@@ -133,19 +134,19 @@ const CheckoutCOD = () => {
                                     <h4 className="font-medium text-gray-900">{product.name}</h4>
                                     <p className="text-gray-500 text-sm mt-1">Quantité: {quantity}</p>
                                     <p className="text-primary-600 font-bold mt-2 text-lg">
-                                        {(product.price * quantity).toFixed(2)} {product.currency || '€'}
+                                        {formatCurrency(product.price * quantity, product.currency)}
                                     </p>
                                 </div>
                             </div>
                         </CardBody>
                     </Card>
 
-                    <Card className="bg-blue-50 border-blue-100">
+                    <Card className="border border-gray-200">
                         <CardBody className="flex items-start gap-3">
-                            <Truck className="w-5 h-5 text-blue-600 mt-0.5" />
+                            <Truck className="w-5 h-5 text-gray-600 mt-0.5" />
                             <div>
-                                <h4 className="font-medium text-blue-900">Livraison Gratuite & Paiement à la livraison</h4>
-                                <p className="text-blue-700 text-sm mt-1">
+                                <h4 className="font-medium text-gray-900">Livraison Gratuite & Paiement à la livraison</h4>
+                                <p className="text-gray-500 text-sm mt-1">
                                     Commandez maintenant et payez uniquement lorsque vous recevez votre colis.
                                 </p>
                             </div>
@@ -220,7 +221,7 @@ const CheckoutCOD = () => {
                                     isLoading={isSubmitting}
                                     className="w-full text-lg py-6"
                                 >
-                                    Commander Maintenant - {(product.price * quantity).toFixed(2)} {product.currency || '€'}
+                                    Commander Maintenant - {formatCurrency(product.price * quantity, product.currency)}
                                 </Button>
                                 <p className="text-center text-xs text-gray-500 mt-2">
                                     En commandant, vous acceptez nos conditions générales de vente.

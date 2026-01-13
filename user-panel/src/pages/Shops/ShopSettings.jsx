@@ -41,7 +41,12 @@ const ShopSettings = () => {
         const fetchShop = async () => {
             try {
                 const response = await axios.get(`/shops/${shopId}`)
-                const shop = response.data.data.shop
+                const shop = response.data?.data?.shop
+
+                if (!shop) {
+                    throw new Error("Impossible de récupérer les informations de la boutique")
+                }
+
                 const settings = shop.settings || {}
 
                 reset({
