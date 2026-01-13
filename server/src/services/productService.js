@@ -55,6 +55,11 @@ class ProductService {
     }
 
     async createProduct(userId, productData) {
+        // Mapping frontend 'stock' -> backend 'inventory'
+        if (productData.stock !== undefined && productData.inventory === undefined) {
+            productData.inventory = productData.stock;
+        }
+
         const {
             name, description, price, category, shopId,
             image_url, inventory, sku, weight, dimensions
@@ -106,6 +111,11 @@ class ProductService {
     }
 
     async updateProduct(userId, productId, updateData) {
+        // Mapping frontend 'stock' -> backend 'inventory'
+        if (updateData.stock !== undefined && updateData.inventory === undefined) {
+            updateData.inventory = updateData.stock;
+        }
+
         const { name, description, price, category, image_url, inventory, sku, weight, dimensions } = updateData;
 
         let { images } = updateData;
@@ -140,10 +150,18 @@ class ProductService {
       WHERE id = ?
     `;
 
+        // IMPORTANT: MySQL crash si param est undefined. On doit passer null.
         await db.query(updateQuery, [
-            name, description, price ? parseFloat(price) : null, category,
-            images ? JSON.stringify(images) : null, inventory, sku, weight,
-            dimensions ? JSON.stringify(dimensions) : null, productId
+            name !== undefined ? name : null,
+            description !== undefined ? description : null,
+            price !== undefined ? parseFloat(price) : null,
+            category !== undefined ? category : null,
+            images !== undefined ? JSON.stringify(images) : null,
+            inventory !== undefined ? inventory : null,
+            sku !== undefined ? sku : null,
+            weight !== undefined ? weight : null,
+            dimensions !== undefined ? JSON.stringify(dimensions) : null,
+            productId
         ]);
 
         // FETCH AFTER UPDATE

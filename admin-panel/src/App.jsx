@@ -33,6 +33,41 @@ function App() {
     }
   }, [useAuthStore.getState().token]); // Re-run on token change
 
+  // AUTO-LOGOUT INACTIVITY system (15 minutes)
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const TIMEOUT_MS = 15 * 60 * 1000; // 15 Minutes
+    let inactivityTimer;
+
+    const logoutUser = () => {
+      console.log('Auto-logout due to inactivity');
+      useAuthStore.getState().logout();
+      // Admin might not need full refresh if state handles it, but safety first
+      // The state change to isAuthenticated=false will trigger the router switch below
+    };
+
+    const resetTimer = () => {
+      clearTimeout(inactivityTimer);
+      inactivityTimer = setTimeout(logoutUser, TIMEOUT_MS);
+    };
+
+    // Listen to user interactions
+    const events = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
+    for (const event of events) {
+      window.addEventListener(event, resetTimer);
+    }
+
+    resetTimer(); // Init timer
+
+    return () => {
+      clearTimeout(inactivityTimer);
+      for (const event of events) {
+        window.removeEventListener(event, resetTimer);
+      }
+    };
+  }, [isAuthenticated]);
+
   if (!isAuthenticated) {
     return (
       <Router basename={basename}>

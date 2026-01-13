@@ -22,6 +22,7 @@ import { useAuthStore } from './store/authStore'
 import axios from 'axios'
 import { useEffect } from 'react'
 import ErrorBoundary from './components/ErrorBoundary'
+import ReloadPrompt from './components/ReloadPrompt'
 
 function App() {
   const { isAuthenticated, token } = useAuthStore()
@@ -40,9 +41,44 @@ function App() {
     }
   }, [token])
 
+  // AUTO-LOGOUT INACTIVITY system (15 minutes)
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const TIMEOUT_MS = 15 * 60 * 1000; // 15 Minutes
+    let inactivityTimer;
+
+    const logoutUser = () => {
+      console.log('Auto-logout due to inactivity');
+      useAuthStore.getState().logout();
+      window.location.href = '/login';
+    };
+
+    const resetTimer = () => {
+      clearTimeout(inactivityTimer);
+      inactivityTimer = setTimeout(logoutUser, TIMEOUT_MS);
+    };
+
+    // Listen to user interactions
+    const events = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
+    for (const event of events) {
+      window.addEventListener(event, resetTimer);
+    }
+
+    resetTimer(); // Init timer
+
+    return () => {
+      clearTimeout(inactivityTimer);
+      for (const event of events) {
+        window.removeEventListener(event, resetTimer);
+      }
+    };
+  }, [isAuthenticated]);
+
   return (
     <ErrorBoundary>
       <Router>
+        <ReloadPrompt />
         <Routes>
           {/* Routes Publiques */}
           <Route path="/login" element={!isAuthenticated ? <Login /> : <Navigate to="/" />} />

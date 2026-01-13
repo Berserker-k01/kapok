@@ -17,7 +17,7 @@ const PublicShop = () => {
     useEffect(() => {
         const fetchShop = async () => {
             try {
-                const response = await axios.get(`/api/shops/public/${slug}`)
+                const response = await axios.get(`/shops/public/${slug}`)
                 setShop(response.data.data.shop)
             } catch (err) {
                 setError("Boutique introuvable")
