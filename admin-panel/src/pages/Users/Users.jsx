@@ -122,7 +122,7 @@ const Users = () => {
                       {user.shop_count}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white font-medium">
-                      {parseFloat(user.total_spent).toLocaleString()} €
+                      {parseFloat(user.total_spent).toLocaleString()} FCFA
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <Badge variant={user.status === 'active' ? 'success' : 'danger'}>
