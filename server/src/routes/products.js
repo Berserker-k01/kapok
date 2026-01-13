@@ -7,6 +7,8 @@ const upload = require('../middleware/upload');
 const router = express.Router();
 
 // Routes publiques (ou semi-publiques)
+// Routes publiques (ou semi-publiques)
+router.get('/public/shop/:shopId', productController.getPublicProductsByShop);
 router.get('/:productId', productController.getProduct);
 
 // Routes protégées

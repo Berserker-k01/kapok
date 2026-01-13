@@ -21,8 +21,20 @@ const ThemeMinimal = ({ shop, products }) => {
         }
     }, [products])
 
+    // Configuration dynamique des couleurs
+    const colors = shop.settings?.themeConfig?.colors || {}
+    const primaryColor = colors.primary || '#000000'
+    const secondaryColor = colors.secondary || '#ffffff'
+    const bgColor = colors.background || '#ffffff'
+    const textColor = colors.text || '#111827'
+
+    const customStyle = {
+        backgroundColor: bgColor,
+        color: textColor,
+    }
+
     return (
-        <div className="min-h-screen bg-white font-sans text-gray-900">
+        <div className="min-h-screen font-sans transition-colors duration-300" style={customStyle}>
             {/* Header Minimaliste */}
             <header className="border-b border-gray-100 sticky top-0 bg-white/80 backdrop-blur-md z-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
@@ -71,11 +83,29 @@ const ThemeMinimal = ({ shop, products }) => {
                                 <div className="absolute bottom-4 left-0 right-0 text-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex justify-center gap-2">
                                     <button
                                         onClick={() => addToCart(product)}
-                                        className="bg-black text-white px-6 py-2 text-sm uppercase tracking-wider hover:bg-gray-800 transition-colors"
+                                        className="px-6 py-2 text-sm uppercase tracking-wider hover:opacity-90 transition-opacity"
+                                        style={{ backgroundColor: primaryColor, color: secondaryColor }}
                                     >
                                         Ajouter
                                     </button>
-                                    <Link to={`/checkout/cod/${product.id}`} className="bg-white border border-black text-black px-6 py-2 text-sm uppercase tracking-wider hover:bg-black hover:text-white transition-colors">
+                                    <Link
+                                        to={`/checkout/cod/${product.id}`}
+                                        className="border px-6 py-2 text-sm uppercase tracking-wider hover:bg-black hover:text-white transition-all"
+                                        style={{
+                                            borderColor: primaryColor,
+                                            color: primaryColor,
+                                            '--hover-bg': primaryColor,
+                                            '--hover-text': secondaryColor
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.target.style.backgroundColor = primaryColor;
+                                            e.target.style.color = secondaryColor;
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.target.style.backgroundColor = 'transparent';
+                                            e.target.style.color = primaryColor;
+                                        }}
+                                    >
                                         Achat Rapide
                                     </Link>
                                 </div>

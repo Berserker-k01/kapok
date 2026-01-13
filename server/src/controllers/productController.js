@@ -1,6 +1,18 @@
 const productService = require('../services/productService');
 const catchAsync = require('../utils/catchAsync');
 
+exports.getPublicProductsByShop = catchAsync(async (req, res, next) => {
+    // Force filters for public view
+    const filters = { ...req.query, status: 'active' };
+    const result = await productService.getProductsByShop(req.params.shopId, filters);
+
+    res.status(200).json({
+        status: 'success',
+        results: result.products.length,
+        data: { products: result.products, pagination: result.pagination }
+    });
+});
+
 exports.getProductsByShop = catchAsync(async (req, res, next) => {
     const result = await productService.getProductsByShop(req.params.shopId, req.query);
 

@@ -16,10 +16,22 @@ router
   .post(shopController.createShop);
 
 // Routes nécessitant d'être propriétaire de la boutique
+const upload = require('../middleware/upload');
+
+// ... imports
+
+// Routes nécessitant d'être propriétaire de la boutique
 router
   .route('/:shopId')
   .get(requireShopOwnership, shopController.getShop)
-  .put(requireShopOwnership, shopController.updateShop)
+  .put(
+    requireShopOwnership,
+    upload.fields([
+      { name: 'logo', maxCount: 1 },
+      { name: 'banner', maxCount: 1 }
+    ]),
+    shopController.updateShop
+  )
   .delete(requireShopOwnership, shopController.deleteShop);
 
 router.get('/:shopId/stats', requireShopOwnership, shopController.getShopStats);

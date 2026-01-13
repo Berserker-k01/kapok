@@ -14,40 +14,35 @@ const PublicShop = () => {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
 
+    // Produits réels
+    const [products, setProducts] = useState([])
+
     useEffect(() => {
-        const fetchShop = async () => {
+        const fetchShopAndProducts = async () => {
             try {
-                const response = await axios.get(`/shops/public/${slug}`)
-                setShop(response.data.data.shop)
+                // 1. Fetch Shop
+                const shopRes = await axios.get(`/shops/public/${slug}`)
+                const shopData = shopRes.data.data.shop
+                setShop(shopData)
+
+                // 2. Fetch Products for this shop
+                if (shopData?.id) {
+                    // Use the public products endpoint (we might need to ensure this route exists or use the generic one)
+                    // The generic /products usually requires auth?
+                    // Let's use the one logged earlier: /shop/:shopId/products or /products?shopId=...
+                    // Check routes/products.js for public access?
+                    // Assuming we need a public route for products:
+                    const prodRes = await axios.get(`/products/public/shop/${shopData.id}`)
+                    setProducts(prodRes.data.data.products || [])
+                }
             } catch (err) {
                 setError("Boutique introuvable")
             } finally {
                 setLoading(false)
             }
         }
-        fetchShop()
+        fetchShopAndProducts()
     }, [slug])
-
-    // Récupérer l'ID du pixel Facebook depuis les settings
-    const facebookPixelId = shop?.settings?.facebookPixelId || shop?.tracking?.facebookPixelId
-
-    // Stocker le pixelId dans localStorage pour l'utiliser dans le checkout
-    useEffect(() => {
-        if (facebookPixelId) {
-            localStorage.setItem('lesigne_facebook_pixel_id', facebookPixelId)
-        }
-    }, [facebookPixelId])
-
-    if (loading) return <div className="min-h-screen flex items-center justify-center">Chargement...</div>
-    if (error) return <div className="min-h-screen flex items-center justify-center text-red-500">{error}</div>
-
-    // Mock products pour la démo (en attendant l'API products publique complète)
-    const products = [
-        { id: 1, name: 'Produit Démo 1', price: 29.99, currency: '€', image_url: 'https://placehold.co/600x800/f3f4f6/9ca3af?text=Produit+1' },
-        { id: 2, name: 'Produit Démo 2', price: 49.99, currency: '€', image_url: 'https://placehold.co/600x800/e5e7eb/9ca3af?text=Produit+2' },
-        { id: 3, name: 'Produit Démo 3', price: 19.99, currency: '€', image_url: 'https://placehold.co/600x800/d1d5db/6b7280?text=Produit+3' },
-        { id: 4, name: 'Produit Démo 4', price: 89.99, currency: '€', image_url: 'https://placehold.co/600x800/9ca3af/4b5563?text=Produit+4' },
-    ]
 
     // Sélection du thème (par défaut 'minimal')
     const currentTheme = shop?.settings?.theme || shop?.theme || 'minimal'

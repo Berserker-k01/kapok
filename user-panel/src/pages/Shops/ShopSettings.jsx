@@ -74,14 +74,25 @@ const ShopSettings = () => {
     const onSubmit = async (data) => {
         try {
             // Séparer le thème (colonne dédiée) des autres réglages (JSONB settings)
-            const { theme, ...settingsData } = data
+            const { theme, logoFile, bannerFile, ...settingsData } = data
 
-            const payload = {
-                theme,
-                settings: settingsData
+            const formData = new FormData();
+            formData.append('theme', theme);
+            formData.append('settings', JSON.stringify(settingsData)); // Send settings as JSON string
+
+            // Append files if they exist (handling FileList from react-hook-form)
+            if (logoFile && logoFile.length > 0) {
+                formData.append('logo', logoFile[0]);
+            }
+            if (bannerFile && bannerFile.length > 0) {
+                formData.append('banner', bannerFile[0]);
             }
 
-            await axios.put(`/api/shops/${shopId}`, payload)
+            await axios.put(`/api/shops/${shopId}`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
 
             toast.success('Paramètres sauvegardés !')
         } catch (error) {
@@ -189,11 +200,29 @@ const ShopSettings = () => {
                                 </div>
 
                                 <div className="space-y-4">
-                                    <Input
-                                        label="URL du Logo"
-                                        placeholder="https://exemple.com/logo.png"
-                                        {...register('themeConfig.content.logoUrl')}
-                                    />
+                                    {/* Inputs File au lieu de TEXT URL */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Logo</label>
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            {...register('logoFile')}
+                                            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
+                                        />
+                                        {watch('themeConfig.content.logoUrl') && <p className="text-xs text-green-600 mt-1">Logo actuel: Chargé</p>}
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Bannière (Grand Format)</label>
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            {...register('bannerFile')}
+                                            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
+                                        />
+                                        {watch('themeConfig.content.bannerUrl') && <p className="text-xs text-green-600 mt-1">Bannière actuelle: Chargée</p>}
+                                    </div>
+
                                     <Input
                                         label="Nom de la Boutique (si pas de logo)"
                                         placeholder="Ma Super Boutique"

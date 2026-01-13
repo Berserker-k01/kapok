@@ -44,7 +44,34 @@ exports.getShop = catchAsync(async (req, res, next) => {
 });
 
 exports.updateShop = catchAsync(async (req, res, next) => {
-    const shop = await shopService.updateShop(req.params.shopId, req.body);
+    // 1. Handle File Uploads (Banner/Logo)
+    let updateData = { ...req.body };
+    const baseUrl = process.env.API_URL || 'https://e-assime.com/api';
+
+    // If FormData was sent, 'settings' might be a JSON string. Parse it first.
+    if (typeof updateData.settings === 'string') {
+        try {
+            updateData.settings = JSON.parse(updateData.settings);
+        } catch (e) {
+            updateData.settings = {};
+        }
+    }
+
+    // Ensure structure exists
+    if (!updateData.settings) updateData.settings = {};
+    if (!updateData.settings.themeConfig) updateData.settings.themeConfig = {};
+    if (!updateData.settings.themeConfig.content) updateData.settings.themeConfig.content = {};
+
+    if (req.files) {
+        if (req.files['logo']) {
+            updateData.settings.themeConfig.content.logoUrl = `${baseUrl}/uploads/${req.files['logo'][0].filename}`;
+        }
+        if (req.files['banner']) {
+            updateData.settings.themeConfig.content.bannerUrl = `${baseUrl}/uploads/${req.files['banner'][0].filename}`;
+        }
+    }
+
+    const shop = await shopService.updateShop(req.params.shopId, updateData);
 
     res.status(200).json({
         status: 'success',

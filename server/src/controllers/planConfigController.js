@@ -53,13 +53,15 @@ exports.createPlan = catchAsync(async (req, res) => {
     throw new AppError('Une clé de plan avec ce nom existe déjà', 400)
   }
 
+  const { v4: uuidv4 } = require('uuid'); // Ensure this is imported at top or here
   const insertQuery = `
     INSERT INTO plans_config 
     (id, plan_key, name, description, price, currency, max_shops, features, discount_percent, is_active, display_order)
-    VALUES (UUID(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `
 
   const result = await db.query(insertQuery, [
+    uuidv4(),
     planKey,
     name,
     description || null,
