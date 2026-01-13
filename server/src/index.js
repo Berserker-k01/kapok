@@ -1,5 +1,12 @@
 const express = require('express')
 const cors = require('cors')
+// CORS Configuration permissive pour supporter PWA/Mobile
+app.use(cors({
+  origin: true, // Allow all origins
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+}));
 const helmet = require('helmet')
 const rateLimit = require('express-rate-limit')
 const path = require('path')
