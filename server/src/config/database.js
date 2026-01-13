@@ -35,7 +35,9 @@ const poolConfig = {
   connectionLimit: 10,
   queueLimit: 0,
   charset: 'utf8mb4',
-  timezone: '+00:00'
+  timezone: '+00:00',
+  enableKeepAlive: true,
+  keepAliveInitialDelay: 0,
 };
 
 const pool = mysql.createPool(poolConfig)

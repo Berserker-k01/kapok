@@ -79,6 +79,9 @@ app.use((req, res, next) => {
 app.get('/api/debug-requests', (req, res) => res.json(debugLogs));
 
 // Servir les fichiers statiques (images uploadées)
+// Servir les fichiers statiques (images uploadées) - Alias pour accès via API router
+app.use('/api/uploads', express.static(path.join(__dirname, '../uploads')));
+// Garder l'ancien alias au cas où
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Routes Check
