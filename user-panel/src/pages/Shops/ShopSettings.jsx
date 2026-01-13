@@ -63,7 +63,7 @@ const ShopSettings = () => {
                 })
             } catch (error) {
                 console.error(error)
-                toast.error("Impossible de charger les paramètres")
+                toast.error(`Erreur ${error.response?.status}: ${error.response?.data?.error || error.response?.data?.message || error.message}`)
             } finally {
                 setLoading(false)
             }
@@ -97,7 +97,7 @@ const ShopSettings = () => {
             toast.success('Paramètres sauvegardés !')
         } catch (error) {
             console.error(error)
-            toast.error("Erreur lors de la sauvegarde")
+            toast.error(`Erreur sauvegarde: ${error.response?.data?.error || error.response?.data?.message || 'Erreur inconnue'}`)
         }
     }
 

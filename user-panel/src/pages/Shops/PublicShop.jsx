@@ -50,6 +50,9 @@ const PublicShop = () => {
     // Récupérer l'ID du pixel Facebook depuis les settings
     const facebookPixelId = shop?.settings?.facebookPixelId || shop?.tracking?.facebookPixelId
 
+    if (loading) return <div className="min-h-screen flex items-center justify-center">Chargement...</div>
+    if (error) return <div className="min-h-screen flex items-center justify-center text-red-500">{error}</div>
+
     return (
         <FacebookPixel pixelId={facebookPixelId}>
             <CartProvider facebookPixelId={facebookPixelId}>
