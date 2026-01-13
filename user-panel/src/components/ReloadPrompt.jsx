@@ -1,7 +1,8 @@
 import { useRegisterSW } from 'virtual:pwa-register/react'
 import { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { Toaster, toast } from 'react-hot-toast'
-import Button from '../ui/Button'
+import Button from './ui/Button'
 import { Download, RefreshCw } from 'lucide-react'
 
 function ReloadPrompt() {
