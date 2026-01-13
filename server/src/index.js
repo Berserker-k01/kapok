@@ -1,6 +1,15 @@
 const express = require('express')
 const cors = require('cors')
-// CORS Configuration permissive pour supporter PWA/Mobile
+const helmet = require('helmet')
+const rateLimit = require('express-rate-limit')
+const path = require('path')
+const fs = require('fs')
+
+// --- CONFIGURATION STATIQUE (PLUS DE .ENV) ---
+process.env.NODE_ENV = 'production';
+// IMPORTANT: Hostinger/Heroku injectent le PORT dynamiquement. 
+// Ne JAMAIS hardcoder le port en production si l'hébergeur le fournit.
+const PORT = process.env.PORT || 5000;
 
 const app = express()
 
@@ -14,9 +23,6 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
-
-// Trust Proxy pour Hostinger/Vercel
-app.set('trust proxy', 1);
 
 // Middleware de sécurité
 app.use(helmet())
