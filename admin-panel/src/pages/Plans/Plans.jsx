@@ -308,10 +308,8 @@ const Plans = () => {
                       onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
                       className="w-full px-3 py-2 border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                     >
-                      <option value="XOF">XOF</option>
-                      <option value="EUR">EUR</option>
-                      <option value="USD">USD</option>
-                      <option value="GBP">GBP</option>
+                      <option value="XOF">XOF (FCFA)</option>
+                      <option value="GNF">GNF</option>
                     </select>
                   </div>
                   <div>

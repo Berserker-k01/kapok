@@ -7,33 +7,33 @@ const Header = ({ setSidebarOpen, title = "Accueil" }) => {
   const { user } = useAuthStore()
 
   const notifications = [
-    { 
-      id: 1, 
+    {
+      id: 1,
       type: 'order',
-      message: 'Nouvelle commande #1234', 
+      message: 'Nouvelle commande #1234',
       time: '2 min',
-      unread: true 
+      unread: true
     },
-    { 
-      id: 2, 
+    {
+      id: 2,
       type: 'inventory',
-      message: 'Stock faible: T-shirt Rouge', 
+      message: 'Stock faible: T-shirt Rouge',
       time: '1h',
-      unread: true 
+      unread: true
     },
-    { 
-      id: 3, 
+    {
+      id: 3,
       type: 'customer',
-      message: 'Nouveau client: Marie Dupont', 
+      message: 'Nouveau client: Marie Dupont',
       time: '3h',
-      unread: false 
+      unread: false
     },
-    { 
-      id: 4, 
+    {
+      id: 4,
       type: 'payment',
-      message: 'Paiement reçu: 150€', 
+      message: 'Paiement reçu: 150 000 FCFA',
       time: '5h',
-      unread: false 
+      unread: false
     }
   ]
 
@@ -97,15 +97,15 @@ const Header = ({ setSidebarOpen, title = "Accueil" }) => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
-          
+
           <div>
             <h1 className="text-2xl font-semibold text-secondary-900">{title}</h1>
             <p className="text-sm text-muted-foreground">
-              {new Date().toLocaleDateString('fr-FR', { 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
+              {new Date().toLocaleDateString('fr-FR', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
               })}
             </p>
           </div>
@@ -123,7 +123,7 @@ const Header = ({ setSidebarOpen, title = "Accueil" }) => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </button>
-            
+
             <div className="hidden md:block relative">
               <input
                 type="text"
@@ -197,11 +197,10 @@ const Header = ({ setSidebarOpen, title = "Accueil" }) => {
                 </div>
                 <div className="max-h-80 overflow-y-auto">
                   {notifications.map((notification) => (
-                    <div 
-                      key={notification.id} 
-                      className={`p-4 border-b border-secondary-100 hover:bg-secondary-50 transition-colors cursor-pointer ${
-                        notification.unread ? 'bg-primary-50' : ''
-                      }`}
+                    <div
+                      key={notification.id}
+                      className={`p-4 border-b border-secondary-100 hover:bg-secondary-50 transition-colors cursor-pointer ${notification.unread ? 'bg-primary-50' : ''
+                        }`}
                     >
                       <div className="flex items-start space-x-3">
                         {getNotificationIcon(notification.type)}

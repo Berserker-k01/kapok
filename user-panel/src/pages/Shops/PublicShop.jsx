@@ -4,15 +4,18 @@ import axios from 'axios'
 import { FiShoppingBag, FiSearch } from 'react-icons/fi'
 import ThemeMinimal from './Themes/ThemeMinimal'
 import ThemeBold from './Themes/ThemeBold'
-import { CartProvider } from '../../context/CartContext'
+// import { CartProvider } from '../../context/CartContext' // Global now
 import CartDrawer from '../../components/Cart/CartDrawer'
 import FacebookPixel from '../../components/FacebookPixel/FacebookPixel'
+
+import { useCart } from '../../context/CartContext'
 
 const PublicShop = () => {
     const { slug } = useParams()
     const [shop, setShop] = useState(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
+    const { setFacebookPixelId } = useCart()
 
     // Produits réels
     const [products, setProducts] = useState([])
@@ -50,19 +53,29 @@ const PublicShop = () => {
     // Récupérer l'ID du pixel Facebook depuis les settings
     const facebookPixelId = shop?.settings?.facebookPixelId || shop?.tracking?.facebookPixelId
 
+    useEffect(() => {
+        if (facebookPixelId) {
+            setFacebookPixelId(facebookPixelId)
+        }
+    }, [facebookPixelId, setFacebookPixelId])
+
+    // Comme CartProvider est déjà dans App.jsx, on ne le remet pas ici.
+    // On ajoute juste CartDrawer (si on veut qu'il soit spécifique au shop ou global).
+    // Le CartDrawer est déjà globalement utile, mais peut-être qu'on veut l'afficher que sur le shop public ?
+    // Checkons si CartDrawer est dans Layout ou autre. Il n'était pas dans Layout. 
+    // Donc on le laisse ici pour qu'il s'affiche sur la page Boutique.
+
     if (loading) return <div className="min-h-screen flex items-center justify-center">Chargement...</div>
     if (error) return <div className="min-h-screen flex items-center justify-center text-red-500">{error}</div>
 
     return (
         <FacebookPixel pixelId={facebookPixelId}>
-            <CartProvider facebookPixelId={facebookPixelId}>
-                <CartDrawer />
-                {currentTheme === 'bold' ? (
-                    <ThemeBold shop={shop} products={products} />
-                ) : (
-                    <ThemeMinimal shop={shop} products={products} />
-                )}
-            </CartProvider>
+            <CartDrawer />
+            {currentTheme === 'bold' ? (
+                <ThemeBold shop={shop} products={products} />
+            ) : (
+                <ThemeMinimal shop={shop} products={products} />
+            )}
         </FacebookPixel>
     )
 }

@@ -6,20 +6,20 @@ const CartContext = createContext()
 
 export const useCart = () => useContext(CartContext)
 
-export const CartProvider = ({ children, facebookPixelId }) => {
+export const CartProvider = ({ children, initialPixelId }) => {
     const [cartItems, setCartItems] = useState(() => {
         try {
-            const savedCart = localStorage.getItem('lesigne_cart')
+            const savedCart = localStorage.getItem('assime_cart')
             return savedCart ? JSON.parse(savedCart) : []
         } catch (e) {
             return []
         }
     })
 
-    const [isCartOpen, setIsCartOpen] = useState(false)
+    const [facebookPixelId, setFacebookPixelId] = useState(initialPixelId)
 
     useEffect(() => {
-        localStorage.setItem('lesigne_cart', JSON.stringify(cartItems))
+        localStorage.setItem('assime_cart', JSON.stringify(cartItems))
     }, [cartItems])
 
     const addToCart = (product, quantity = 1) => {
@@ -72,7 +72,8 @@ export const CartProvider = ({ children, facebookPixelId }) => {
             isCartOpen,
             setIsCartOpen,
             cartTotal,
-            cartCount
+            cartCount,
+            setFacebookPixelId // Exposed for PublicShop
         }}>
             {children}
         </CartContext.Provider>

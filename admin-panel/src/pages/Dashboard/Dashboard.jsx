@@ -69,7 +69,7 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           title="Revenus Totaux"
-          value={`${parseFloat(stats.total_revenue).toLocaleString()} €`} // Devise à adapter
+          value={`${parseFloat(stats.total_revenue).toLocaleString()} FCFA`} // Devise à adapter
           trend="up"
           trendValue="+0%"
           icon={TrendingUp}
