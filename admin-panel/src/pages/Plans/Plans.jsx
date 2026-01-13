@@ -31,7 +31,7 @@ const Plans = () => {
 
   const fetchPlans = async () => {
     try {
-      const response = await axios.get('/admin/plans')
+      const response = await axios.get('/plans')
       setPlans(response.data.plans)
     } catch (error) {
       toast.error('Erreur lors du chargement des plans')
@@ -97,10 +97,10 @@ const Plans = () => {
       }
 
       if (editingPlan) {
-        await axios.put(`/api/admin/plans/${editingPlan.id}`, payload)
+        await axios.put(`/plans/${editingPlan.id}`, payload)
         toast.success('Plan mis à jour avec succès')
       } else {
-        await axios.post('/api/admin/plans', payload)
+        await axios.post('/plans', payload)
         toast.success('Plan créé avec succès')
       }
 
@@ -118,7 +118,7 @@ const Plans = () => {
     }
 
     try {
-      await axios.delete(`/api/admin/plans/${planId}`)
+      await axios.delete(`/plans/${planId}`)
       toast.success('Plan supprimé avec succès')
       fetchPlans()
     } catch (error) {

@@ -77,7 +77,23 @@ app.use((req, res, next) => {
   next();
 });
 
-app.get('/api/debug-requests', (req, res) => res.json(REQUEST_LOGS));
+app.get('/api/debug-requests', (req, res) => {
+  const db = require('./config/database');
+
+  res.json({
+    status: 'active',
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString(),
+    memory: process.memoryUsage(),
+    env: {
+      NODE_ENV: process.env.NODE_ENV,
+      PORT: PORT,
+      API_URL: process.env.API_URL
+    },
+    requests_count: REQUEST_LOGS.length,
+    logs: REQUEST_LOGS
+  });
+});
 
 // Servir les fichiers statiques (images uploadées)
 // Servir les fichiers statiques (images uploadées) - Alias pour accès via API router
