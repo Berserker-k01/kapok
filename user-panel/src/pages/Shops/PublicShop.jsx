@@ -47,6 +47,9 @@ const PublicShop = () => {
     // Sélection du thème (par défaut 'minimal')
     const currentTheme = shop?.settings?.theme || shop?.theme || 'minimal'
 
+    // Récupérer l'ID du pixel Facebook depuis les settings
+    const facebookPixelId = shop?.settings?.facebookPixelId || shop?.tracking?.facebookPixelId
+
     return (
         <FacebookPixel pixelId={facebookPixelId}>
             <CartProvider facebookPixelId={facebookPixelId}>

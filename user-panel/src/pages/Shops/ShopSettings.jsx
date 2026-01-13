@@ -40,7 +40,7 @@ const ShopSettings = () => {
     useEffect(() => {
         const fetchShop = async () => {
             try {
-                const response = await axios.get(`/api/shops/${shopId}`)
+                const response = await axios.get(`/shops/${shopId}`)
                 const shop = response.data.data.shop
                 const settings = shop.settings || {}
 
@@ -88,7 +88,7 @@ const ShopSettings = () => {
                 formData.append('banner', bannerFile[0]);
             }
 
-            await axios.put(`/api/shops/${shopId}`, formData, {
+            await axios.put(`/shops/${shopId}`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
                 }
