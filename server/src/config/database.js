@@ -107,8 +107,19 @@ const query = async (text, params) => {
     // Convertir les placeholders PostgreSQL ($1, $2...) en MySQL (?)
     const { sql, params: convertedParams } = convertPlaceholders(finalSql, finalParams)
 
-    // Exécuter la requête
-    const [result, fields] = await pool.execute(sql, convertedParams)
+    // Exécuter la requête avec RETRY automatique (1 tentative)
+    let result, fields;
+    try {
+      [result, fields] = await pool.execute(sql, convertedParams);
+    } catch (err) {
+      const retryCodes = ['PROTOCOL_CONNECTION_LOST', 'ECONNRESET', 'ETIMEDOUT', 'Can\'t add new command when connection is in closed state'];
+      if (retryCodes.some(code => err.message.includes(code) || err.code === code)) {
+        console.warn(`⚠️ DB Connection Lost (${err.code}), retrying query...`);
+        [result, fields] = await pool.execute(sql, convertedParams);
+      } else {
+        throw err;
+      }
+    }
 
     let rows = [];
     let rowCount = 0;

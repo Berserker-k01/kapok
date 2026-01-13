@@ -47,44 +47,17 @@ app.use((req, res, next) => {
   next();
 });
 
-// --- DEBUG LOGGER (Capture les 20 dernières requêtes ET RÉPONSES) ---
+// --- DEBUG LOGGER SIMPLIFIÉ (Non-bloquant) ---
 // Patch pour gérer BigInt (MySQL COUNT retourne BigInt)
 BigInt.prototype.toJSON = function () { return this.toString() }
 
-const debugLogs = [];
 app.use((req, res, next) => {
-  const oldJson = res.json;
-
-  res.json = function (body) {
-    // Fonction safe pour éviter "Circular structure"
-    const safeBody = () => {
-      try {
-        return JSON.parse(JSON.stringify(body));
-      } catch (e) {
-        return { error: 'Circular or Unserializable Body', details: e.message };
-      }
-    };
-
-    const log = {
-      time: new Date().toISOString(),
-      method: req.method,
-      url: req.url,
-      ip: req.ip,
-      status: res.statusCode,
-      reqBody: req.body,
-      resBody: safeBody()
-    };
-
-    debugLogs.unshift(log);
-    if (debugLogs.length > 20) debugLogs.pop();
-
-    return oldJson.call(this, body);
-  };
-
+  // Simple console log au lieu de l'intercepteur lourd
+  // console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
   next();
 });
 
-app.get('/api/debug-requests', (req, res) => res.json(debugLogs));
+// app.get('/api/debug-requests', (req, res) => res.json([])); // Désactivé
 
 // Servir les fichiers statiques (images uploadées)
 // Servir les fichiers statiques (images uploadées) - Alias pour accès via API router
