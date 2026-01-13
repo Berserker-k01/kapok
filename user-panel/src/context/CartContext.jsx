@@ -16,6 +16,7 @@ export const CartProvider = ({ children, initialPixelId }) => {
         }
     })
 
+    const [isCartOpen, setIsCartOpen] = useState(false)
     const [facebookPixelId, setFacebookPixelId] = useState(initialPixelId)
 
     useEffect(() => {
