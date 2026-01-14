@@ -209,9 +209,9 @@ exports.createPublicOrder = async (req, res) => {
             // Check if customer already exists for this shop? No, customers are global or shop-specific? 
             // In this schema, customers seem global but linked via orders.
             await db.query(`
-                INSERT INTO customers (name, phone, address, city, created_at)
-                VALUES (?, ?, ?, ?, NOW())
-            `, [`${firstName} ${lastName}`, phone, address, city])
+                INSERT INTO customers (name, phone, address, created_at)
+                VALUES (?, ?, ?, NOW())
+            `, [`${firstName} ${lastName}`, phone, `${address}, ${city}`])
 
             const fetchedCustomer = await db.query('SELECT id FROM customers WHERE phone = ?', [phone])
             customerId = fetchedCustomer.rows[0].id
