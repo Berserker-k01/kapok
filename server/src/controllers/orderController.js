@@ -172,7 +172,7 @@ exports.createPublicOrder = async (req, res) => {
 
         for (const item of orderItems) {
             const productQuery = `
-                SELECT p.*, s.currency, s.id as shop_id
+                SELECT p.*, s.id as shop_id
                 FROM products p 
                 JOIN shops s ON p.shop_id = s.id 
                 WHERE p.id = ? AND s.id = ?
@@ -184,7 +184,7 @@ exports.createPublicOrder = async (req, res) => {
             }
 
             const product = productResult.rows[0]
-            currency = product.currency // On suppose la même devise pour tout le shop
+            currency = 'XOF' // Default currency since shops table doesn't have it yet
             const itemTotal = product.price * item.quantity
             totalAmount += itemTotal
 
