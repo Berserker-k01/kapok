@@ -12,6 +12,7 @@ import { FiFacebook, FiSave, FiArrowLeft, FiLayout } from 'react-icons/fi'
 
 const shopSettingsSchema = z.object({
     facebookPixelId: z.string().optional(),
+    status: z.enum(['active', 'suspended', 'inactive']).default('active'),
     googleAnalyticsId: z.string().optional(),
     theme: z.enum(['minimal', 'bold', 'custom']).default('minimal'),
     themeConfig: z.object({
@@ -53,6 +54,7 @@ const ShopSettings = () => {
 
                 reset({
                     theme: shop.theme || 'minimal',
+                    status: shop.status || 'active',
                     facebookPixelId: settings.facebookPixelId || '',
                     googleAnalyticsId: settings.googleAnalyticsId || '',
                     themeConfig: settings.themeConfig || {
@@ -83,10 +85,11 @@ const ShopSettings = () => {
     const onSubmit = async (data) => {
         try {
             // Séparer le thème (colonne dédiée) des autres réglages (JSONB settings)
-            const { theme, logoFile, bannerFile, ...settingsData } = data
+            const { theme, status, logoFile, bannerFile, ...settingsData } = data
 
             const formData = new FormData();
             formData.append('theme', theme);
+            formData.append('status', status); // Send status explicitly
             formData.append('settings', JSON.stringify(settingsData)); // Send settings as JSON string
 
             // Append files if they exist (handling FileList from react-hook-form)
@@ -130,6 +133,22 @@ const ShopSettings = () => {
                 </CardHeader>
                 <CardBody>
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+
+                        {/* Status Toggle */}
+                        <div className="bg-white p-4 rounded-lg border border-gray-200 flex items-center justify-between">
+                            <div>
+                                <h3 className="font-medium text-gray-900">Statut de la boutique</h3>
+                                <p className="text-sm text-gray-500">Activez ou désactivez l'accès public à votre boutique.</p>
+                            </div>
+                            <select
+                                {...register('status')}
+                                className="input-field w-auto min-w-[150px]"
+                            >
+                                <option value="active">🟢 Active</option>
+                                <option value="inactive">🔴 Inactive</option>
+                                <option value="suspended">🟠 Maintenance</option>
+                            </select>
+                        </div>
 
                         {/* Sélection du Thème */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">

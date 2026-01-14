@@ -150,10 +150,10 @@ const Shops = () => {
 
             {/* Actions */}
             <div className="flex space-x-2">
-              <Link to={`/s/${shop.slug}`} className="flex-1 btn-secondary text-sm flex items-center justify-center">
+              <a href={`/s/${shop.slug}`} target="_blank" rel="noopener noreferrer" className="flex-1 btn-secondary text-sm flex items-center justify-center">
                 <FiEye className="mr-1 h-4 w-4" />
                 Voir
-              </Link>
+              </a>
               <button
                 onClick={() => window.location.href = `/shops/${shop.id}/settings`}
                 className="flex-1 btn-secondary text-sm flex items-center justify-center"
