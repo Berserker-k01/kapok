@@ -150,15 +150,26 @@ exports.updatePlan = catchAsync(async (req, res) => {
     WHERE id = ?
   `
 
-  const result = await db.query(query, values)
+  /* 
+     MySQL UPDATE/INSERT/DELETE returns 'rowsAffected', not 'rows'.
+     So we cannot check result.rows.length > 0 directly.
+     We must fetch the updated plan manually.
+  */
 
-  if (result.rows.length === 0) {
+  // 1. UPDATE
+  await db.query(query, values)
+
+  // 2. FETCH UPDATED PLAN
+  const fetchQuery = 'SELECT * FROM plans_config WHERE id = ?'
+  const fetchResult = await db.query(fetchQuery, [planId])
+
+  if (fetchResult.rows.length === 0) {
     throw new AppError('Plan non trouvé', 404)
   }
 
   res.json({
     success: true,
-    plan: result.rows[0],
+    plan: fetchResult.rows[0],
     message: 'Plan mis à jour avec succès'
   })
 })
