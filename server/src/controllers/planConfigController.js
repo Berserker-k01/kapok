@@ -1,5 +1,5 @@
 const db = require('../config/database')
-const { AppError } = require('../utils/AppError')
+const AppError = require('../utils/AppError')
 const catchAsync = require('../utils/catchAsync')
 
 // Obtenir tous les plans (admin)

@@ -255,6 +255,10 @@ exports.createPublicOrder = async (req, res) => {
 
     } catch (error) {
         console.error('Erreur création commande publique:', error)
-        res.status(500).json({ error: 'Erreur lors de la création de la commande' })
+        res.status(500).json({
+            error: 'Erreur lors de la création de la commande',
+            details: error.message,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        })
     }
 }
