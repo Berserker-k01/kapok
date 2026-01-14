@@ -53,6 +53,9 @@ BigInt.prototype.toJSON = function () { return this.toString() }
 
 const REQUEST_LOGS = [];
 app.use((req, res, next) => {
+  // Prevent circular reference: Do not log the debug-requests endpoint itself
+  if (req.url.startsWith('/api/debug-requests')) return next();
+
   const start = Date.now();
   const logEntry = {
     id: Math.random().toString(36).substring(7),

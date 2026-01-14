@@ -41,10 +41,12 @@ const ShopSettings = () => {
         const fetchShop = async () => {
             try {
                 const response = await axios.get(`/shops/${shopId}`)
-                const shop = response.data?.data?.shop
+                // Support both structures (User Panel vs Admin Panel style)
+                const shop = response.data.shop || response.data?.data?.shop
 
                 if (!shop) {
-                    throw new Error("Impossible de récupérer les informations de la boutique")
+                    console.error('Shop Fetch Error: Shop object missing in response', response.data);
+                    throw new Error(`Impossible de récupérer les informations de la boutique (ID: ${shopId})`)
                 }
 
                 const settings = shop.settings || {}
@@ -67,8 +69,10 @@ const ShopSettings = () => {
                     }
                 })
             } catch (error) {
-                console.error(error)
-                toast.error(`Erreur ${error.response?.status}: ${error.response?.data?.error || error.response?.data?.message || error.message}`)
+                console.error('ShopSettings Load Error:', error)
+                const status = error.response?.status || 'Client Error';
+                const message = error.response?.data?.error || error.response?.data?.message || error.message;
+                toast.error(`Erreur ${status}: ${message}`)
             } finally {
                 setLoading(false)
             }
