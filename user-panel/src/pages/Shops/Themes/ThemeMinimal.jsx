@@ -1,32 +1,46 @@
-import { FiShoppingBag, FiSearch, FiArrowRight } from 'react-icons/fi'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { FiShoppingBag, FiSearch, FiArrowRight, FiMenu, FiX, FiInstagram, FiFacebook, FiTwitter } from 'react-icons/fi'
 import { useCart } from '../../../context/CartContext'
 import { trackViewContent, isPixelReady } from '../../../utils/facebookPixel'
-import { useEffect } from 'react'
+import { formatCurrency } from '../../../utils/currency'
 
 const ThemeMinimal = ({ shop, products }) => {
     const { addToCart, setIsCartOpen, cartCount } = useCart()
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+    const [scrolled, setScrolled] = useState(false)
 
-    // Tracker ViewContent pour chaque produit au chargement
+    // Scroll effect for header
+    useEffect(() => {
+        const handleScroll = () => {
+            setScrolled(window.scrollY > 50)
+        }
+        window.addEventListener('scroll', handleScroll)
+        return () => window.removeEventListener('scroll', handleScroll)
+    }, [])
+
+    // Tracker ViewContent
     useEffect(() => {
         if (isPixelReady() && products.length > 0) {
             products.forEach(product => {
-                trackViewContent(
-                    product.name,
-                    'product',
-                    product.price,
-                    product.currency || 'XOF'
-                )
+                trackViewContent(product.name, 'product', product.price, product.currency || 'XOF')
             })
         }
     }, [products])
 
-    // Configuration dynamique des couleurs
-    const colors = shop.settings?.themeConfig?.colors || {}
-    const primaryColor = colors.primary || '#000000'
+    // Configuration
+    const themeConfig = shop.settings?.themeConfig || {}
+    const colors = themeConfig.colors || {}
+    const content = themeConfig.content || {}
+
+    const primaryColor = colors.primary || '#1a1a1a'
     const secondaryColor = colors.secondary || '#ffffff'
     const bgColor = colors.background || '#ffffff'
-    const textColor = colors.text || '#111827'
+    const textColor = colors.text || '#1a1a1a'
+
+    const bannerUrl = content.bannerUrl
+    const logoUrl = content.logoUrl
+    const shopName = content.shopName || shop.name
 
     const customStyle = {
         backgroundColor: bgColor,
@@ -34,98 +48,212 @@ const ThemeMinimal = ({ shop, products }) => {
     }
 
     return (
-        <div className="min-h-screen font-sans transition-colors duration-300" style={customStyle}>
-            {/* Header Minimaliste */}
-            <header className="border-b border-gray-100 sticky top-0 bg-white/80 backdrop-blur-md z-50">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-                    <div className="text-2xl font-light tracking-widest uppercase">
-                        {shop.name}
+        <div className="min-h-screen font-sans selection:bg-purple-200 selection:text-purple-900" style={customStyle}>
+
+            {/* Mobile Menu */}
+            <div className={`fixed inset-0 z-[60] bg-white transform transition-transform duration-300 ease-in-out ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} md:hidden`}>
+                <div className="p-6 flex flex-col h-full">
+                    <div className="flex justify-between items-center mb-10">
+                        <span className="text-xl font-bold uppercase tracking-widest">{shopName}</span>
+                        <FiX className="w-6 h-6 cursor-pointer" onClick={() => setIsMobileMenuOpen(false)} />
                     </div>
-                    <div className="flex items-center space-x-6 text-gray-400">
-                        <FiSearch className="w-5 h-5 hover:text-gray-900 cursor-pointer transition-colors" />
-                        <div className="relative hover:text-gray-900 cursor-pointer transition-colors" onClick={() => setIsCartOpen(true)}>
-                            <FiShoppingBag className="w-5 h-5" />
-                            <span className="absolute -top-2 -right-2 bg-black text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">{cartCount}</span>
+                    <nav className="flex-1 space-y-6 text-2xl font-light">
+                        <a href="#" className="block hover:text-gray-500">Accueil</a>
+                        <a href="#products" className="block hover:text-gray-500">Collection</a>
+                        <a href="#about" className="block hover:text-gray-500">À propos</a>
+                    </nav>
+                    <div className="space-y-4">
+                        <div className="flex space-x-6 text-gray-400">
+                            <FiInstagram className="w-6 h-6" />
+                            <FiFacebook className="w-6 h-6" />
+                            <FiTwitter className="w-6 h-6" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Header */}
+            <header className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${scrolled || !bannerUrl ? 'bg-white/90 backdrop-blur-md shadow-sm py-4' : 'bg-transparent py-6'}`}>
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+                    {/* Left: Menu & Search */}
+                    <div className="flex items-center space-x-4">
+                        <FiMenu className={`w-6 h-6 cursor-pointer md:hidden ${!scrolled && bannerUrl ? 'text-white' : 'text-gray-900'}`} onClick={() => setIsMobileMenuOpen(true)} />
+                        <FiSearch className={`w-5 h-5 hidden md:block cursor-pointer hover:opacity-70 transition-opacity ${!scrolled && bannerUrl ? 'text-white' : 'text-gray-900'}`} />
+                    </div>
+
+                    {/* Center: Logo */}
+                    <Link to={`/s/${shop.slug}`} className="absolute left-1/2 transform -translate-x-1/2">
+                        {logoUrl ? (
+                            <img src={logoUrl} alt={shopName} className="h-8 md:h-12 object-contain" />
+                        ) : (
+                            <span className={`text-xl md:text-2xl font-bold tracking-widest uppercase ${!scrolled && bannerUrl ? 'text-white' : 'text-gray-900'}`}>
+                                {shopName}
+                            </span>
+                        )}
+                    </Link>
+
+                    {/* Right: Cart */}
+                    <div className="flex items-center space-x-4">
+                        <div
+                            className={`relative cursor-pointer hover:opacity-70 transition-opacity ${!scrolled && bannerUrl ? 'text-white' : 'text-gray-900'}`}
+                            onClick={() => setIsCartOpen(true)}
+                        >
+                            <FiShoppingBag className="w-6 h-6" />
+                            {cartCount > 0 && (
+                                <span className="absolute -top-1 -right-1 bg-purple-600 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">
+                                    {cartCount}
+                                </span>
+                            )}
                         </div>
                     </div>
                 </div>
             </header>
 
-            {/* Hero Section Épurée */}
-            <section className="py-24 px-4 text-center">
-                <div className="max-w-3xl mx-auto space-y-6">
-                    <h1 className="text-4xl md:text-6xl font-thin tracking-tight text-gray-900">
-                        {shop.description || "L'élégance dans la simplicité."}
+            {/* Hero Section */}
+            {bannerUrl ? (
+                <div className="relative w-full h-[70vh] md:h-[80vh] bg-gray-900 overflow-hidden">
+                    <img src={bannerUrl} alt="Cover" className="absolute inset-0 w-full h-full object-cover opacity-80" />
+                    <div className="absolute inset-0 bg-black/30" /> {/* Overlay darkening */}
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
+                        <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 uppercase tracking-tighter shadow-sm animate-in fade-in slide-in-from-bottom-6 duration-1000">
+                            {shop.description ? shop.description.split('.')[0] : "Nouvelle Collection"}
+                        </h1>
+                        <a href="#products" className="bg-white text-black px-8 py-3 uppercase tracking-widest text-sm font-semibold hover:bg-gray-100 transition-colors">
+                            Découvrir
+                        </a>
+                    </div>
+                </div>
+            ) : (
+                <div className="pt-32 pb-16 px-4 text-center bg-gradient-to-b from-gray-50 to-white">
+                    <h1 className="text-4xl md:text-6xl font-light text-gray-900 mb-6 tracking-tight">
+                        {shop.name}
                     </h1>
-                    <p className="text-lg text-gray-500 font-light">
-                        Découvrez notre nouvelle collection, conçue pour durer.
+                    <p className="text-lg text-gray-500 max-w-2xl mx-auto font-light">
+                        {shop.description || "Découvrez notre sélection exclusive de produits."}
                     </p>
                 </div>
-            </section>
+            )}
 
-            {/* Grille Produits Classique */}
-            <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12">
+            {/* Products Section */}
+            <section id="products" className="py-16 md:py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="flex justify-between items-end mb-12">
+                    <h2 className="text-2xl md:text-3xl font-medium tracking-tight text-gray-900">Nouveautés</h2>
+                    <div className="text-sm border-b border-gray-900 pb-1 cursor-pointer hover:text-gray-600 hover:border-gray-600 transition-colors">
+                        Tout voir
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-10 md:gap-x-8 md:gap-y-16">
                     {products.map((product) => (
-                        <div key={product.id} className="group cursor-pointer">
-                            <div className="aspect-[3/4] w-full overflow-hidden bg-gray-100 mb-4 relative">
+                        <div key={product.id} className="group">
+                            <div className="relative aspect-[3/4] overflow-hidden bg-gray-100 mb-4 select-none">
+                                {/* Image */}
                                 {product.image_url ? (
                                     <img
                                         src={product.image_url}
                                         alt={product.name}
-                                        className="h-full w-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                                        className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
                                     />
                                 ) : (
-                                    <div className="h-full w-full flex items-center justify-center text-gray-300 font-light">
-                                        No Image
+                                    <div className="w-full h-full flex items-center justify-center text-gray-300">
+                                        <FiShoppingBag className="w-12 h-12 opacity-20" />
                                     </div>
                                 )}
-                                <div className="absolute bottom-4 left-0 right-0 text-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex justify-center gap-2">
+
+                                {/* Overlay & Action Buttons on Desktop */}
+                                <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden md:block" />
+
+                                <div className="absolute bottom-4 left-0 right-0 px-4 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-4 group-hover:translate-y-0 hidden md:flex flex-col gap-2">
                                     <button
                                         onClick={() => addToCart(product)}
-                                        className="px-6 py-2 text-sm uppercase tracking-wider hover:opacity-90 transition-opacity"
-                                        style={{ backgroundColor: primaryColor, color: secondaryColor }}
+                                        className="w-full py-3 bg-white text-black text-xs font-bold uppercase tracking-widest hover:bg-black hover:text-white transition-colors shadow-lg"
                                     >
-                                        Ajouter
+                                        Ajouter au panier
                                     </button>
-                                    <Link
-                                        to={`/checkout/cod/${product.id}`}
-                                        className="border px-6 py-2 text-sm uppercase tracking-wider hover:bg-black hover:text-white transition-all"
-                                        style={{
-                                            borderColor: primaryColor,
-                                            color: primaryColor,
-                                            '--hover-bg': primaryColor,
-                                            '--hover-text': secondaryColor
-                                        }}
-                                        onMouseEnter={(e) => {
-                                            e.target.style.backgroundColor = primaryColor;
-                                            e.target.style.color = secondaryColor;
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            e.target.style.backgroundColor = 'transparent';
-                                            e.target.style.color = primaryColor;
-                                        }}
-                                    >
-                                        Achat Rapide
-                                    </Link>
                                 </div>
                             </div>
-                            <h3 className="text-sm text-gray-900 font-medium">{product.name}</h3>
-                            <p className="mt-1 text-sm text-gray-500">{product.price} {product.currency || '€'}</p>
+
+                            {/* Info */}
+                            <div className="text-left">
+                                <h3 className="text-sm font-medium text-gray-900 group-hover:underline decoration-1 underline-offset-4 truncate">
+                                    <Link to={`/checkout/cod/${product.id}`}>{product.name}</Link>
+                                </h3>
+                                <div className="mt-1 flex items-center space-x-2">
+                                    <span className="text-sm text-gray-500 font-light">
+                                        {formatCurrency(product.price, product.currency || 'XOF')}
+                                    </span>
+                                    {/* Fake 'Compare At' price check (if we had it, we would show strikethrough here) */}
+                                </div>
+                            </div>
+
+                            {/* Mobile 'Add' Button (Always accessible or simple icon) */}
+                            <button
+                                onClick={() => addToCart(product)}
+                                className="md:hidden mt-3 w-full border border-gray-200 py-2 text-xs font-bold uppercase tracking-wider text-gray-900 hover:bg-gray-50"
+                            >
+                                Ajouter
+                            </button>
                         </div>
                     ))}
                 </div>
 
                 {products.length === 0 && (
-                    <div className="text-center py-12 text-gray-400 font-light">
-                        Aucun produit disponible pour le moment.
+                    <div className="py-24 text-center bg-gray-50 rounded-lg">
+                        <p className="text-gray-500">Aucun produit disponible pour le moment.</p>
                     </div>
                 )}
             </section>
 
-            {/* Footer Simple */}
-            <footer className="border-t border-gray-100 py-12 text-center">
-                <p className="text-sm text-gray-400">© {new Date().getFullYear()} {shop.name}. Powered by Lesigne.</p>
+            {/* Newsletter / Promo Section (Static for now, adds 'Shopify feel') */}
+            <section className="bg-gray-900 text-white py-20 px-4">
+                <div className="max-w-xl mx-auto text-center space-y-6">
+                    <h3 className="text-2xl font-light uppercase tracking-widest">Rejoignez la communauté</h3>
+                    <p className="text-gray-400 font-light">Inscrivez-vous pour recevoir les dernières nouveautés et offres exclusives.</p>
+                    <div className="flex border-b border-gray-600 pb-2">
+                        <input type="email" placeholder="Votre email" className="bg-transparent w-full outline-none text-white placeholder-gray-600" />
+                        <FiArrowRight className="text-gray-400 cursor-pointer hover:text-white" />
+                    </div>
+                </div>
+            </section>
+
+            {/* Footer */}
+            <footer className="bg-white border-t border-gray-200 pt-16 pb-8">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
+                        {/* Brand */}
+                        <div className="space-y-4">
+                            <span className="text-xl font-bold uppercase tracking-widest">{shopName}</span>
+                            <p className="text-sm text-gray-500 max-w-xs">{shop.description}</p>
+                        </div>
+
+                        {/* Links */}
+                        <div className="space-y-4">
+                            <h4 className="text-sm font-bold uppercase tracking-widest">Navigation</h4>
+                            <div className="flex flex-col space-y-2 text-sm text-gray-500">
+                                <a href="#" className="hover:text-black transition-colors">Accueil</a>
+                                <a href="#products" className="hover:text-black transition-colors">Catalogue</a>
+                                <a href="#" className="hover:text-black transition-colors">Contact</a>
+                            </div>
+                        </div>
+
+                        {/* Social */}
+                        <div className="space-y-4">
+                            <h4 className="text-sm font-bold uppercase tracking-widest">Suivez-nous</h4>
+                            <div className="flex space-x-4 text-gray-500">
+                                <FiInstagram className="w-5 h-5 hover:text-black cursor-pointer transition-colors" />
+                                <FiFacebook className="w-5 h-5 hover:text-black cursor-pointer transition-colors" />
+                                <FiTwitter className="w-5 h-5 hover:text-black cursor-pointer transition-colors" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="border-t border-gray-100 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-gray-400">
+                        <p>© {new Date().getFullYear()} {shopName}. Tous droits réservés.</p>
+                        <p className="mt-2 md:mt-0 flex items-center">
+                            Powered by <span className="text-purple-600 font-bold ml-1">Assimε</span>
+                        </p>
+                    </div>
+                </div>
             </footer>
         </div>
     )
