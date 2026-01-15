@@ -25,14 +25,14 @@ import ErrorBoundary from './components/ErrorBoundary'
 import ReloadPrompt from './components/ReloadPrompt'
 import { CartProvider } from './context/CartContext'
 
+// URL Backend (Configuré globalement pour éviter les race conditions)
+axios.defaults.baseURL = 'https://e-assime.com/api';
+
 function App() {
   const { isAuthenticated, token } = useAuthStore()
 
-  // Configuration Axios Globale (Interceptor > useEffect pour éviter les race conditions)
+  // Configuration Interceptors (useEffect nécessaire pour accéder au store/hooks)
   useEffect(() => {
-    // URL Backend
-    axios.defaults.baseURL = 'https://e-assime.com/api';
-
     // Intercepteur pour injecter le token en temps réel
     const requestInterceptor = axios.interceptors.request.use(
       (config) => {

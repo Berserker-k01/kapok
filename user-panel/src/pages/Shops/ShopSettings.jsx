@@ -41,7 +41,10 @@ const ShopSettings = () => {
     useEffect(() => {
         const fetchShop = async () => {
             try {
-                const response = await axios.get(`/shops/${shopId}`)
+                // Force /api prefix + Log for debugging
+                const response = await axios.get(`/api/shops/${shopId}`)
+                console.log('Shop Response Headers:', response.headers);
+
                 // Support both structures (User Panel vs Admin Panel style)
                 const shop = response.data.shop || response.data?.data?.shop
 
@@ -100,7 +103,7 @@ const ShopSettings = () => {
                 formData.append('banner', bannerFile[0]);
             }
 
-            await axios.put(`/shops/${shopId}`, formData, {
+            await axios.put(`/api/shops/${shopId}`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
                 }

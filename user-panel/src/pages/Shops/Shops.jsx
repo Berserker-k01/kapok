@@ -25,7 +25,7 @@ const Shops = () => {
 
   const fetchShops = async () => {
     try {
-      const response = await axios.get('/shops')
+      const response = await axios.get('/api/shops')
       // CORRECTION ROBUSTE: Gérer les deux formats (Admin vs User)
       setShops(response.data.shops || response.data.data?.shops || [])
     } catch (error) {
@@ -43,7 +43,7 @@ const Shops = () => {
   const handleCreateShop = async (e) => {
     e.preventDefault()
     try {
-      await axios.post('/shops', newShop)
+      await axios.post('/api/shops', newShop)
       toast.success('Boutique créée avec succès !')
       setShowCreateModal(false)
       setNewShop({ name: '', slug: '', category: 'Mode & Vêtements' })
@@ -57,7 +57,7 @@ const Shops = () => {
   const handleToggleStatus = async (shop) => {
     const newStatus = shop.status === 'active' ? 'suspended' : 'active' // 'suspended' comme inactif temporaire
     try {
-      await axios.put(`/shops/${shop.id}`, { status: newStatus })
+      await axios.put(`/api/shops/${shop.id}`, { status: newStatus })
       toast.success(`Boutique ${newStatus === 'active' ? 'activée' : 'désactivée'}`)
       fetchShops()
     } catch (error) {
