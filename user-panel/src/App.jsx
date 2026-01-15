@@ -25,43 +25,11 @@ import ErrorBoundary from './components/ErrorBoundary'
 import ReloadPrompt from './components/ReloadPrompt'
 import { CartProvider } from './context/CartContext'
 
-// URL Backend (Configuré globalement pour éviter les race conditions)
-axios.defaults.baseURL = 'https://e-assime.com/api';
+// URL Backend is handled in api/axiosConfig.js
 
 function App() {
   const { isAuthenticated, token } = useAuthStore()
 
-  // Configuration Interceptors (useEffect nécessaire pour accéder au store/hooks)
-  useEffect(() => {
-    // Intercepteur pour injecter le token en temps réel
-    const requestInterceptor = axios.interceptors.request.use(
-      (config) => {
-        const token = useAuthStore.getState().token;
-        if (token) {
-          config.headers['Authorization'] = `Bearer ${token}`;
-        }
-        return config;
-      },
-      (error) => Promise.reject(error)
-    );
-
-    // Intercepteur pour gérer les 401 (Session expirée)
-    const responseInterceptor = axios.interceptors.response.use(
-      (response) => response,
-      (error) => {
-        if (error.response && (error.response.status === 401 || error.response.status === 403)) {
-          // Optionnel : Auto-logout si 401 (Token invalide/expiré)
-          // useAuthStore.getState().logout();
-        }
-        return Promise.reject(error);
-      }
-    );
-
-    return () => {
-      axios.interceptors.request.eject(requestInterceptor);
-      axios.interceptors.response.eject(responseInterceptor);
-    };
-  }, []);
 
   // AUTO-LOGOUT INACTIVITY system (15 minutes)
   useEffect(() => {
