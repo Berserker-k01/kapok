@@ -90,10 +90,30 @@ const ShopSettings = () => {
             // Séparer le thème (colonne dédiée) des autres réglages (JSONB settings)
             const { theme, status, logoFile, bannerFile, ...settingsData } = data
 
+            // Nettoyer les données : convertir undefined en null et supprimer les champs vides
+            const cleanData = (obj) => {
+                if (obj === null || obj === undefined) return null
+                if (typeof obj !== 'object') return obj
+                
+                const cleaned = {}
+                for (const [key, value] of Object.entries(obj)) {
+                    if (value === undefined || value === '') {
+                        cleaned[key] = null
+                    } else if (typeof value === 'object' && !Array.isArray(value)) {
+                        cleaned[key] = cleanData(value)
+                    } else {
+                        cleaned[key] = value
+                    }
+                }
+                return cleaned
+            }
+
+            const cleanedSettings = cleanData(settingsData)
+
             const formData = new FormData();
             formData.append('theme', theme);
             formData.append('status', status); // Send status explicitly
-            formData.append('settings', JSON.stringify(settingsData)); // Send settings as JSON string
+            formData.append('settings', JSON.stringify(cleanedSettings)); // Send cleaned settings as JSON string
 
             // Append files if they exist (handling FileList from react-hook-form)
             if (logoFile && logoFile.length > 0) {

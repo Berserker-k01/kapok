@@ -144,7 +144,10 @@ const Shops = () => {
             {/* Theme */}
             <div className="mb-4">
               <p className="text-sm text-gray-600">
-                <span className="font-medium">Thème:</span> {shop.theme || 'Défaut'}
+                <span className="font-medium">Thème:</span>{' '}
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
+                  {shop.theme === 'minimal' ? '✨ Minimal' : shop.theme === 'bold' ? '💥 Bold' : shop.theme === 'custom' ? '🎨 Personnalisé' : '✨ Minimal (Défaut)'}
+                </span>
               </p>
             </div>
 
