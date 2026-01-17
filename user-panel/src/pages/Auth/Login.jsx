@@ -89,7 +89,15 @@ const Login = () => {
                 Se connecter
               </Button>
 
-
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleDemoLogin}
+                isLoading={isLoading}
+                className="w-full border-2 border-primary-200 text-primary-700 hover:bg-primary-50 font-semibold"
+              >
+                🎭 Connexion Démo (Test Local)
+              </Button>
             </div>
             <div className="text-center mt-4">
               <p className="text-sm text-gray-600">

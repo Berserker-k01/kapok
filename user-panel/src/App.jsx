@@ -24,6 +24,7 @@ import { useEffect } from 'react'
 import ErrorBoundary from './components/ErrorBoundary'
 import ReloadPrompt from './components/ReloadPrompt'
 import { CartProvider } from './context/CartContext'
+import NotFound from './pages/NotFound'
 
 // URL Backend is handled in api/axiosConfig.js
 
@@ -137,7 +138,7 @@ function App() {
                       <Route path="/subscriptions" element={<PlanSelection />} />
                       <Route path="/subscriptions/payment/:planKey" element={<Payment />} />
                       <Route path="/subscriptions/payment-status/:paymentId" element={<PaymentStatus />} />
-                      <Route path="*" element={<Navigate to="/" replace />} />
+                      <Route path="*" element={<NotFound />} />
                     </Routes>
                   </Layout>
                 ) : (

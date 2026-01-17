@@ -182,7 +182,7 @@ const Layout = ({ children }) => {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-4 md:p-6 overflow-auto w-full">
+        <main className="flex-1 p-6 md:p-8 lg:p-10 overflow-auto w-full">
           <div className="max-w-7xl mx-auto w-full">
             {children}
           </div>

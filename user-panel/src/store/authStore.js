@@ -8,6 +8,22 @@ export const useAuthStore = create(persist((set, get) => ({
   isAuthenticated: false,
 
   login: async (credentials) => {
+    // Connexion démo pour tests locaux
+    if (credentials.demo) {
+      // Simuler une connexion réussie avec un utilisateur de test
+      set({
+        user: {
+          id: 999,
+          name: 'Utilisateur Démo',
+          email: 'demo@lesigne.com',
+          role: 'user'
+        },
+        token: 'demo-token-' + Date.now(),
+        isAuthenticated: true
+      })
+      return { success: true }
+    }
+
     // Connexion normale via API
     try {
       // API call réelle

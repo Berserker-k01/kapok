@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import custom animations */
+@import './assets/animations.css';
+
 @layer base {
   * {
     @apply border-border;
@@ -23,13 +26,13 @@
 
 @layer components {
 
-  /* Buttons */
+  /* Buttons - Enhanced */
   .btn {
     @apply inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
   .btn-primary {
-    @apply btn bg-primary-600 hover:bg-primary-700 text-white focus:ring-primary-500 shadow-sm;
+    @apply btn bg-primary-600 hover:bg-primary-700 text-white focus:ring-primary-500 shadow-soft hover:shadow-soft-lg transform hover:-translate-y-0.5;
   }
 
   .btn-secondary {
@@ -37,7 +40,7 @@
   }
 
   .btn-outline {
-    @apply btn border border-primary-600 text-primary-600 hover:bg-primary-50 focus:ring-primary-500;
+    @apply btn border-2 border-primary-600 text-primary-600 hover:bg-primary-50 focus:ring-primary-500 hover:border-primary-700;
   }
 
   .btn-ghost {
@@ -52,9 +55,9 @@
     @apply px-6 py-3 text-base;
   }
 
-  /* Cards */
+  /* Cards - Enhanced */
   .card {
-    @apply bg-white rounded-xl shadow-sm border border-secondary-200 overflow-hidden;
+    @apply bg-white rounded-xl shadow-soft border border-secondary-200 overflow-hidden transition-shadow duration-300 hover:shadow-soft-lg;
   }
 
   .card-header {
@@ -69,7 +72,7 @@
     @apply px-6 py-4 border-t border-secondary-200 bg-secondary-50;
   }
 
-  /* Forms */
+  /* Forms - Enhanced */
   .form-group {
     @apply space-y-2;
   }
@@ -79,7 +82,7 @@
   }
 
   .form-input {
-    @apply w-full px-3 py-2 border border-secondary-300 rounded-lg bg-white text-secondary-900 placeholder-secondary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors;
+    @apply w-full px-3 py-2 border border-secondary-300 rounded-lg bg-white text-secondary-900 placeholder-secondary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all;
   }
 
   .form-textarea {
@@ -92,23 +95,23 @@
   }
 
   .form-error {
-    @apply text-sm text-primary-600 mt-1;
+    @apply text-sm text-red-600 mt-1;
   }
 
-  /* Navigation */
+  /* Navigation - Enhanced */
   .nav-link {
-    @apply flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors;
+    @apply flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200;
   }
 
   .nav-link-active {
-    @apply nav-link bg-primary-100 text-primary-700;
+    @apply nav-link bg-primary-100 text-primary-700 shadow-sm;
   }
 
   .nav-link-inactive {
     @apply nav-link text-secondary-600 hover:bg-secondary-100 hover:text-secondary-900;
   }
 
-  /* Tables */
+  /* Tables - Enhanced */
   .table {
     @apply w-full border-collapse;
   }
@@ -129,7 +132,7 @@
     @apply px-6 py-4 text-sm text-secondary-900;
   }
 
-  /* Badges */
+  /* Badges - Enhanced */
   .badge {
     @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
   }
@@ -150,7 +153,7 @@
     @apply badge bg-secondary-100 text-secondary-800;
   }
 
-  /* Utilities */
+  /* Utilities - Traditional */
   .text-muted {
     @apply text-muted-foreground;
   }
@@ -160,6 +163,141 @@
   }
 
   .shadow-card {
-    @apply shadow-sm hover:shadow-md transition-shadow;
+    @apply shadow-soft hover:shadow-soft-lg transition-shadow;
+  }
+}
+
+@layer utilities {
+  /* Glassmorphism Effects */
+  .glass {
+    @apply bg-white/80 backdrop-blur-md border border-white/20;
+  }
+
+  .glass-dark {
+    @apply bg-black/80 backdrop-blur-md border border-white/10;
+  }
+
+  .glass-sm {
+    @apply bg-white/60 backdrop-blur-sm border border-white/20;
+  }
+
+  .glass-lg {
+    @apply bg-white/90 backdrop-blur-lg border border-white/30;
+  }
+
+  /* Gradient Text */
+  .text-gradient {
+    @apply bg-clip-text text-transparent;
+  }
+
+  .text-gradient-purple {
+    @apply text-gradient bg-gradient-purple;
+  }
+
+  .text-gradient-gold {
+    @apply text-gradient bg-gradient-gold;
+  }
+
+  .text-gradient-sunset {
+    @apply text-gradient bg-gradient-sunset;
+  }
+
+  /* Image Overlays */
+  .overlay-dark {
+    @apply relative before:absolute before:inset-0 before:bg-black/40 before:z-10;
+  }
+
+  .overlay-gradient {
+    @apply relative before:absolute before:inset-0 before:bg-gradient-to-t before:from-black/60 before:to-transparent before:z-10;
+  }
+
+  /* Smooth Transitions */
+  .transition-smooth {
+    @apply transition-all duration-300 ease-out;
+  }
+
+  .transition-smooth-slow {
+    @apply transition-all duration-500 ease-out;
+  }
+
+  /* Hover Lift Effect */
+  .hover-lift {
+    @apply transition-transform duration-300 hover:-translate-y-1;
+  }
+
+  .hover-lift-lg {
+    @apply transition-transform duration-300 hover:-translate-y-2;
+  }
+
+  /* Product Card Effects */
+  .product-card {
+    @apply group relative overflow-hidden rounded-lg bg-white shadow-soft hover:shadow-soft-lg transition-all duration-300;
+  }
+
+  .product-image {
+    @apply aspect-[3/4] overflow-hidden bg-secondary-100;
+  }
+
+  .product-image img {
+    @apply h-full w-full object-cover transition-transform duration-700 group-hover:scale-110;
+  }
+
+  /* Loading States */
+  .skeleton {
+    @apply animate-pulse bg-secondary-200 rounded;
+  }
+
+  .skeleton-text {
+    @apply skeleton h-4 w-full;
+  }
+
+  .skeleton-title {
+    @apply skeleton h-6 w-3/4;
+  }
+
+  .skeleton-avatar {
+    @apply skeleton h-12 w-12 rounded-full;
+  }
+
+  /* Smooth Scroll */
+  .smooth-scroll {
+    scroll-behavior: smooth;
+  }
+
+  /* Hide Scrollbar */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Custom Scrollbar */
+  .scrollbar-custom::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .scrollbar-custom::-webkit-scrollbar-track {
+    @apply bg-secondary-100;
+  }
+
+  .scrollbar-custom::-webkit-scrollbar-thumb {
+    @apply bg-secondary-400 rounded-full hover:bg-secondary-500;
+  }
+
+  /* Aspect Ratios (for older browsers) */
+  .aspect-square {
+    aspect-ratio: 1 / 1;
+  }
+
+  .aspect-video {
+    aspect-ratio: 16 / 9;
+  }
+
+  .aspect-product {
+    aspect-ratio: 3 / 4;
   }
 }
