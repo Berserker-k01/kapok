@@ -413,7 +413,7 @@ const Products = () => {
 
                       {/* Product Details Card */}
                       <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-                        <div className="bg-gradient-to-r from-gray-50 to-white px-6 py-4 border-b border-gray-200">
+                        <div className="bg-gradient-to-r from-gray-50 to-white px-8 py-5 border-b border-gray-200">
                           <h4 className="text-base font-bold text-gray-900 flex items-center">
                             <div className="w-8 h-8 bg-primary-100 rounded-lg flex items-center justify-center mr-3">
                               <FiBox className="w-4 h-4 text-primary-600" />
@@ -422,7 +422,7 @@ const Products = () => {
                           </h4>
                         </div>
                         
-                        <div className="p-6 space-y-6">
+                        <div className="p-8 space-y-6">
                           {/* Name & Price Row */}
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-2">
@@ -484,7 +484,7 @@ const Products = () => {
 
                       {/* Category & Stock Card */}
                       <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-                        <div className="bg-gradient-to-r from-gray-50 to-white px-6 py-4 border-b border-gray-200">
+                        <div className="bg-gradient-to-r from-gray-50 to-white px-8 py-5 border-b border-gray-200">
                           <h4 className="text-base font-bold text-gray-900 flex items-center">
                             <div className="w-8 h-8 bg-primary-100 rounded-lg flex items-center justify-center mr-3">
                               <FiFilter className="w-4 h-4 text-primary-600" />
@@ -493,7 +493,7 @@ const Products = () => {
                           </h4>
                         </div>
                         
-                        <div className="p-6">
+                        <div className="p-8">
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-2">
                               <label className="block text-sm font-semibold text-gray-900">Catégorie</label>
