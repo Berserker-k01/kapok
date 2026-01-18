@@ -3,12 +3,14 @@ import { Link } from 'react-router-dom'
 import axios from 'axios'
 import toast from 'react-hot-toast'
 import { useAuthStore } from '../../store/authStore'
-import { FiPlus, FiEdit, FiEye, FiSettings, FiGlobe, FiShoppingBag } from 'react-icons/fi'
+import { FiPlus, FiEdit, FiEye, FiSettings, FiGlobe, FiShoppingBag, FiTrash2 } from 'react-icons/fi'
 
 const Shops = () => {
   const [shops, setShops] = useState([])
   const [loading, setLoading] = useState(true)
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [shopToDelete, setShopToDelete] = useState(null)
   const [newShop, setNewShop] = useState({
     name: '',
     slug: '',
@@ -63,6 +65,21 @@ const Shops = () => {
     } catch (error) {
       console.error('Erreur changement statut:', error)
       toast.error('Impossible de changer le statut')
+    }
+  }
+
+  const handleDeleteShop = async () => {
+    if (!shopToDelete) return
+    
+    try {
+      await axios.delete(`/api/shops/${shopToDelete.id}`)
+      toast.success('Boutique supprimée avec succès')
+      setShowDeleteModal(false)
+      setShopToDelete(null)
+      fetchShops()
+    } catch (error) {
+      console.error('Erreur suppression boutique:', error)
+      toast.error('Impossible de supprimer la boutique')
     }
   }
 
@@ -165,10 +182,14 @@ const Shops = () => {
                 Modifier
               </button>
               <button
-                onClick={() => window.location.href = `/shops/${shop.id}/settings`}
-                className="btn-secondary p-2"
+                onClick={() => {
+                  setShopToDelete(shop)
+                  setShowDeleteModal(true)
+                }}
+                className="btn-secondary p-2 hover:bg-red-50 hover:text-red-600 hover:border-red-200"
+                title="Supprimer"
               >
-                <FiSettings className="h-4 w-4" />
+                <FiTrash2 className="h-4 w-4" />
               </button>
             </div>
           </div>
@@ -291,6 +312,46 @@ const Shops = () => {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && shopToDelete && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen px-4">
+            <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setShowDeleteModal(false)}></div>
+
+            <div className="relative bg-white rounded-lg max-w-md w-full p-6">
+              <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-red-100 rounded-full">
+                <FiTrash2 className="w-6 h-6 text-red-600" />
+              </div>
+              
+              <h3 className="text-lg font-semibold text-gray-900 text-center mb-2">Supprimer la boutique ?</h3>
+              <p className="text-sm text-gray-600 text-center mb-6">
+                Êtes-vous sûr de vouloir supprimer <strong>{shopToDelete.name}</strong> ?
+                <br />
+                Cette action est irréversible et supprimera tous les produits associés.
+              </p>
+
+              <div className="flex space-x-3">
+                <button
+                  onClick={() => {
+                    setShowDeleteModal(false)
+                    setShopToDelete(null)
+                  }}
+                  className="flex-1 btn-secondary"
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={handleDeleteShop}
+                  className="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors font-semibold"
+                >
+                  Supprimer
+                </button>
+              </div>
             </div>
           </div>
         </div>
