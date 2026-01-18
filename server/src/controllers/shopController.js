@@ -44,6 +44,28 @@ exports.getShop = catchAsync(async (req, res, next) => {
 });
 
 exports.updateShop = catchAsync(async (req, res, next) => {
+    // Helper function to clean undefined values
+    const cleanData = (obj) => {
+        if (obj === null || obj === undefined) return null;
+        if (typeof obj !== 'object' || obj instanceof Date) return obj;
+        
+        if (Array.isArray(obj)) {
+            return obj.map(item => cleanData(item));
+        }
+        
+        const cleaned = {};
+        for (const [key, value] of Object.entries(obj)) {
+            if (value === undefined || value === '') {
+                cleaned[key] = null;
+            } else if (typeof value === 'object' && value !== null) {
+                cleaned[key] = cleanData(value);
+            } else {
+                cleaned[key] = value;
+            }
+        }
+        return cleaned;
+    };
+
     // 1. Handle File Uploads (Banner/Logo)
     let updateData = { ...req.body };
     const baseUrl = process.env.API_URL || 'https://e-assime.com/api';
@@ -70,6 +92,9 @@ exports.updateShop = catchAsync(async (req, res, next) => {
             updateData.settings.themeConfig.content.bannerUrl = `${baseUrl}/uploads/${req.files['banner'][0].filename}`;
         }
     }
+
+    // Clean all data to convert undefined to null
+    updateData = cleanData(updateData);
 
     const shop = await shopService.updateShop(req.params.shopId, updateData);
 

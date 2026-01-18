@@ -52,8 +52,8 @@ const PublicShop = () => {
         fetchShopAndProducts()
     }, [slug])
 
-    // Sélection du thème (par défaut 'minimal')
-    const currentTheme = shop?.settings?.theme || shop?.theme || 'minimal'
+    // Sélection du thème (par défaut 'bold')
+    const currentTheme = shop?.settings?.theme || shop?.theme || 'bold'
 
     // Récupérer l'ID du pixel Facebook depuis les settings
     const facebookPixelId = shop?.settings?.facebookPixelId || shop?.tracking?.facebookPixelId
