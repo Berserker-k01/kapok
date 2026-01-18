@@ -377,102 +377,142 @@ const Products = () => {
                 </div>
 
                 <form onSubmit={handleSaveProduct} className="flex flex-col flex-1 overflow-hidden">
-                  <div className="overflow-y-auto px-8 py-6 space-y-6 flex-1">
-                  {/* Image Upload */}
-                  <div className="flex justify-center">
-                    <div className="relative">
-                      <div className="h-32 w-32 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300">
-                        {imagePreview ? (
-                          <img src={imagePreview} alt="Preview" className="h-full w-full object-cover" />
-                        ) : (
-                          <FiImage className="h-10 w-10 text-gray-400" />
-                        )}
+                  <div className="overflow-y-auto px-8 py-6 space-y-8 flex-1">
+                    
+                    {/* Section Image */}
+                    <div className="flex flex-col items-center space-y-3">
+                      <div className="relative group">
+                        <div className="h-40 w-40 bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300 group-hover:border-primary-400 transition-colors">
+                          {imagePreview ? (
+                            <img src={imagePreview} alt="Preview" className="h-full w-full object-cover" />
+                          ) : (
+                            <div className="text-center">
+                              <FiImage className="h-12 w-12 text-gray-400 mx-auto mb-2" />
+                              <p className="text-xs text-gray-500">Image produit</p>
+                            </div>
+                          )}
+                        </div>
+                        <label className="absolute bottom-2 right-2 bg-primary-600 text-white rounded-full p-3 shadow-lg cursor-pointer hover:bg-primary-700 transition-all hover:scale-110">
+                          <FiEdit className="h-4 w-4" />
+                          <input
+                            type="file"
+                            className="hidden"
+                            accept="image/*"
+                            onChange={handleImageChange}
+                          />
+                        </label>
                       </div>
-                      <label className="absolute bottom-0 right-0 bg-white rounded-full p-2 shadow-md cursor-pointer hover:bg-gray-50">
-                        <FiEdit className="h-4 w-4 text-primary-600" />
-                        <input
-                          type="file"
-                          className="hidden"
-                          accept="image/*"
-                          onChange={handleImageChange}
+                      <p className="text-xs text-gray-500">Format : JPG, PNG (Max 2MB)</p>
+                    </div>
+
+                    {/* Séparateur */}
+                    <div className="border-t border-gray-200"></div>
+
+                    {/* Section Informations générales */}
+                    <div className="space-y-4">
+                      <h4 className="text-sm font-semibold text-gray-900 uppercase tracking-wide flex items-center">
+                        <FiBox className="w-4 h-4 mr-2 text-primary-600" />
+                        Informations générales
+                      </h4>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <label className="block text-sm font-medium text-gray-900">
+                            Nom du produit <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            className="input-field"
+                            required
+                            placeholder="Ex: T-shirt Coton Bio"
+                            value={newProduct.name}
+                            onChange={e => setNewProduct({ ...newProduct, name: e.target.value })}
+                          />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <label className="block text-sm font-medium text-gray-900">
+                            Prix <span className="text-red-500">*</span>
+                          </label>
+                          <div className="relative">
+                            <input
+                              type="number"
+                              step="0.01"
+                              className="input-field pl-12"
+                              required
+                              placeholder="0.00"
+                              value={newProduct.price}
+                              onChange={e => setNewProduct({ ...newProduct, price: e.target.value })}
+                            />
+                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium">XOF</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <label className="block text-sm font-medium text-gray-900">Description</label>
+                          <button
+                            type="button"
+                            onClick={handleGenerateDescription}
+                            className="text-xs flex items-center gap-1 text-purple-600 hover:text-purple-800 font-medium px-3 py-1.5 rounded-lg hover:bg-purple-50 transition-colors border border-purple-200"
+                          >
+                            <FiCpu className="w-3.5 h-3.5" />
+                            Générer avec l'IA
+                          </button>
+                        </div>
+                        <textarea
+                          rows={4}
+                          className="input-field resize-none"
+                          placeholder="Décrivez votre produit en détail..."
+                          value={newProduct.description}
+                          onChange={e => setNewProduct({ ...newProduct, description: e.target.value })}
                         />
-                      </label>
+                      </div>
                     </div>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Nom du produit *</label>
-                      <input
-                        type="text"
-                        className="input-field"
-                        required
-                        placeholder="Ex: T-shirt Coton Bio"
-                        value={newProduct.name}
-                        onChange={e => setNewProduct({ ...newProduct, name: e.target.value })}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Prix *</label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        className="input-field"
-                        required
-                        placeholder="0.00"
-                        value={newProduct.price}
-                        onChange={e => setNewProduct({ ...newProduct, price: e.target.value })}
-                      />
-                    </div>
-                  </div>
 
-                  <div>
-                    <div className="flex justify-between items-center mb-1">
-                      <label className="block text-sm font-medium text-gray-700">Description</label>
-                      <button
-                        type="button"
-                        onClick={handleGenerateDescription}
-                        className="text-xs flex items-center text-purple-600 hover:text-purple-800 font-medium px-2 py-1 rounded hover:bg-purple-50 transition-colors"
-                      >
-                        <FiCpu className="mr-1" />
-                        Générer avec l'IA
-                      </button>
-                    </div>
-                    <textarea
-                      rows={4}
-                      className="input-field resize-none"
-                      placeholder="Description détaillée du produit..."
-                      value={newProduct.description}
-                      onChange={e => setNewProduct({ ...newProduct, description: e.target.value })}
-                    />
-                  </div>
+                    {/* Séparateur */}
+                    <div className="border-t border-gray-200"></div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Catégorie</label>
-                      <select
-                        className="input-field"
-                        value={newProduct.category}
-                        onChange={e => setNewProduct({ ...newProduct, category: e.target.value })}
-                      >
-                        <option>Vêtements</option>
-                        <option>Électronique</option>
-                        <option>Maison</option>
-                        <option>Beauté</option>
-                        <option>Accessoires</option>
-                      </select>
+                    {/* Section Catégorie & Stock */}
+                    <div className="space-y-4">
+                      <h4 className="text-sm font-semibold text-gray-900 uppercase tracking-wide flex items-center">
+                        <FiFilter className="w-4 h-4 mr-2 text-primary-600" />
+                        Classification & Inventaire
+                      </h4>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <label className="block text-sm font-medium text-gray-900">Catégorie</label>
+                          <select
+                            className="input-field"
+                            value={newProduct.category}
+                            onChange={e => setNewProduct({ ...newProduct, category: e.target.value })}
+                          >
+                            <option>Vêtements</option>
+                            <option>Électronique</option>
+                            <option>Maison</option>
+                            <option>Beauté</option>
+                            <option>Accessoires</option>
+                          </select>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <label className="block text-sm font-medium text-gray-900">
+                            Stock initial <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="number"
+                            className="input-field"
+                            required
+                            placeholder="0"
+                            min="0"
+                            value={newProduct.stock}
+                            onChange={e => setNewProduct({ ...newProduct, stock: e.target.value })}
+                          />
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Stock initial *</label>
-                      <input
-                        type="number"
-                        className="input-field"
-                        required
-                        placeholder="0"
-                        value={newProduct.stock}
-                        onChange={e => setNewProduct({ ...newProduct, stock: e.target.value })}
-                      />
-                    </div>
-                  </div>
 
                   </div>
 
