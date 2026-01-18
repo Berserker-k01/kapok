@@ -377,160 +377,176 @@ const Products = () => {
                 </div>
 
                 <form onSubmit={handleSaveProduct} className="flex flex-col flex-1 overflow-hidden">
-                  <div className="overflow-y-auto px-8 py-6 space-y-8 flex-1">
-                    
-                    {/* Section Image */}
-                    <div className="flex flex-col items-center space-y-3">
-                      <div className="relative group">
-                        <div className="h-40 w-40 bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300 group-hover:border-primary-400 transition-colors">
-                          {imagePreview ? (
-                            <img src={imagePreview} alt="Preview" className="h-full w-full object-cover" />
-                          ) : (
-                            <div className="text-center">
-                              <FiImage className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-                              <p className="text-xs text-gray-500">Image produit</p>
-                            </div>
-                          )}
-                        </div>
-                        <label className="absolute bottom-2 right-2 bg-primary-600 text-white rounded-full p-3 shadow-lg cursor-pointer hover:bg-primary-700 transition-all hover:scale-110">
-                          <FiEdit className="h-4 w-4" />
-                          <input
-                            type="file"
-                            className="hidden"
-                            accept="image/*"
-                            onChange={handleImageChange}
-                          />
-                        </label>
-                      </div>
-                      <p className="text-xs text-gray-500">Format : JPG, PNG (Max 2MB)</p>
-                    </div>
-
-                    {/* Séparateur */}
-                    <div className="border-t border-gray-200"></div>
-
-                    {/* Section Informations générales */}
-                    <div className="space-y-4">
-                      <h4 className="text-sm font-semibold text-gray-900 uppercase tracking-wide flex items-center">
-                        <FiBox className="w-4 h-4 mr-2 text-primary-600" />
-                        Informations générales
-                      </h4>
+                  <div className="overflow-y-auto flex-1">
+                    <div className="p-8 space-y-6">
                       
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <label className="block text-sm font-medium text-gray-900">
-                            Nom du produit <span className="text-red-500">*</span>
-                          </label>
-                          <input
-                            type="text"
-                            className="input-field"
-                            required
-                            placeholder="Ex: T-shirt Coton Bio"
-                            value={newProduct.name}
-                            onChange={e => setNewProduct({ ...newProduct, name: e.target.value })}
-                          />
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <label className="block text-sm font-medium text-gray-900">
-                            Prix <span className="text-red-500">*</span>
-                          </label>
-                          <div className="relative">
-                            <input
-                              type="number"
-                              step="0.01"
-                              className="input-field pl-12"
-                              required
-                              placeholder="0.00"
-                              value={newProduct.price}
-                              onChange={e => setNewProduct({ ...newProduct, price: e.target.value })}
-                            />
-                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium">XOF</span>
+                      {/* Image Upload Card */}
+                      <div className="bg-gray-50 rounded-2xl p-6 border border-gray-200">
+                        <div className="flex flex-col items-center space-y-4">
+                          <div className="relative group">
+                            <div className="h-48 w-48 bg-white rounded-2xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300 group-hover:border-primary-500 transition-all duration-300 shadow-sm">
+                              {imagePreview ? (
+                                <img src={imagePreview} alt="Preview" className="h-full w-full object-cover" />
+                              ) : (
+                                <div className="text-center p-6">
+                                  <FiImage className="h-16 w-16 text-gray-300 mx-auto mb-3" />
+                                  <p className="text-sm font-medium text-gray-500">Photo du produit</p>
+                                  <p className="text-xs text-gray-400 mt-1">Cliquez pour ajouter</p>
+                                </div>
+                              )}
+                            </div>
+                            <label className="absolute -bottom-3 -right-3 bg-primary-600 text-white rounded-full p-4 shadow-xl cursor-pointer hover:bg-primary-700 transition-all hover:scale-110 active:scale-95">
+                              <FiEdit className="h-5 w-5" />
+                              <input
+                                type="file"
+                                className="hidden"
+                                accept="image/*"
+                                onChange={handleImageChange}
+                              />
+                            </label>
+                          </div>
+                          <div className="text-center">
+                            <p className="text-xs font-medium text-gray-600">JPG ou PNG • Maximum 2MB</p>
                           </div>
                         </div>
                       </div>
 
-                      <div className="space-y-2">
-                        <div className="flex justify-between items-center">
-                          <label className="block text-sm font-medium text-gray-900">Description</label>
-                          <button
-                            type="button"
-                            onClick={handleGenerateDescription}
-                            className="text-xs flex items-center gap-1 text-purple-600 hover:text-purple-800 font-medium px-3 py-1.5 rounded-lg hover:bg-purple-50 transition-colors border border-purple-200"
-                          >
-                            <FiCpu className="w-3.5 h-3.5" />
-                            Générer avec l'IA
-                          </button>
-                        </div>
-                        <textarea
-                          rows={4}
-                          className="input-field resize-none"
-                          placeholder="Décrivez votre produit en détail..."
-                          value={newProduct.description}
-                          onChange={e => setNewProduct({ ...newProduct, description: e.target.value })}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Séparateur */}
-                    <div className="border-t border-gray-200"></div>
-
-                    {/* Section Catégorie & Stock */}
-                    <div className="space-y-4">
-                      <h4 className="text-sm font-semibold text-gray-900 uppercase tracking-wide flex items-center">
-                        <FiFilter className="w-4 h-4 mr-2 text-primary-600" />
-                        Classification & Inventaire
-                      </h4>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <label className="block text-sm font-medium text-gray-900">Catégorie</label>
-                          <select
-                            className="input-field"
-                            value={newProduct.category}
-                            onChange={e => setNewProduct({ ...newProduct, category: e.target.value })}
-                          >
-                            <option>Vêtements</option>
-                            <option>Électronique</option>
-                            <option>Maison</option>
-                            <option>Beauté</option>
-                            <option>Accessoires</option>
-                          </select>
+                      {/* Product Details Card */}
+                      <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+                        <div className="bg-gradient-to-r from-gray-50 to-white px-6 py-4 border-b border-gray-200">
+                          <h4 className="text-base font-bold text-gray-900 flex items-center">
+                            <div className="w-8 h-8 bg-primary-100 rounded-lg flex items-center justify-center mr-3">
+                              <FiBox className="w-4 h-4 text-primary-600" />
+                            </div>
+                            Détails du produit
+                          </h4>
                         </div>
                         
-                        <div className="space-y-2">
-                          <label className="block text-sm font-medium text-gray-900">
-                            Stock initial <span className="text-red-500">*</span>
-                          </label>
-                          <input
-                            type="number"
-                            className="input-field"
-                            required
-                            placeholder="0"
-                            min="0"
-                            value={newProduct.stock}
-                            onChange={e => setNewProduct({ ...newProduct, stock: e.target.value })}
-                          />
+                        <div className="p-6 space-y-6">
+                          {/* Name & Price Row */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                              <label className="block text-sm font-semibold text-gray-900">
+                                Nom du produit <span className="text-red-500">*</span>
+                              </label>
+                              <input
+                                type="text"
+                                className="input-field text-base"
+                                required
+                                placeholder="Ex: T-shirt Premium Cotton"
+                                value={newProduct.name}
+                                onChange={e => setNewProduct({ ...newProduct, name: e.target.value })}
+                              />
+                            </div>
+                            
+                            <div className="space-y-2">
+                              <label className="block text-sm font-semibold text-gray-900">
+                                Prix de vente <span className="text-red-500">*</span>
+                              </label>
+                              <div className="relative">
+                                <input
+                                  type="number"
+                                  step="0.01"
+                                  className="input-field text-base pl-16"
+                                  required
+                                  placeholder="0.00"
+                                  value={newProduct.price}
+                                  onChange={e => setNewProduct({ ...newProduct, price: e.target.value })}
+                                />
+                                <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-600 font-bold text-sm">XOF</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Description */}
+                          <div className="space-y-2">
+                            <div className="flex justify-between items-center">
+                              <label className="block text-sm font-semibold text-gray-900">Description du produit</label>
+                              <button
+                                type="button"
+                                onClick={handleGenerateDescription}
+                                className="inline-flex items-center gap-2 text-xs font-semibold text-purple-600 hover:text-purple-700 px-4 py-2 rounded-lg hover:bg-purple-50 transition-all border border-purple-200 hover:border-purple-300"
+                              >
+                                <FiCpu className="w-4 h-4" />
+                                Générer avec l'IA
+                              </button>
+                            </div>
+                            <textarea
+                              rows={5}
+                              className="input-field resize-none text-base"
+                              placeholder="Décrivez les caractéristiques, matériaux, tailles disponibles..."
+                              value={newProduct.description}
+                              onChange={e => setNewProduct({ ...newProduct, description: e.target.value })}
+                            />
+                          </div>
                         </div>
                       </div>
-                    </div>
 
+                      {/* Category & Stock Card */}
+                      <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+                        <div className="bg-gradient-to-r from-gray-50 to-white px-6 py-4 border-b border-gray-200">
+                          <h4 className="text-base font-bold text-gray-900 flex items-center">
+                            <div className="w-8 h-8 bg-primary-100 rounded-lg flex items-center justify-center mr-3">
+                              <FiFilter className="w-4 h-4 text-primary-600" />
+                            </div>
+                            Organisation & Stock
+                          </h4>
+                        </div>
+                        
+                        <div className="p-6">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                              <label className="block text-sm font-semibold text-gray-900">Catégorie</label>
+                              <select
+                                className="input-field text-base cursor-pointer"
+                                value={newProduct.category}
+                                onChange={e => setNewProduct({ ...newProduct, category: e.target.value })}
+                              >
+                                <option value="Vêtements">👕 Vêtements</option>
+                                <option value="Électronique">📱 Électronique</option>
+                                <option value="Maison">🏠 Maison & Décoration</option>
+                                <option value="Beauté">💄 Beauté & Cosmétiques</option>
+                                <option value="Accessoires">👜 Accessoires</option>
+                                <option value="Sport">⚽ Sport & Loisirs</option>
+                              </select>
+                            </div>
+                            
+                            <div className="space-y-2">
+                              <label className="block text-sm font-semibold text-gray-900">
+                                Quantité en stock <span className="text-red-500">*</span>
+                              </label>
+                              <input
+                                type="number"
+                                className="input-field text-base"
+                                required
+                                placeholder="0"
+                                min="0"
+                                value={newProduct.stock}
+                                onChange={e => setNewProduct({ ...newProduct, stock: e.target.value })}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                    </div>
                   </div>
 
-                  {/* Footer avec boutons */}
-                  <div className="flex space-x-3 px-8 py-6 border-t sticky bottom-0 bg-white">
+                  {/* Footer Actions */}
+                  <div className="border-t border-gray-200 bg-gray-50 px-8 py-5 flex items-center justify-end gap-3">
                     <Button
                       type="button"
                       variant="secondary"
                       onClick={() => setShowAddModal(false)}
-                      className="flex-1"
+                      className="px-6 py-3 text-base font-medium"
                     >
                       Annuler
                     </Button>
                     <Button
                       type="submit"
-                      className="flex-1"
+                      className="px-8 py-3 text-base font-bold shadow-lg"
                     >
-                      {isEditing ? 'Sauvegarder' : 'Ajouter le produit'}
+                      {isEditing ? '💾 Sauvegarder les modifications' : '✨ Ajouter le produit'}
                     </Button>
                   </div>
                 </form>
