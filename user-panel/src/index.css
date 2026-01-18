@@ -55,21 +55,29 @@
     @apply px-6 py-3 text-base;
   }
 
-  /* Cards - Enhanced */
+  /* Cards - Premium avec padding généreux */
   .card {
-    @apply bg-white rounded-xl shadow-soft border border-secondary-200 overflow-hidden transition-shadow duration-300 hover:shadow-soft-lg p-6;
+    @apply bg-white rounded-xl shadow-soft border border-secondary-200 overflow-hidden transition-shadow duration-300 hover:shadow-soft-lg;
   }
 
+  /* Card header - Bien espacée avec fond subtil */
   .card-header {
-    @apply px-6 py-4 border-b border-secondary-200 bg-secondary-50 -mx-6 -mt-6 mb-6;
+    @apply px-8 py-5 border-b border-secondary-200 bg-secondary-50/50;
   }
 
+  /* Card body - Padding généreux pour éviter les débordements */
   .card-body {
-    @apply space-y-4;
+    @apply px-8 py-6 space-y-4;
   }
 
+  /* Card footer - Bien espacée */
   .card-footer {
-    @apply px-6 py-4 border-t border-secondary-200 bg-secondary-50 -mx-6 -mb-6 mt-6;
+    @apply px-8 py-5 border-t border-secondary-200 bg-secondary-50/50;
+  }
+
+  /* Card simple (sans header/footer) - Padding direct */
+  .card-simple {
+    @apply p-8;
   }
 
   /* Forms - Enhanced */
