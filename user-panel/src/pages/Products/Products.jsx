@@ -364,9 +364,9 @@ const Products = () => {
                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                className="relative bg-white rounded-xl shadow-2xl max-w-2xl w-full p-6 z-10"
+                className="relative bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden z-10 flex flex-col"
               >
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center justify-between p-6 pb-4 border-b sticky top-0 bg-white z-10">
                   <h3 className="text-xl font-bold text-gray-900">{isEditing ? 'Modifier le produit' : 'Ajouter un produit'}</h3>
                   <button
                     onClick={() => setShowAddModal(false)}
@@ -376,7 +376,8 @@ const Products = () => {
                   </button>
                 </div>
 
-                <form onSubmit={handleSaveProduct} className="space-y-6">
+                <form onSubmit={handleSaveProduct} className="flex flex-col flex-1 overflow-hidden">
+                  <div className="overflow-y-auto p-6 space-y-6 flex-1">
                   {/* Image Upload */}
                   <div className="flex justify-center">
                     <div className="relative">
@@ -473,7 +474,10 @@ const Products = () => {
                     </div>
                   </div>
 
-                  <div className="flex space-x-3 pt-2">
+                  </div>
+
+                  {/* Footer con bottoni */}
+                  <div className="flex space-x-3 p-6 pt-4 border-t sticky bottom-0 bg-white">
                     <Button
                       type="button"
                       variant="secondary"
