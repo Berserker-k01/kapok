@@ -366,18 +366,18 @@ const Products = () => {
                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
                 className="relative bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden z-10 flex flex-col"
               >
-                <div className="flex items-center justify-between p-6 pb-4 border-b sticky top-0 bg-white z-10">
+                <div className="flex items-center justify-between px-8 py-6 border-b sticky top-0 bg-white z-10">
                   <h3 className="text-xl font-bold text-gray-900">{isEditing ? 'Modifier le produit' : 'Ajouter un produit'}</h3>
                   <button
                     onClick={() => setShowAddModal(false)}
-                    className="text-gray-400 hover:text-gray-500 p-1 rounded-full hover:bg-gray-100"
+                    className="text-gray-400 hover:text-gray-500 p-2 rounded-full hover:bg-gray-100 -mr-2"
                   >
                     <FiX className="w-5 h-5" />
                   </button>
                 </div>
 
                 <form onSubmit={handleSaveProduct} className="flex flex-col flex-1 overflow-hidden">
-                  <div className="overflow-y-auto p-6 space-y-6 flex-1">
+                  <div className="overflow-y-auto px-8 py-6 space-y-6 flex-1">
                   {/* Image Upload */}
                   <div className="flex justify-center">
                     <div className="relative">
@@ -476,8 +476,8 @@ const Products = () => {
 
                   </div>
 
-                  {/* Footer con bottoni */}
-                  <div className="flex space-x-3 p-6 pt-4 border-t sticky bottom-0 bg-white">
+                  {/* Footer avec boutons */}
+                  <div className="flex space-x-3 px-8 py-6 border-t sticky bottom-0 bg-white">
                     <Button
                       type="button"
                       variant="secondary"
