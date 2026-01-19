@@ -17,22 +17,21 @@ const ThemeMinimal = ({ shop, products, addToCart, cart }) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 font-sans smooth-scroll">
       {/* Premium Header with Glassmorphism */}
-      <header 
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-          scrolled 
-            ? 'glass shadow-xl py-3 backdrop-blur-2xl' 
+      <header
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled
+            ? 'glass shadow-xl py-3 backdrop-blur-2xl'
             : 'bg-white/80 backdrop-blur-md py-5 shadow-sm'
-        }`}
+          }`}
       >
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center justify-between">
             {/* Logo with animation */}
             <div className="flex items-center space-x-3 group">
               {shop?.logo_url ? (
-                <img 
-                  src={shop.logo_url} 
-                  alt={shop.name} 
-                  className="h-12 w-12 object-contain rounded-xl shadow-md group-hover:scale-110 transition-transform duration-300" 
+                <img
+                  src={shop.logo_url}
+                  alt={shop.name}
+                  className="h-12 w-12 object-contain rounded-xl shadow-md group-hover:scale-110 transition-transform duration-300"
                 />
               ) : (
                 <div className="h-12 w-12 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl flex items-center justify-center shadow-lg group-hover:rotate-12 transition-transform duration-300">
@@ -71,7 +70,7 @@ const ThemeMinimal = ({ shop, products, addToCart, cart }) => {
         <section className="relative overflow-hidden mb-16">
           {/* Animated Background Gradient */}
           <div className="absolute inset-0 bg-gradient-to-br from-primary-500/20 via-purple-500/20 to-pink-500/20"></div>
-          
+
           {/* Banner Image with Parallax Effect */}
           <div className="relative h-[70vh] overflow-hidden">
             <img
@@ -81,7 +80,7 @@ const ThemeMinimal = ({ shop, products, addToCart, cart }) => {
             />
             {/* Overlay with gradient */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
-            
+
             {/* Hero Content */}
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="text-center max-w-4xl px-6 space-y-8 animate-fade-in-up">
@@ -133,7 +132,7 @@ const ThemeMinimal = ({ shop, products, addToCart, cart }) => {
               >
                 {/* Card with Hover Effect */}
                 <div className="relative bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
-                  
+
                   {/* Image Container */}
                   <div className="relative aspect-square overflow-hidden bg-gray-100">
                     {product.image_url ? (
@@ -152,7 +151,7 @@ const ThemeMinimal = ({ shop, products, addToCart, cart }) => {
                         <FiImage className="w-20 h-20 text-gray-300" />
                       </div>
                     )}
-                    
+
                     {/* Quick View Badge */}
                     <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-4 group-hover:translate-x-0">
                       <div className="bg-white/95 backdrop-blur-sm rounded-full p-3 shadow-xl hover:scale-110 transition-transform cursor-pointer">
@@ -175,7 +174,7 @@ const ThemeMinimal = ({ shop, products, addToCart, cart }) => {
                     <h4 className="text-lg font-bold text-gray-900 group-hover:text-primary-600 transition-colors line-clamp-2 leading-snug">
                       {product.name}
                     </h4>
-                    
+
                     {/* Price */}
                     <div className="flex items-center justify-between">
                       <div className="space-y-1">
@@ -226,7 +225,7 @@ const ThemeMinimal = ({ shop, products, addToCart, cart }) => {
               <h3 className="text-2xl font-black">{shop?.name}</h3>
               <p className="text-gray-400">{shop?.description}</p>
             </div>
-            
+
             {/* Links */}
             <div className="space-y-4">
               <h4 className="text-lg font-bold">Liens rapides</h4>
@@ -236,20 +235,20 @@ const ThemeMinimal = ({ shop, products, addToCart, cart }) => {
                 <li className="hover:text-white transition-colors cursor-pointer">Conditions</li>
               </ul>
             </div>
-            
+
             {/* Social */}
             <div className="space-y-4">
               <h4 className="text-lg font-bold">Suivez-nous</h4>
               <div className="flex gap-4">
                 {['FiFacebook', 'FiInstagram', 'FiTwitter'].map((icon, i) => (
-                  < key={i} className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center hover:bg-primary-600 transition-all cursor-pointer hover:scale-110">
+                  <div key={i} className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center hover:bg-primary-600 transition-all cursor-pointer hover:scale-110">
                     <FiHeart className="w-5 h-5" />
                   </div>
                 ))}
               </div>
             </div>
           </div>
-          
+
           <div className="border-t border-gray-700 pt-8 text-center text-gray-400">
             <p>© 2024 {shop?.name}. Tous droits réservés.</p>
           </div>
