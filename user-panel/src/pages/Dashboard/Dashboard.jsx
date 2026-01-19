@@ -1,32 +1,32 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { Store, Package, ShoppingCart, TrendingUp, ArrowUpRight, ArrowDownRight, Clock, Loader } from 'lucide-react';
+import { Store, Package, ShoppingCart, TrendingUp, ArrowUpRight, ArrowDownRight, Clock, Loader, Users, ChevronDown, Check } from 'lucide-react';
 import { Card, CardBody } from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import { formatCurrency } from '../../utils/currency';
 import { useAuthStore } from '../../store/authStore';
 
 const StatCard = ({ title, value, trend, trendValue, icon: Icon, color }) => (
-  <Card>
+  <Card className="transform hover:-translate-y-1 transition-transform duration-300">
     <CardBody className="p-6">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm font-medium text-secondary-500">{title}</p>
           <p className="text-2xl font-bold text-secondary-900 mt-1">{value}</p>
         </div>
-        <div className={`p-3 rounded-lg ${color}`}>
+        <div className={`p-3 rounded-xl shadow-lg ${color}`}>
           <Icon className="w-6 h-6 text-white" />
         </div>
       </div>
       <div className="mt-4 flex items-center text-sm">
         {trend === 'up' ? (
-          <span className="text-green-600 flex items-center font-medium">
-            <ArrowUpRight size={16} className="mr-1" />
+          <span className="text-green-600 flex items-center font-bold bg-green-50 px-2 py-0.5 rounded-full">
+            <ArrowUpRight size={14} className="mr-1" />
             {trendValue}
           </span>
         ) : (
-          <span className="text-red-600 flex items-center font-medium">
-            <ArrowDownRight size={16} className="mr-1" />
+          <span className="text-red-600 flex items-center font-bold bg-red-50 px-2 py-0.5 rounded-full">
+            <ArrowDownRight size={14} className="mr-1" />
             {trendValue}
           </span>
         )}
@@ -37,13 +37,13 @@ const StatCard = ({ title, value, trend, trendValue, icon: Icon, color }) => (
 );
 
 const ActivityItem = ({ title, time, type }) => (
-  <div className="flex items-start space-x-3 py-3 border-b border-secondary-100 last:border-0">
-    <div className={`mt-1 w-2 h-2 rounded-full ${type === 'order' ? 'bg-green-500' :
-      type === 'product' ? 'bg-blue-500' : 'bg-yellow-500'
+  <div className="flex items-start space-x-3 py-3 border-b border-secondary-100 last:border-0 hover:bg-gray-50 p-2 rounded-lg transition-colors">
+    <div className={`mt-1 w-2.5 h-2.5 rounded-full ring-4 ring-opacity-20 ${type === 'order' ? 'bg-green-500 ring-green-500' :
+      type === 'product' ? 'bg-blue-500 ring-blue-500' : 'bg-yellow-500 ring-yellow-500'
       }`} />
     <div>
-      <p className="text-sm font-medium text-secondary-900">{title}</p>
-      <div className="flex items-center mt-1 text-xs text-secondary-500">
+      <p className="text-sm font-semibold text-secondary-900">{title}</p>
+      <div className="flex items-center mt-1 text-xs text-secondary-500 font-medium">
         <Clock size={12} className="mr-1" />
         {time}
       </div>
@@ -56,12 +56,14 @@ const Dashboard = () => {
     totalRevenue: 0,
     totalOrders: 0,
     totalProducts: 0,
-    totalShops: 0,
+    totalCustomers: 0,
     recentOrders: []
   });
   const [loading, setLoading] = useState(true);
   const [selectedShop, setSelectedShop] = useState(null);
   const [shops, setShops] = useState([]);
+  const [isShopSelectorOpen, setIsShopSelectorOpen] = useState(false);
+  const selectorRef = useRef(null);
   const { token } = useAuthStore();
 
   useEffect(() => {
@@ -70,13 +72,22 @@ const Dashboard = () => {
     }
   }, [token]);
 
+  // Close selector when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (selectorRef.current && !selectorRef.current.contains(event.target)) {
+        setIsShopSelectorOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
         // 1. Récupérer les boutiques
         const shopsRes = await axios.get('/shops');
-
-        // CORRECTION ROBUSTE: Gérer les deux formats (Admin vs User)
         const shopsData = shopsRes.data.shops || shopsRes.data.data?.shops || [];
         setShops(shopsData);
 
@@ -99,24 +110,23 @@ const Dashboard = () => {
   const fetchStats = async (shopId) => {
     setLoading(true);
     try {
-      // Stats Produits
       const productsRes = await axios.get(`/products/shop/${shopId}`);
-      // CORRECTION: productsRes.data.products (comme dans Products.jsx)
       const products = productsRes.data?.products || [];
 
-      // Stats Commandes
       const ordersRes = await axios.get(`/orders/shop/${shopId}`);
-      // CORRECTION: ordersRes.data.orders (comme dans Orders.jsx)
       const orders = ordersRes.data?.orders || [];
 
       // Calculs
       const totalRevenue = orders.reduce((sum, order) => sum + parseFloat(order.total_amount), 0);
 
+      // Calcul Clients Uniques (Basique pour l'instant, basé sur les noms de clients dans les commandes)
+      const uniqueCustomers = new Set(orders.map(o => o.customer?.name || o.customer_id).filter(Boolean)).size;
+
       setStats({
         totalRevenue,
         totalOrders: orders.length,
         totalProducts: products.length,
-        totalShops: shops.length, // Global
+        totalCustomers: uniqueCustomers,
         recentOrders: orders.slice(0, 5)
       });
     } catch (error) {
@@ -126,34 +136,72 @@ const Dashboard = () => {
     }
   };
 
-  const handleShopChange = (e) => {
-    const shopId = e.target.value;
-    const shop = shops.find(s => s.id === shopId);
+  const handleShopChange = (shop) => {
     setSelectedShop(shop);
-    fetchStats(shopId);
+    setIsShopSelectorOpen(false);
+    fetchStats(shop.id);
   };
 
   if (loading && !stats.totalRevenue && !selectedShop) {
-    return <div className="flex justify-center items-center h-96"><Loader className="animate-spin" /></div>;
+    return <div className="flex justify-center items-center h-96"><Loader className="animate-spin text-primary-600" /></div>;
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="space-y-8 animate-fade-in">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-secondary-900">Tableau de bord</h1>
-          <p className="text-secondary-500 mt-1">Vue d'ensemble de vos activités</p>
+          <h1 className="text-3xl font-bold text-secondary-900 tracking-tight">Tableau de bord</h1>
+          <p className="text-secondary-500 mt-1 font-medium">Vue d'ensemble de vos activités</p>
         </div>
+
+        {/* Custom Shop Selector */}
         {shops.length > 0 && (
-          <select
-            className="border border-gray-300 rounded-md px-3 py-2 bg-white w-full md:w-auto"
-            value={selectedShop?.id}
-            onChange={handleShopChange}
-          >
-            {shops.map(shop => (
-              <option key={shop.id} value={shop.id}>{shop.name}</option>
-            ))}
-          </select>
+          <div className="relative z-20" ref={selectorRef}>
+            <label className="block text-xs font-bold text-secondary-500 uppercase tracking-wider mb-1">
+              Boutique active
+            </label>
+            <button
+              onClick={() => setIsShopSelectorOpen(!isShopSelectorOpen)}
+              className="flex items-center justify-between w-full md:w-64 px-4 py-2.5 bg-white border border-secondary-200 rounded-xl shadow-sm hover:border-primary-500 hover:ring-2 hover:ring-primary-100 transition-all cursor-pointer text-left"
+            >
+              <div className="flex items-center">
+                <div className="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center text-primary-600 mr-3">
+                  <Store size={16} />
+                </div>
+                <span className="font-semibold text-gray-900 truncate">{selectedShop?.name}</span>
+              </div>
+              <ChevronDown size={18} className={`text-gray-400 transition-transform ${isShopSelectorOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {isShopSelectorOpen && (
+              <div className="absolute right-0 mt-2 w-full md:w-72 bg-white rounded-xl shadow-xl border border-secondary-100 py-2 animate-in fade-in zoom-in-95 duration-200">
+                <div className="px-4 py-2 text-xs font-bold text-secondary-400 uppercase tracking-wider border-b border-secondary-50 mb-1">
+                  Changer de boutique
+                </div>
+                {shops.map(shop => (
+                  <button
+                    key={shop.id}
+                    onClick={() => handleShopChange(shop)}
+                    className={`w-full text-left px-4 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors
+                      ${selectedShop?.id === shop.id ? 'bg-primary-50/50' : ''}
+                    `}
+                  >
+                    <div className="flex items-center">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center mr-3 font-bold text-sm
+                        ${selectedShop?.id === shop.id ? 'bg-primary-100 text-primary-700' : 'bg-gray-100 text-gray-600'}
+                      `}>
+                        {shop.name.charAt(0)}
+                      </div>
+                      <span className={`font-medium ${selectedShop?.id === shop.id ? 'text-primary-900' : 'text-gray-700'}`}>
+                        {shop.name}
+                      </span>
+                    </div>
+                    {selectedShop?.id === shop.id && <Check size={18} className="text-primary-600" />}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         )}
       </div>
 
@@ -183,41 +231,46 @@ const Dashboard = () => {
           icon={Package}
           color="bg-orange-500"
         />
+        {/* Changed from 'Boutiques' to 'Clients' to be relevant for single-shop context */}
         <StatCard
-          title="Boutiques"
-          value={stats.totalShops}
+          title="Clients Uniques"
+          value={stats.totalCustomers}
           trend="up"
           trendValue="+0%"
-          icon={Store}
-          color="bg-green-600"
+          icon={Users}
+          color="bg-teal-600"
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Recent Orders */}
-        <Card className="lg:col-span-2">
-          <div className="px-6 py-4 border-b border-secondary-200 flex justify-between items-center bg-secondary-50">
-            <h2 className="font-semibold text-secondary-900">Dernières Commandes</h2>
-            <Badge variant="primary">Total: {stats.recentOrders.length}</Badge>
+        <Card className="lg:col-span-2 shadow-sm">
+          <div className="px-6 py-5 border-b border-secondary-100 flex justify-between items-center bg-white rounded-t-xl">
+            <h2 className="font-bold text-secondary-900 flex items-center">
+              <ShoppingCart size={18} className="mr-2 text-secondary-400" />
+              Dernières Commandes
+            </h2>
+            <Badge variant="primary" className="rounded-full px-3">Total: {stats.recentOrders.length}</Badge>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
-              <thead className="text-xs text-secondary-500 uppercase bg-secondary-50">
+              <thead className="text-xs text-secondary-500 uppercase bg-secondary-50/50">
                 <tr>
-                  <th className="px-6 py-3">ID Commande</th>
-                  <th className="px-6 py-3">Client</th>
-                  <th className="px-6 py-3">Montant</th>
-                  <th className="px-6 py-3">Statut</th>
+                  <th className="px-6 py-4 font-semibold">ID Commande</th>
+                  <th className="px-6 py-4 font-semibold">Client</th>
+                  <th className="px-6 py-4 font-semibold">Montant</th>
+                  <th className="px-6 py-4 font-semibold">Statut</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-secondary-50">
                 {stats.recentOrders.map((order) => (
-                  <tr key={order.id} className="border-b border-secondary-100 hover:bg-secondary-50">
-                    <td className="px-6 py-4 font-medium">{order.order_number}</td>
-                    <td className="px-6 py-4">{order.customer?.name || 'Anonyme'}</td>
-                    <td className="px-6 py-4">{formatCurrency(order.total_amount, order.currency)}</td>
+                  <tr key={order.id} className="hover:bg-secondary-50/50 transition-colors">
+                    <td className="px-6 py-4 font-medium text-primary-600">#{order.order_number}</td>
+                    <td className="px-6 py-4 font-medium text-gray-900">{order.customer?.name || 'Client Web'}</td>
+                    <td className="px-6 py-4 font-bold text-gray-700">{formatCurrency(order.total_amount, order.currency)}</td>
                     <td className="px-6 py-4">
-                      <Badge variant={order.status === 'delivered' ? 'success' : order.status === 'cancelled' ? 'danger' : 'warning'}>
+                      <Badge className="px-2.5 py-0.5 rounded-md text-xs font-bold uppercase tracking-wide"
+                        variant={order.status === 'delivered' ? 'success' : order.status === 'cancelled' ? 'danger' : 'warning'}>
                         {order.status}
                       </Badge>
                     </td>
@@ -225,7 +278,12 @@ const Dashboard = () => {
                 ))}
                 {stats.recentOrders.length === 0 && (
                   <tr>
-                    <td colSpan="4" className="px-6 py-4 text-center text-gray-500">Aucune commande récente</td>
+                    <td colSpan="4" className="px-6 py-12 text-center text-gray-400">
+                      <div className="flex flex-col items-center justify-center">
+                        <ShoppingCart size={40} className="mb-3 text-gray-200" />
+                        <p>Aucune commande récente</p>
+                      </div>
+                    </td>
                   </tr>
                 )}
               </tbody>
@@ -233,14 +291,27 @@ const Dashboard = () => {
           </div>
         </Card>
 
-        {/* Recent Activity (Placeholder pour l'instant) */}
-        <Card>
-          <div className="px-6 py-4 border-b border-secondary-200 bg-secondary-50">
-            <h2 className="font-semibold text-secondary-900">Activité Récente</h2>
+        {/* Recent Activity */}
+        <Card className="shadow-sm h-full">
+          <div className="px-6 py-5 border-b border-secondary-100 bg-white rounded-t-xl">
+            <h2 className="font-bold text-secondary-900 flex items-center">
+              <Clock size={18} className="mr-2 text-secondary-400" />
+              Activité Récente
+            </h2>
           </div>
-          <CardBody>
-            <div className="space-y-2">
-              <ActivityItem title="Bienvenue sur votre dashboard" time="A l'instant" type="shop" />
+          <CardBody className="p-0">
+            <div className="divide-y divide-secondary-50">
+              <div className="p-4 hover:bg-gray-50 transition-colors">
+                <div className="flex items-center space-x-3">
+                  <div className="bg-green-100 p-2 rounded-lg">
+                    <Store size={18} className="text-green-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900">Bienvenue</p>
+                    <p className="text-xs text-gray-500">Tableau de bord prêt pour {selectedShop?.name}</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </CardBody>
         </Card>
