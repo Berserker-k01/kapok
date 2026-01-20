@@ -11,6 +11,7 @@ import Checkout from './pages/Checkout/Checkout'
 import ShopSettings from './pages/Shops/ShopSettings'
 import PublicShop from './pages/Shops/PublicShop'
 import Products from './pages/Products/Products'
+import Collections from './pages/Products/Collections'
 import Orders from './pages/Orders/Orders'
 import Shops from './pages/Shops/Shops'
 import Analytics from './pages/Analytics/Analytics'
@@ -132,6 +133,7 @@ function App() {
                       <Route path="/shops" element={<Shops />} />
                       <Route path="/shops/:shopId/settings" element={<ShopSettings />} />
                       <Route path="/products" element={<Products />} />
+                      <Route path="/collections" element={<Collections />} />
                       <Route path="/orders" element={<Orders />} />
                       <Route path="/analytics" element={<Analytics />} />
                       <Route path="/settings" element={<Settings />} />

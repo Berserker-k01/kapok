@@ -259,6 +259,7 @@ app.use('/api/subscription-payments', require('./routes/subscriptionPayments'));
 app.use('/api/plans', require('./routes/planConfig')); // CHANGED: Was /api/admin/plans
 app.use('/api/admin/payment-numbers', require('./routes/paymentConfig')); // Admin only
 app.use('/api/ai', require('./routes/ai'));
+app.use('/api/collections', require('./routes/collections'));
 
 // Error Handler
 app.use(require('./middleware/errorHandler'));

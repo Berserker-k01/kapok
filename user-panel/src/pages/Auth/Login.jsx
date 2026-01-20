@@ -5,6 +5,7 @@ import { Card, CardBody } from '../../components/ui/Card'
 import Input from '../../components/ui/Input'
 import Button from '../../components/ui/Button'
 import { Link } from 'react-router-dom'
+import logoFull from '../../assets/logo-full.png'
 
 const Login = () => {
   const [credentials, setCredentials] = useState({ email: '', password: '' })
@@ -48,8 +49,8 @@ const Login = () => {
       <Card className="max-w-md w-full">
         <CardBody className="space-y-8">
           <div className="text-center">
-            <div className="mx-auto h-12 w-12 bg-primary-600 rounded-lg flex items-center justify-center">
-              <span className="text-white text-xl font-bold">A</span>
+            <div className="flex justify-center mb-6">
+              <img src={logoFull} alt="Assime Logo" className="h-12 w-auto" />
             </div>
             <h2 className="mt-6 text-3xl font-extrabold text-secondary-900">
               Connexion à Assimε
