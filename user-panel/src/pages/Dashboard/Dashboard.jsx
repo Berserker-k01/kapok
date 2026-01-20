@@ -6,45 +6,38 @@ import Badge from '../../components/ui/Badge';
 import { formatCurrency } from '../../utils/currency';
 import { useAuthStore } from '../../store/authStore';
 
-const StatCard = ({ title, value, trend, trendValue, icon: Icon, color }) => (
-  <Card className="transform hover:-translate-y-1 transition-transform duration-300">
+const StatCard = ({ title, value, trend, trendValue, icon: Icon, color, gradient }) => (
+  <Card className="transform hover:-translate-y-1 hover:shadow-lg transition-all duration-300 group">
     <CardBody className="p-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium text-secondary-500">{title}</p>
-          <p className="text-2xl font-bold text-secondary-900 mt-1">{value}</p>
+      <div className="flex items-center justify-between mb-4">
+        <div className={`p-3 rounded-2xl ${gradient} shadow-lg text-white group-hover:scale-110 transition-transform duration-300`}>
+          <Icon className="w-6 h-6" />
         </div>
-        <div className={`p-3 rounded-xl shadow-lg ${color}`}>
-          <Icon className="w-6 h-6 text-white" />
-        </div>
-      </div>
-      <div className="mt-4 flex items-center text-sm">
-        {trend === 'up' ? (
-          <span className="text-green-600 flex items-center font-bold bg-green-50 px-2 py-0.5 rounded-full">
-            <ArrowUpRight size={14} className="mr-1" />
+        {trend && (
+          <div className={`flex items-center text-xs font-bold px-2 py-1 rounded-full ${trend === 'up' ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'
+            }`}>
+            {trend === 'up' ? <ArrowUpRight size={14} className="mr-1" /> : <ArrowDownRight size={14} className="mr-1" />}
             {trendValue}
-          </span>
-        ) : (
-          <span className="text-red-600 flex items-center font-bold bg-red-50 px-2 py-0.5 rounded-full">
-            <ArrowDownRight size={14} className="mr-1" />
-            {trendValue}
-          </span>
+          </div>
         )}
-        <span className="text-secondary-400 ml-2">vs mois dernier</span>
+      </div>
+      <div>
+        <p className="text-secondary-500 text-sm font-medium mb-1">{title}</p>
+        <h3 className="text-2xl font-black text-secondary-900 tracking-tight">{value}</h3>
       </div>
     </CardBody>
   </Card>
 );
 
 const ActivityItem = ({ title, time, type }) => (
-  <div className="flex items-start space-x-3 py-3 border-b border-secondary-100 last:border-0 hover:bg-gray-50 p-2 rounded-lg transition-colors">
-    <div className={`mt-1 w-2.5 h-2.5 rounded-full ring-4 ring-opacity-20 ${type === 'order' ? 'bg-green-500 ring-green-500' :
+  <div className="flex items-start space-x-4 py-4 border-b border-secondary-50 last:border-0 hover:bg-gray-50/50 p-3 rounded-xl transition-colors group">
+    <div className={`mt-1.5 w-2 h-2 rounded-full ring-4 ring-opacity-20 transition-all duration-300 group-hover:ring-8 ${type === 'order' ? 'bg-green-500 ring-green-500' :
       type === 'product' ? 'bg-blue-500 ring-blue-500' : 'bg-yellow-500 ring-yellow-500'
       }`} />
     <div>
-      <p className="text-sm font-semibold text-secondary-900">{title}</p>
-      <div className="flex items-center mt-1 text-xs text-secondary-500 font-medium">
-        <Clock size={12} className="mr-1" />
+      <p className="text-sm font-bold text-secondary-900">{title}</p>
+      <div className="flex items-center mt-1.5 text-xs text-secondary-400 font-medium">
+        <Clock size={12} className="mr-1.5" />
         {time}
       </div>
     </div>
@@ -213,7 +206,7 @@ const Dashboard = () => {
           trend="up"
           trendValue="+0%"
           icon={TrendingUp}
-          color="bg-purple-600"
+          gradient="bg-gradient-to-br from-purple-500 to-purple-600 shadow-purple-200"
         />
         <StatCard
           title="Commandes"
@@ -221,7 +214,7 @@ const Dashboard = () => {
           trend="up"
           trendValue="+0%"
           icon={ShoppingCart}
-          color="bg-blue-600"
+          gradient="bg-gradient-to-br from-blue-500 to-blue-600 shadow-blue-200"
         />
         <StatCard
           title="Produits Actifs"
@@ -229,7 +222,7 @@ const Dashboard = () => {
           trend="down"
           trendValue="+0%"
           icon={Package}
-          color="bg-orange-500"
+          gradient="bg-gradient-to-br from-orange-500 to-orange-600 shadow-orange-200"
         />
         {/* Changed from 'Boutiques' to 'Clients' to be relevant for single-shop context */}
         <StatCard
@@ -238,7 +231,7 @@ const Dashboard = () => {
           trend="up"
           trendValue="+0%"
           icon={Users}
-          color="bg-teal-600"
+          gradient="bg-gradient-to-br from-teal-500 to-teal-600 shadow-teal-200"
         />
       </div>
 
