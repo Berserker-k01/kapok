@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../store/authStore'
+import logoFull from '../../assets/logo-full.png'
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
   const { user, logout } = useAuthStore()
@@ -108,19 +109,13 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-secondary-200 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="flex items-center justify-between h-16 px-6 border-b border-secondary-200">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">A</span>
-              </div>
-              <div>
-                <div className="text-lg font-semibold text-secondary-900">Assimε</div>
-                <div className="text-xs text-muted-foreground">Ma Boutique</div>
-              </div>
+          <div className="flex items-center justify-center h-16 px-6 border-b border-secondary-200">
+            <div className="flex items-center">
+              <img src={logoFull} alt="Assime Logo" className="h-10 w-auto" />
             </div>
             <button
               onClick={() => setIsOpen(false)}
-              className="lg:hidden p-1 rounded-md text-secondary-400 hover:text-secondary-500 hover:bg-secondary-100"
+              className="lg:hidden p-1 rounded-md text-secondary-400 hover:text-secondary-500 hover:bg-secondary-100 ml-auto"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

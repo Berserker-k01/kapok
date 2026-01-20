@@ -167,40 +167,56 @@ const Shops = () => {
             </div>
 
             {/* Actions Footer - Pushed to bottom */}
-            <div className="mt-auto bg-gray-50 p-4 border-t border-gray-100 flex items-center space-x-3">
-              <a
-                href={`/s/${shop.slug}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 btn-secondary text-sm py-2 flex items-center justify-center bg-white hover:bg-gray-50"
-              >
-                <FiEye className="mr-2 h-4 w-4" />
-                Voir
-              </a>
-              <Link
-                to={`/shops/${shop.id}/settings`}
-                className="flex-1 btn-secondary text-sm py-2 flex items-center justify-center bg-white hover:bg-gray-50"
-              >
-                <FiEdit className="mr-2 h-4 w-4" />
-                Gérer
-              </Link>
-              <button
-                onClick={() => handleToggleStatus(shop)}
-                className="p-2 text-gray-400 hover:text-primary-600 hover:bg-white rounded-lg transition-all"
-                title={shop.status === 'active' ? 'Désactiver' : 'Activer'}
-              >
-                <FiSettings className="h-4 w-4" />
-              </button>
-              <button
-                onClick={() => {
-                  setShopToDelete(shop)
-                  setShowDeleteModal(true)
-                }}
-                className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
-                title="Supprimer"
-              >
-                <FiTrash2 className="h-4 w-4" />
-              </button>
+            <div className="mt-auto bg-gray-50/50 p-4 border-t border-gray-100 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    const url = `${window.location.origin}/s/${shop.slug}`;
+                    navigator.clipboard.writeText(url);
+                    toast.success('Lien copié !');
+                  }}
+                  className="p-2 text-gray-400 hover:text-primary-600 hover:bg-white rounded-lg transition-all border border-transparent hover:border-gray-200 shadow-sm hover:shadow-md"
+                  title="Copier le lien"
+                >
+                  <FiGlobe className="h-4 w-4" />
+                </button>
+                <a
+                  href={`/s/${shop.slug}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 text-gray-400 hover:text-primary-600 hover:bg-white rounded-lg transition-all border border-transparent hover:border-gray-200 shadow-sm hover:shadow-md"
+                  title="Voir la boutique"
+                >
+                  <FiEye className="h-4 w-4" />
+                </a>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Link
+                  to={`/shops/${shop.id}/settings`}
+                  className="btn-secondary text-xs px-4 py-2 flex items-center justify-center bg-white hover:bg-gray-50"
+                >
+                  <FiEdit className="mr-2 h-3.5 w-3.5" />
+                  Gérer
+                </Link>
+                <button
+                  onClick={() => handleToggleStatus(shop)}
+                  className="p-2 text-gray-400 hover:text-primary-600 hover:bg-white rounded-lg transition-all"
+                  title={shop.status === 'active' ? 'Désactiver' : 'Activer'}
+                >
+                  <FiSettings className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => {
+                    setShopToDelete(shop)
+                    setShowDeleteModal(true)
+                  }}
+                  className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                  title="Supprimer"
+                >
+                  <FiTrash2 className="h-4 w-4" />
+                </button>
+              </div>
             </div>
           </div>
         ))}

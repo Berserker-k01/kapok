@@ -15,6 +15,8 @@ import {
   Phone
 } from 'lucide-react';
 import Button from '../ui/Button';
+import logoFull from '../../assets/logo-full.png';
+import logoIcon from '../../assets/logo-icon.png';
 
 const Layout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -44,12 +46,11 @@ const Layout = ({ children }) => {
           {/* Logo */}
           <div className="h-16 flex items-center justify-center border-b border-secondary-800">
             {sidebarOpen ? (
-              <div className="flex items-center space-x-2">
-                <ShieldCheck className="text-red-500" />
-                <span className="text-xl font-bold">Assimε Admin</span>
+              <div className="flex items-center space-x-2 px-4">
+                <img src={logoFull} alt="Assime Admin" className="h-8 w-auto filter invert brightness-0 invert" />
               </div>
             ) : (
-              <ShieldCheck className="text-red-500" size={24} />
+              <img src={logoIcon} alt="Assime Admin" className="h-8 w-auto filter invert brightness-0 invert" />
             )}
           </div>
 
