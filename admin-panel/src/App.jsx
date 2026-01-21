@@ -26,6 +26,7 @@ function App() {
     // Relative URL pour passer par le Proxy (Nginx ou Vite)
     // HARDCODED HOSTINGER PRODUCTION
     axios.defaults.baseURL = 'https://e-assime.com/api';
+    // axios.defaults.baseURL = 'http://localhost:5000/api';
 
     // Intercepteur pour injecter le token en temps réel
     const requestInterceptor = axios.interceptors.request.use(
