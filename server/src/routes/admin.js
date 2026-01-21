@@ -104,10 +104,14 @@ router.get('/users', async (req, res) => {
       SELECT 
         u.id, u.name, u.email, u.role, u.status, u.created_at, u.last_login,
         COUNT(DISTINCT s.id) as shop_count,
-        COALESCE(SUM(o.total_amount), 0) as total_spent
+        COALESCE(SUM(o.total_amount), 0) as total_spent,
+        sub.plan_name,
+        sub.current_period_end,
+        sub.status as subscription_status
       FROM users u
       LEFT JOIN shops s ON u.id = s.owner_id
       LEFT JOIN orders o ON s.id = o.shop_id AND o.status = 'completed'
+      LEFT JOIN subscriptions sub ON u.id = sub.user_id AND sub.status = 'active'
       WHERE u.role = 'user'
     `
     let queryParams = []
@@ -124,7 +128,7 @@ router.get('/users', async (req, res) => {
       queryParams.push(`%${search}%`, `%${search}%`)
     }
 
-    query += ` GROUP BY u.id ORDER BY u.created_at DESC LIMIT ? OFFSET ?`
+    query += ` GROUP BY u.id, sub.plan_name, sub.current_period_end, sub.status ORDER BY u.created_at DESC LIMIT ? OFFSET ?`
     queryParams.push(parseInt(limit), parseInt(offset))
 
     const result = await db.query(query, queryParams)
