@@ -1,6 +1,7 @@
 const db = require('../config/database')
 const AppError = require('../utils/AppError')
 const catchAsync = require('../utils/catchAsync')
+const { v4: uuidv4 } = require('uuid')
 
 // Obtenir tous les plans (admin)
 exports.getAllPlans = catchAsync(async (req, res) => {
@@ -53,7 +54,9 @@ exports.createPlan = catchAsync(async (req, res) => {
     throw new AppError('Une clé de plan avec ce nom existe déjà', 400)
   }
 
-  const { v4: uuidv4 } = require('uuid'); // Ensure this is imported at top or here
+  /* 
+     Move uuid import to top level. 
+  */
   const insertQuery = `
     INSERT INTO plans_config 
     (id, plan_key, name, description, price, currency, max_shops, features, discount_percent, is_active, display_order)
