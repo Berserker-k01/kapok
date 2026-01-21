@@ -1,4 +1,5 @@
 const productService = require('../services/productService');
+const collectionService = require('../services/collectionService');
 const catchAsync = require('../utils/catchAsync');
 
 exports.getPublicProductsByShop = catchAsync(async (req, res, next) => {
@@ -28,6 +29,16 @@ exports.createProduct = catchAsync(async (req, res, next) => {
     }
 
     const product = await productService.createProduct(req.user.id, req.body);
+
+    // [MODIFICATION] Ajout optionnel à une collection
+    if (req.body.collectionId) {
+        try {
+            await collectionService.addProductToCollection(req.body.collectionId, product.id);
+        } catch (error) {
+            console.error('Erreur ajout collection:', error);
+            // On ne bloque pas la création du produit si l'ajout à la collection échoue
+        }
+    }
 
     res.status(201).json({
         status: 'success',

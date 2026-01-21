@@ -15,7 +15,7 @@ const PublicShop = () => {
     const [shop, setShop] = useState(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
-    const { setFacebookPixelId } = useCart()
+    const { setFacebookPixelId, addToCart, cartItems } = useCart()
 
     // Produits réels
     const [products, setProducts] = useState([])
@@ -77,9 +77,9 @@ const PublicShop = () => {
         <FacebookPixel pixelId={facebookPixelId}>
             <CartDrawer />
             {currentTheme === 'bold' ? (
-                <ThemeBold shop={shop} products={products} />
+                <ThemeBold shop={shop} products={products} addToCart={addToCart} cart={cartItems} />
             ) : (
-                <ThemeMinimal shop={shop} products={products} />
+                <ThemeMinimal shop={shop} products={products} addToCart={addToCart} cart={cartItems} />
             )}
         </FacebookPixel>
     )

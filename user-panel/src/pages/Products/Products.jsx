@@ -20,8 +20,10 @@ const Products = () => {
     description: '',
     category: 'Vêtements',
     stock: '',
-    shopId: ''
+    shopId: '',
+    collectionId: '' // [NEW] Optional Collection
   })
+  const [collections, setCollections] = useState([]) // [NEW] Collections state
   const [imageFile, setImageFile] = useState(null)
   const [imagePreview, setImagePreview] = useState(null)
   const [isEditing, setIsEditing] = useState(false)
@@ -76,6 +78,20 @@ const Products = () => {
     fetchProducts()
   }, [selectedShop])
 
+  // [NEW] Fetch Collections when shop changes
+  useEffect(() => {
+    const fetchCollections = async () => {
+      if (!selectedShop) return
+      try {
+        const response = await axios.get('/collections', { params: { shopId: selectedShop } })
+        setCollections(response.data.data.collections || [])
+      } catch (error) {
+        console.error('Erreur chargement collections', error)
+      }
+    }
+    fetchCollections()
+  }, [selectedShop])
+
   const handleImageChange = (e) => {
     const file = e.target.files[0]
     if (file) {
@@ -108,7 +124,9 @@ const Products = () => {
     formData.append('description', newProduct.description)
     formData.append('category', newProduct.category)
     formData.append('stock', newProduct.stock)
+    formData.append('stock', newProduct.stock)
     formData.append('shopId', selectedShop)
+    if (newProduct.collectionId) formData.append('collectionId', newProduct.collectionId) // [NEW]
 
     if (imageFile) {
       formData.append('image', imageFile)
@@ -140,7 +158,7 @@ const Products = () => {
   }
 
   const resetForm = () => {
-    setNewProduct({ name: '', price: '', description: '', category: 'Vêtements', stock: '', shopId: '' })
+    setNewProduct({ name: '', price: '', description: '', category: 'Vêtements', stock: '', shopId: '', collectionId: '' })
     setImageFile(null)
     setImagePreview(null)
     setIsEditing(false)
@@ -379,7 +397,7 @@ const Products = () => {
                 <form onSubmit={handleSaveProduct} className="flex flex-col flex-1 overflow-hidden">
                   <div className="overflow-y-auto flex-1">
                     <div className="p-8 space-y-6">
-                      
+
                       {/* Image Upload Card */}
                       <div className="bg-gray-50 rounded-2xl p-6 border border-gray-200">
                         <div className="flex flex-col items-center space-y-4">
@@ -421,7 +439,7 @@ const Products = () => {
                             Détails du produit
                           </h4>
                         </div>
-                        
+
                         <div className="p-8 space-y-6">
                           {/* Name & Price Row */}
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -438,7 +456,7 @@ const Products = () => {
                                 onChange={e => setNewProduct({ ...newProduct, name: e.target.value })}
                               />
                             </div>
-                            
+
                             <div className="space-y-2">
                               <label className="block text-sm font-semibold text-gray-900">
                                 Prix de vente <span className="text-red-500">*</span>
@@ -492,7 +510,7 @@ const Products = () => {
                             Organisation & Stock
                           </h4>
                         </div>
-                        
+
                         <div className="p-8">
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-2">
@@ -510,7 +528,7 @@ const Products = () => {
                                 <option value="Sport">⚽ Sport & Loisirs</option>
                               </select>
                             </div>
-                            
+
                             <div className="space-y-2">
                               <label className="block text-sm font-semibold text-gray-900">
                                 Quantité en stock <span className="text-red-500">*</span>
@@ -525,6 +543,21 @@ const Products = () => {
                                 onChange={e => setNewProduct({ ...newProduct, stock: e.target.value })}
                               />
                             </div>
+                          </div>
+
+                          {/* [NEW] Collection Selection */}
+                          <div className="mt-4">
+                            <label className="block text-sm font-semibold text-gray-900 mb-1">Collection (Optionnel)</label>
+                            <select
+                              className="input-field text-base cursor-pointer"
+                              value={newProduct.collectionId}
+                              onChange={e => setNewProduct({ ...newProduct, collectionId: e.target.value })}
+                            >
+                              <option value="">-- Aucune --</option>
+                              {collections.map(c => (
+                                <option key={c.id} value={c.id}>{c.name}</option>
+                              ))}
+                            </select>
                           </div>
                         </div>
                       </div>

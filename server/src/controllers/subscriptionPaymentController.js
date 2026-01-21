@@ -3,7 +3,7 @@ const multer = require('multer')
 const path = require('path')
 const fs = require('fs')
 const { v4: uuidv4 } = require('uuid')
-const { AppError } = require('../utils/AppError')
+const AppError = require('../utils/AppError')
 const catchAsync = require('../utils/catchAsync')
 
 // Configuration Multer pour l'upload d'images
