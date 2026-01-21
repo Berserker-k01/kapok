@@ -9,7 +9,7 @@ const router = express.Router({ mergeParams: true });
 // Public routes (if any needed for storefront, usually fetched via shop)
 // For now, we assume admin panel usage mainly, protected by auth
 
-router.use(auth.protect);
+router.use(auth.authenticateToken);
 
 router
     .route('/')
