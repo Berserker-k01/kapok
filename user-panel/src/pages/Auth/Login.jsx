@@ -50,7 +50,7 @@ const Login = () => {
         <CardBody className="space-y-8">
           <div className="text-center">
             <div className="flex justify-center mb-6">
-              <img src={logoFull} alt="Assime Logo" className="h-12 w-auto" />
+              <img src={logoFull} alt="Assime" className="h-16 w-auto" />
             </div>
             <h2 className="mt-6 text-3xl font-extrabold text-secondary-900">
               Connexion à Assimε
