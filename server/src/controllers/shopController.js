@@ -48,11 +48,11 @@ exports.updateShop = catchAsync(async (req, res, next) => {
     const cleanData = (obj) => {
         if (obj === null || obj === undefined) return null;
         if (typeof obj !== 'object' || obj instanceof Date) return obj;
-        
+
         if (Array.isArray(obj)) {
             return obj.map(item => cleanData(item));
         }
-        
+
         const cleaned = {};
         for (const [key, value] of Object.entries(obj)) {
             if (value === undefined || value === '') {
@@ -86,10 +86,10 @@ exports.updateShop = catchAsync(async (req, res, next) => {
 
     if (req.files) {
         if (req.files['logo']) {
-            updateData.settings.themeConfig.content.logoUrl = `${baseUrl}/uploads/${req.files['logo'][0].filename}`;
+            updateData.settings.themeConfig.content.logoUrl = `/api/uploads/${req.files['logo'][0].filename}`;
         }
         if (req.files['banner']) {
-            updateData.settings.themeConfig.content.bannerUrl = `${baseUrl}/uploads/${req.files['banner'][0].filename}`;
+            updateData.settings.themeConfig.content.bannerUrl = `/api/uploads/${req.files['banner'][0].filename}`;
         }
     }
 
