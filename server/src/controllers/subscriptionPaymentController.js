@@ -245,7 +245,12 @@ exports.getPendingPayments = catchAsync(async (req, res) => {
 exports.approvePayment = catchAsync(async (req, res) => {
   const { paymentId } = req.params
   const { adminNotes } = req.body
-  const adminId = req.user.id
+  let adminId = req.user.id
+
+  // Fix pour admin-demo qui n'existe pas en base
+  if (adminId === 'admin-demo') {
+    adminId = null
+  }
 
   // Récupérer le paiement
   const paymentQuery = 'SELECT * FROM subscription_payments WHERE id = ?'
@@ -324,7 +329,11 @@ exports.approvePayment = catchAsync(async (req, res) => {
 exports.rejectPayment = catchAsync(async (req, res) => {
   const { paymentId } = req.params
   const { adminNotes } = req.body
-  const adminId = req.user.id
+  let adminId = req.user.id
+
+  if (adminId === 'admin-demo') {
+    adminId = null
+  }
 
   const query = `
     UPDATE subscription_payments 

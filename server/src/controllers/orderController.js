@@ -206,37 +206,43 @@ exports.createPublicOrder = async (req, res) => {
         if (customerCheck.rows.length > 0) {
             customerId = customerCheck.rows[0].id
         } else {
-            // Check if customer already exists for this shop? No, customers are global or shop-specific? 
-            // In this schema, customers seem global but linked via orders.
+            customerId = uuidv4()
             await db.query(`
-                INSERT INTO customers (name, phone, address, created_at)
-                VALUES (?, ?, ?, NOW())
-            `, [`${firstName} ${lastName}`, phone, `${address}, ${city}`])
-
-            const fetchedCustomer = await db.query('SELECT id FROM customers WHERE phone = ?', [phone])
-            customerId = fetchedCustomer.rows[0].id
+                INSERT INTO customers (id, name, phone, address, created_at)
+                VALUES (?, ?, ?, ?, NOW())
+            `, [customerId, `${firstName} ${lastName}`, phone, `${address}, ${city}`])
         }
 
         // 5. Créer la commande
+        const orderId = uuidv4()
         const orderNumber = `ORD-${Date.now().toString().slice(-6)}`
-        const newOrder = await db.query(`
+
+        await db.query(`
             INSERT INTO orders (
-                shop_id, customer_id, total_amount, currency, status, 
+                id, shop_id, customer_id, total_amount, currency, status, 
                 payment_status, payment_method, order_number, created_at, updated_at
             )
-            VALUES (?, ?, ?, ?, 'pending', 'pending', 'cod', ?, NOW(), NOW())
-        `, [shopId, customerId, totalAmount, currency, orderNumber])
+            VALUES (?, ?, ?, ?, ?, 'pending', 'pending', 'cod', ?, NOW(), NOW())
+        `, [orderId, shopId, customerId, totalAmount, currency, orderNumber])
 
-        // FETCH AFTER INSERT id needed for items
-        const fetchedOrder = await db.query('SELECT * FROM orders WHERE order_number = ?', [orderNumber])
-        const order = fetchedOrder.rows[0]
+        // FETCH to get the full object including defaults if needed, or construct it
+        // Optimisation: use known values
+        const order = {
+            id: orderId,
+            order_number: orderNumber,
+            total_amount: totalAmount,
+            currency,
+            status: 'pending',
+            created_at: new Date()
+        }
 
         // 6. Insérer les items
         for (const item of verifiedItems) {
+            const itemId = uuidv4()
             await db.query(`
-                INSERT INTO order_items (order_id, product_id, quantity, price)
-                VALUES (?, ?, ?, ?)
-            `, [order.id, item.id, item.quantity, item.price])
+                INSERT INTO order_items (id, order_id, product_id, quantity, price)
+                VALUES (?, ?, ?, ?, ?)
+            `, [itemId, orderId, item.id, item.quantity, item.price])
         }
 
         // 7. Synchro Sheet & Response
