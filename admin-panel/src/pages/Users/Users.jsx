@@ -1,10 +1,35 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 import toast from 'react-hot-toast'
-import { FiSearch, FiUserX, FiUserCheck, FiLoader, FiMail } from 'react-icons/fi'
+import { FiSearch, FiUserX, FiUserCheck, FiLoader, FiMail, FiClock } from 'react-icons/fi'
 import { Card } from '../../components/ui/Card'
 import Badge from '../../components/ui/Badge'
 import { useAuthStore } from '../../store/authStore'
+import { formatDistanceToNow, parseISO, isPast } from 'date-fns'
+import { fr } from 'date-fns/locale'
+
+const SubscriptionTimer = ({ date }) => {
+  if (!date) return <span className="text-gray-400">-</span>
+
+  const expiryDate = parseISO(date)
+  const isExpired = isPast(expiryDate)
+
+  // Calculate days remaining roughly
+  const now = new Date()
+  const diffTime = expiryDate - now
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+
+  let colorClass = "text-green-600 bg-green-50"
+  if (isExpired) colorClass = "text-red-600 bg-red-50"
+  else if (diffDays <= 7) colorClass = "text-orange-600 bg-orange-50"
+
+  return (
+    <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colorClass}`}>
+      <FiClock className="mr-1" />
+      {isExpired ? 'Expiré' : `Reste ${diffDays}j`}
+    </div>
+  )
+}
 
 const Users = () => {
   const [users, setUsers] = useState([])
@@ -81,6 +106,7 @@ const Users = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-secondary-400 uppercase tracking-wider">Utilisateur</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-secondary-400 uppercase tracking-wider">Rôle</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-secondary-400 uppercase tracking-wider">Boutiques</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-secondary-400 uppercase tracking-wider">Abonnement</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-secondary-400 uppercase tracking-wider">Dépenses Totales</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-secondary-400 uppercase tracking-wider">Statut</th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-secondary-400 uppercase tracking-wider">Actions</th>
@@ -120,6 +146,12 @@ const Users = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-secondary-400">
                       {user.shop_count}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex flex-col">
+                        <span className="font-medium text-sm text-gray-900">{user.plan === 'free' ? 'Gratuit' : user.plan?.toUpperCase()}</span>
+                        {user.plan !== 'free' && <SubscriptionTimer date={user.subscription_end} />}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white font-medium">
                       {parseFloat(user.total_spent).toLocaleString()} FCFA

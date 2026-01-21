@@ -102,9 +102,10 @@ router.get('/users', async (req, res) => {
 
     let query = `
       SELECT 
-        u.id, u.name, u.email, u.role, u.status, u.created_at, u.last_login,
+        u.id, u.name, u.email, u.role, u.status, u.created_at, u.last_login, u.plan,
         COUNT(DISTINCT s.id) as shop_count,
-        COALESCE(SUM(o.total_amount), 0) as total_spent
+        COALESCE(SUM(o.total_amount), 0) as total_spent,
+        (SELECT current_period_end FROM subscriptions sub WHERE sub.user_id = u.id AND sub.status = 'active' LIMIT 1) as subscription_end
       FROM users u
       LEFT JOIN shops s ON u.id = s.owner_id
       LEFT JOIN orders o ON s.id = o.shop_id AND o.status = 'completed'

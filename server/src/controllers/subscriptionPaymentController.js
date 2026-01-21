@@ -285,12 +285,18 @@ exports.approvePayment = catchAsync(async (req, res) => {
     `
     await db.query(updateUserQuery, [payment.plan_key, payment.user_id])
 
+    // Déterminer la durée de l'abonnement
+    let interval = '1 MONTH';
+    if (payment.plan_key === 'basic') interval = '1 MONTH';
+    else if (payment.plan_key === 'premium') interval = '3 MONTH';
+    else if (payment.plan_key === 'gold') interval = '6 MONTH';
+
     // Créer ou mettre à jour l'abonnement
     const subscriptionQuery = `
       INSERT INTO subscriptions 
       (id, user_id, plan_name, status, price, currency, current_period_start, current_period_end)
-      VALUES (UUID(), ?, ?, 'active', ?, ?, NOW(), NOW() + INTERVAL 1 MONTH)
-      ON DUPLICATE KEY UPDATE status = 'active', current_period_end = NOW() + INTERVAL 1 MONTH
+      VALUES (UUID(), ?, ?, 'active', ?, ?, NOW(), NOW() + INTERVAL ${interval})
+      ON DUPLICATE KEY UPDATE status = 'active', current_period_end = NOW() + INTERVAL ${interval}, price = VALUES(price), plan_name = VALUES(plan_name)
     `
     await db.query(subscriptionQuery, [
       payment.user_id,
