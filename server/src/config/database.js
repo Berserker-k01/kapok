@@ -26,7 +26,7 @@ const parseDatabaseUrl = (url) => {
 const poolConfig = {
   // CONFIGURATION HARDCODÉE (Mode Hostinger)
   // Plus de dépendance à process.env
-  host: '127.0.0.1', // WAS: u980915146_assimedb (Hostinger IP)
+  host: 'localhost',
   user: 'u980915146_admin',
   password: 'Daniel2005k@ssi',
   database: 'u980915146_assimedb',
