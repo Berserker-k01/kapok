@@ -18,6 +18,7 @@ const Plans = () => {
     description: '',
     price: '',
     currency: 'XOF',
+    duration_months: '1',
     max_shops: '',
     features: '',
     discount_percent: '0',
@@ -54,6 +55,7 @@ const Plans = () => {
         description: plan.description || '',
         price: plan.price.toString(),
         currency: plan.currency,
+        duration_months: plan.duration_months ? plan.duration_months.toString() : '1',
         max_shops: plan.max_shops ? plan.max_shops.toString() : '',
         features: features,
         discount_percent: plan.discount_percent ? plan.discount_percent.toString() : '0',
@@ -68,6 +70,7 @@ const Plans = () => {
         description: '',
         price: '',
         currency: 'XOF',
+        duration_months: '1',
         max_shops: '',
         features: '',
         discount_percent: '0',
@@ -90,6 +93,7 @@ const Plans = () => {
       const payload = {
         ...formData,
         price: parseFloat(formData.price),
+        durationMonths: parseInt(formData.duration_months),
         max_shops: formData.max_shops ? parseInt(formData.max_shops) : null,
         features: featuresArray,
         discount_percent: parseFloat(formData.discount_percent),
@@ -208,6 +212,9 @@ const Plans = () => {
                         • {feature}
                       </li>
                     ))}
+                    <li className="text-sm font-semibold text-primary-600 mt-2">
+                      • Durée : {plan.duration_months || 1} mois
+                    </li>
                   </ul>
                 </div>
 
@@ -311,6 +318,34 @@ const Plans = () => {
                       <option value="XOF">XOF (FCFA)</option>
                       <option value="GNF">GNF</option>
                     </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-secondary-700 mb-1">
+                      Réduction (%)
+                    </label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      max="100"
+                      value={formData.discount_percent}
+                      onChange={(e) => setFormData({ ...formData, discount_percent: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-secondary-700 mb-1">
+                      Durée (Mois)
+                    </label>
+                    <Input
+                      type="number"
+                      min="1"
+                      value={formData.duration_months}
+                      onChange={(e) => setFormData({ ...formData, duration_months: e.target.value })}
+                      required
+                    />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-secondary-700 mb-1">

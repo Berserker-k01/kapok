@@ -261,6 +261,11 @@ exports.approvePayment = catchAsync(async (req, res) => {
     throw new AppError('Ce paiement a déjà été traité', 400)
   }
 
+  // Fetch plan details to get duration
+  const planConfigQuery = 'SELECT duration_months FROM plans_config WHERE plan_key = ?';
+  const planConfigResult = await db.query(planConfigQuery, [payment.plan_key]);
+  const durationMonths = planConfigResult.rows.length > 0 ? planConfigResult.rows[0].duration_months : 1;
+
   // Démarrer une transaction
   await db.query('BEGIN')
 
@@ -281,28 +286,26 @@ exports.approvePayment = catchAsync(async (req, res) => {
     const updateUserQuery = `
       UPDATE users 
       SET plan = ?, updated_at = NOW()
-      WHERE id = ?
     `
     await db.query(updateUserQuery, [payment.plan_key, payment.user_id])
 
     // Déterminer la durée de l'abonnement
-    let interval = '1 MONTH';
-    if (payment.plan_key === 'basic') interval = '1 MONTH';
-    else if (payment.plan_key === 'premium') interval = '3 MONTH';
-    else if (payment.plan_key === 'gold') interval = '6 MONTH';
+    const intervalValue = durationMonths;
 
     // Créer ou mettre à jour l'abonnement
     const subscriptionQuery = `
       INSERT INTO subscriptions 
       (id, user_id, plan_name, status, price, currency, current_period_start, current_period_end)
-      VALUES (UUID(), ?, ?, 'active', ?, ?, NOW(), NOW() + INTERVAL ${interval})
-      ON DUPLICATE KEY UPDATE status = 'active', current_period_end = NOW() + INTERVAL ${interval}, price = VALUES(price), plan_name = VALUES(plan_name)
+      VALUES (UUID(), ?, ?, 'active', ?, ?, NOW(), NOW() + INTERVAL ? MONTH)
+      ON DUPLICATE KEY UPDATE status = 'active', current_period_end = NOW() + INTERVAL ? MONTH, price = VALUES(price), plan_name = VALUES(plan_name)
     `
     await db.query(subscriptionQuery, [
       payment.user_id,
       payment.plan_name,
       payment.amount,
-      payment.currency
+      payment.currency,
+      intervalValue,
+      intervalValue
     ])
 
     await db.query('COMMIT')

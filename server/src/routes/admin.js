@@ -4,6 +4,8 @@ const { authenticateToken, requireAdmin, requireSuperAdmin } = require('../middl
 
 const router = express.Router()
 
+
+
 // Toutes les routes admin nécessitent une authentification admin
 router.use(authenticateToken)
 router.use(requireAdmin)
