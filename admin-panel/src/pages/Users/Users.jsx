@@ -80,7 +80,6 @@ const Users = () => {
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-secondary-400 uppercase tracking-wider">Utilisateur</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-secondary-400 uppercase tracking-wider">Rôle</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-secondary-400 uppercase tracking-wider">Abonnement</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-secondary-400 uppercase tracking-wider">Boutiques</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-secondary-400 uppercase tracking-wider">Dépenses Totales</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-secondary-400 uppercase tracking-wider">Statut</th>
@@ -118,30 +117,6 @@ const Users = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <Badge variant="info">{user.role}</Badge>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {user.subscription_status === 'active' ? (
-                        <div>
-                          <div className="font-bold text-gray-900 dark:text-white">{user.plan_name || 'Inconnu'}</div>
-                          {user.current_period_end && (
-                            <div className="text-xs mt-1">
-                              {(() => {
-                                const end = new Date(user.current_period_end);
-                                const now = new Date();
-                                const diffTime = end - now;
-                                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-                                if (diffDays < 0) return <span className="text-red-500 font-bold">Expiré</span>;
-                                if (diffDays === 0) return <span className="text-red-500 font-bold">Expire aujourd'hui</span>;
-                                if (diffDays <= 7) return <span className="text-orange-500 font-bold">Expire dans {diffDays}j</span>;
-                                return <span className="text-green-600">Expire dans {diffDays}j</span>;
-                              })()}
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <Badge variant="secondary">Gratuit</Badge>
-                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-secondary-400">
                       {user.shop_count}

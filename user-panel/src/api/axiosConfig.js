@@ -3,7 +3,6 @@ import { useAuthStore } from '../store/authStore';
 
 // URL Backend
 axios.defaults.baseURL = 'https://e-assime.com/api';
-// axios.defaults.baseURL = 'http://localhost:5000/api';
 
 // --- REQUEST INTERCEPTOR ---
 // Attach Token automatically

@@ -300,9 +300,8 @@ INSERT INTO platform_settings (id, `key`, value, description) VALUES
 -- Plans
 INSERT INTO plans_config (id, plan_key, name, description, price, currency, max_shops, features, is_active, display_order) VALUES
 (UUID(), 'free', 'Gratuit', 'Plan gratuit avec fonctionnalités de base', 0, 'XOF', 2, '["2 boutiques", "100 produits par boutique", "Support email"]', TRUE, 1),
-(UUID(), 'basic', 'Basic', '01 Mois d\'accès à Assime', 30000, 'XOF', 2, '["2 boutiques", "05 Produits gagnants offerts", "Formation vidéo complète", "Accès Ecom Mastery Gold", "01 Mois de suivi Groupe"]', TRUE, 2),
-(UUID(), 'premium', 'Premium', '03 Mois d\'accès à Assime', 50000, 'XOF', 5, '["5 boutiques", "10 Produits gagnants offerts", "Formation vidéo complète", "Accès Ecom Mastery Gold", "03 Mois de suivi Groupe"]', TRUE, 3),
-(UUID(), 'gold', 'Gold', '06 Mois d\'accès à Assime', 99000, 'XOF', 10, '["10 boutiques", "50 Produits gagnants offerts", "Liste de fournisseurs", "Équipe de vente Afrique", "Accès Ecom Mastery Gold", "Suivi Illimité Groupe"]', TRUE, 4);
+(UUID(), 'basic', 'Basic', 'Plan basique pour les petites entreprises', 29999, 'XOF', 5, '["5 boutiques", "Produits illimités", "Support prioritaire", "Analytics avancées"]', TRUE, 2),
+(UUID(), 'pro', 'Pro', 'Plan professionnel avec toutes les fonctionnalités', 99999, 'XOF', NULL, '["Boutiques illimitées", "Produits illimités", "Support 24/7", "Analytics complètes", "Thèmes premium"]', TRUE, 3);
 
 -- Moyens de Paiement (CI + TG)
 INSERT INTO payment_config (id, provider_name, phone_number, provider_type, is_active, display_order, instructions) VALUES

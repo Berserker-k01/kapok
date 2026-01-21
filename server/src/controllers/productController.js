@@ -22,8 +22,9 @@ exports.getProductsByShop = catchAsync(async (req, res, next) => {
 exports.createProduct = catchAsync(async (req, res, next) => {
     // Gestion de l'image uploadée
     if (req.file) {
-        // Use relative path to ensure functionality across environments (Local/Prod)
-        req.body.image_url = `/api/uploads/${req.file.filename}`;
+        // Construction URL absolue ou relative selon config
+        const baseUrl = process.env.API_URL || 'https://e-assime.com/api';
+        req.body.image_url = `${baseUrl}/uploads/${req.file.filename}`;
     }
 
     const product = await productService.createProduct(req.user.id, req.body);
@@ -47,7 +48,8 @@ exports.getProduct = catchAsync(async (req, res, next) => {
 exports.updateProduct = catchAsync(async (req, res, next) => {
     // Gestion de l'image uploadée
     if (req.file) {
-        req.body.image_url = `/api/uploads/${req.file.filename}`;
+        const baseUrl = process.env.API_URL || 'https://e-assime.com/api';
+        req.body.image_url = `${baseUrl}/uploads/${req.file.filename}`;
     }
 
     const product = await productService.updateProduct(req.user.id, req.params.productId, req.body);
