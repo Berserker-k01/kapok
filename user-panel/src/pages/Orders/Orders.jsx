@@ -16,8 +16,103 @@ const Orders = () => {
   const [selectedStatus, setSelectedStatus] = useState('all')
   const { token } = useAuthStore()
 
-  // ... (Configuration Axios & Effects unchanged)
+  // Configuration Axios
+  useEffect(() => {
+    if (token) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+    }
+  }, [token])
 
+  // Charger les boutiques
+  useEffect(() => {
+    const fetchShops = async () => {
+      try {
+        const response = await axios.get('/shops')
+        const shopsData = response.data.data?.shops || []
+        setShops(shopsData)
+        if (shopsData.length > 0) {
+          setSelectedShop(shopsData[0].id)
+        } else {
+          setLoading(false)
+        }
+      } catch (error) {
+        console.error('Erreur chargement boutiques:', error)
+        toast.error('Impossible de charger vos boutiques')
+        setLoading(false)
+      }
+    }
+    fetchShops()
+  }, [])
+
+  // Charger les commandes
+  const fetchOrders = async () => {
+    if (!selectedShop) return
+
+    setLoading(true)
+    try {
+      const response = await axios.get(`/orders/shop/${selectedShop}`)
+      setOrders(response.data.orders)
+    } catch (error) {
+      console.error('Erreur chargement commandes:', error)
+      toast.error('Impossible de charger les commandes')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchOrders()
+  }, [selectedShop])
+
+  const handleUpdateStatus = async (orderId, newStatus) => {
+    try {
+      await axios.put(`/orders/${orderId}/status`, { status: newStatus })
+      toast.success(`Commande ${newStatus === 'confirmed' ? 'confirmée' : newStatus === 'shipped' ? 'expédiée' : 'mise à jour'}`)
+      fetchOrders() // Rafraîchir la liste
+    } catch (error) {
+      console.error('Erreur mise à jour statut:', error)
+      toast.error('Impossible de mettre à jour le statut')
+    }
+  }
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'pending': return 'bg-yellow-100 text-yellow-800'
+      case 'confirmed': return 'bg-blue-100 text-blue-800'
+      case 'processing': return 'bg-purple-100 text-purple-800'
+      case 'shipped': return 'bg-indigo-100 text-indigo-800'
+      case 'delivered': return 'bg-green-100 text-green-800'
+      case 'validated_by_customer': return 'bg-teal-100 text-teal-800'
+      case 'cancelled': return 'bg-red-100 text-red-800'
+      default: return 'bg-gray-100 text-gray-800'
+    }
+  }
+
+  const getStatusText = (status) => {
+    switch (status) {
+      case 'pending': return 'En attente'
+      case 'confirmed': return 'Confirmée'
+      case 'processing': return 'En préparation'
+      case 'shipped': return 'Expédiée'
+      case 'delivered': return 'Livrée'
+      case 'validated_by_customer': return 'Validée par client'
+      case 'cancelled': return 'Annulée'
+      default: return status
+    }
+  }
+
+  const filteredOrders = orders.filter(order => {
+    const matchesSearch =
+      order.order_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.customer?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.customer?.email?.toLowerCase().includes(searchTerm.toLowerCase())
+
+    const matchesStatus = selectedStatus === 'all' || order.status === selectedStatus
+
+    return matchesSearch && matchesStatus
+  })
+
+  // Export Excel
   const handleExport = () => {
     if (filteredOrders.length === 0) {
       toast.error("Aucune commande à exporter")
@@ -44,7 +139,32 @@ const Orders = () => {
     toast.success("Exportation réussie !")
   }
 
-  // ... (fetchOrders, other functions unchanged)
+  // Calcul des stats
+  const stats = [
+    {
+      title: 'Total Commandes',
+      value: orders.length,
+      icon: <FiPackage className="w-6 h-6" />,
+      color: 'bg-blue-100 text-blue-600'
+    },
+    {
+      title: 'En attente',
+      value: orders.filter(o => o.status === 'pending').length,
+      icon: <FiClock className="w-6 h-6" />,
+      color: 'bg-yellow-100 text-yellow-600'
+    },
+    {
+      title: 'Revenus (Validés)',
+      value: `${orders
+        .filter(o => ['delivered', 'validated_by_customer'].includes(o.status))
+        .reduce((sum, o) => sum + parseFloat(o.total_amount), 0)
+        .toFixed(2)} ${orders[0]?.currency || 'XOF'}`,
+      icon: <FiDollarSign className="w-6 h-6" />,
+      color: 'bg-green-100 text-green-600'
+    }
+  ]
+
+  if (loading && shops.length === 0) return <div className="p-8 text-center">Chargement...</div>
 
   return (
     <div className="space-y-6">
