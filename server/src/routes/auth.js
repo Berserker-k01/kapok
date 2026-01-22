@@ -46,7 +46,7 @@ router.post('/register', catchAsync(async (req, res, next) => {
   await db.query(insertQuery, [userId, name, email, hashedPassword])
 
   // 2. Récupérer l'utilisateur créé
-  const selectQuery = 'SELECT id, name, email, role, created_at FROM users WHERE id = ?'
+  const selectQuery = 'SELECT id, name, email, role, status, plan, created_at FROM users WHERE id = ?'
   const result = await db.query(selectQuery, [userId])
   const user = result.rows[0]
 
@@ -60,7 +60,8 @@ router.post('/register', catchAsync(async (req, res, next) => {
       id: user.id,
       name: user.name,
       email: user.email,
-      role: user.role
+      role: user.role,
+      plan: user.plan
     },
     token
   })
@@ -76,7 +77,7 @@ router.post('/login', catchAsync(async (req, res, next) => {
   }
 
   // Trouver l'utilisateur
-  const userQuery = 'SELECT id, name, email, password, role, status FROM users WHERE email = ?'
+  const userQuery = 'SELECT id, name, email, password, role, status, plan FROM users WHERE email = ?'
   const userResult = await db.query(userQuery, [email])
 
   if (userResult.rows.length === 0) {
@@ -109,7 +110,8 @@ router.post('/login', catchAsync(async (req, res, next) => {
       id: user.id,
       name: user.name,
       email: user.email,
-      role: user.role
+      role: user.role,
+      plan: user.plan
     },
     token
   })
@@ -187,7 +189,9 @@ router.get('/verify', authenticateToken, (req, res) => {
     user: {
       id: req.user.id,
       email: req.user.email,
-      role: req.user.role
+      role: req.user.role,
+      plan: req.user.plan,
+      name: req.user.name || req.user.email.split('@')[0]
     }
   })
 })

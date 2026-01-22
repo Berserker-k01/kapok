@@ -33,6 +33,13 @@ function App() {
   const { isAuthenticated, token } = useAuthStore()
 
 
+  // Check auth session validity on mount
+  useEffect(() => {
+    if (isAuthenticated) {
+      useAuthStore.getState().checkAuth()
+    }
+  }, [isAuthenticated])
+
   // AUTO-LOGOUT INACTIVITY system (15 minutes)
   useEffect(() => {
     if (!isAuthenticated) return;

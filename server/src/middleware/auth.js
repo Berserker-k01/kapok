@@ -28,7 +28,7 @@ const authenticateToken = async (req, res, next) => {
     }
 
     // Vérifier si l'utilisateur existe toujours
-    const userQuery = 'SELECT id, email, role, status FROM users WHERE id = ?'
+    const userQuery = 'SELECT id, email, role, status, plan FROM users WHERE id = ?'
     const userResult = await db.query(userQuery, [decoded.userId])
 
     if (userResult.rows.length === 0) {

@@ -23,7 +23,16 @@ const PaymentStatus = () => {
   const fetchPayment = async () => {
     try {
       const response = await axios.get(`/subscription-payments/status/${paymentId}`)
-      setPayment(response.data.payment)
+      const newStatus = response.data.payment
+      setPayment(newStatus)
+
+      // Si approuvé, on force le rafraîchissement du profil utilisateur
+      if (newStatus.status === 'approved') {
+        // Import dynamique ou utilisation du store global si possible
+        // Mais ici on est dans un composant, on peut importer le hook ou le store
+        const { useAuthStore } = await import('../../store/authStore')
+        useAuthStore.getState().checkAuth()
+      }
     } catch (error) {
       toast.error('Erreur lors du chargement du statut')
       console.error(error)

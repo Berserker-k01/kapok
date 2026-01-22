@@ -59,6 +59,33 @@ export const useAuthStore = create(persist((set, get) => ({
     }
   },
 
+  checkAuth: async () => {
+    try {
+      const { token } = get()
+      if (!token) return false
+
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+      const response = await axios.get('/auth/verify')
+
+      if (response.data?.valid) {
+        // Merge existing user data with fresh data (keeping things like name if local, but respecting remote plan etc)
+        const freshUser = response.data.user
+        set(state => ({
+          user: { ...state.user, ...freshUser },
+          isAuthenticated: true
+        }))
+        return true
+      }
+      return false
+    } catch (error) {
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        get().logout()
+        return false
+      }
+      return true // Keep session locally on network error? Or careful? Let's assume keep unless 401.
+    }
+  },
+
   logout: () => {
     set({
       user: null,
