@@ -120,14 +120,14 @@ const Subscriptions = () => {
                         <option value="pro">Pro</option>
                       </select>
                     ) : (
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${PLANS[user.plan || 'free'].color}`}>
-                        {PLANS[user.plan || 'free'].name}
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${(PLANS[user.plan] || PLANS['free']).color}`}>
+                        {(PLANS[user.plan] || PLANS['free']).name}
                       </span>
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-secondary-400">
                     <span className="font-medium text-gray-900 dark:text-white">{user.shop_count}</span>
-                    <span className="text-gray-400"> / {PLANS[user.plan || 'free'].limit}</span>
+                    <span className="text-gray-400"> / {(PLANS[user.plan] || PLANS['free']).limit}</span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <Badge variant={user.status === 'active' ? 'success' : 'warning'}>

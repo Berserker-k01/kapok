@@ -291,6 +291,7 @@ exports.approvePayment = catchAsync(async (req, res) => {
     const updateUserQuery = `
       UPDATE users 
       SET plan = ?, updated_at = NOW()
+      WHERE id = ?
     `
     await db.query(updateUserQuery, [payment.plan_key, payment.user_id])
 
