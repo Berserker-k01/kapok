@@ -96,7 +96,8 @@ const Checkout = () => {
             toast.success('Commande enregistrée avec succès !')
         } catch (error) {
             console.error('Erreur commande:', error)
-            toast.error("Une erreur est survenue lors de la commande.")
+            const errorMessage = error.response?.data?.error || error.response?.data?.details || "Une erreur est survenue lors de la commande.";
+            toast.error(errorMessage)
         }
     }
 
