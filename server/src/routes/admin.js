@@ -1,6 +1,7 @@
 const express = require('express')
 const db = require('../config/database')
 const { authenticateToken, requireAdmin, requireSuperAdmin } = require('../middleware/auth')
+const bcrypt = require('bcryptjs')
 
 const router = express.Router()
 
@@ -226,6 +227,45 @@ router.put('/users/:userId/status', requireSuperAdmin, async (req, res) => {
   } catch (error) {
     console.error('Erreur mise à jour statut utilisateur:', error)
     res.status(500).json({ error: 'Erreur lors de la mise à jour du statut' })
+  }
+})
+
+// Réinitialiser le mot de passe d'un utilisateur (Admin)
+router.post('/users/:userId/reset-password', async (req, res) => {
+  try {
+    const userId = req.params.userId
+    const { newPassword } = req.body
+
+    if (!newPassword || newPassword.length < 6) {
+      return res.status(400).json({ error: 'Le mot de passe doit contenir au moins 6 caractères' })
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10)
+
+    await db.query('UPDATE users SET password = ?, updated_at = NOW() WHERE id = ?', [hashedPassword, userId])
+
+    res.json({ message: 'Mot de passe réinitialisé avec succès' })
+  } catch (error) {
+    console.error('Erreur reset password:', error)
+    res.status(500).json({ error: 'Erreur lors de la réinitialisation du mot de passe' })
+  }
+})
+
+// Annuler le plan d'un utilisateur (Admin)
+router.post('/users/:userId/cancel-plan', async (req, res) => {
+  try {
+    const userId = req.params.userId
+
+    // 1. Remettre le user en plan 'free'
+    await db.query("UPDATE users SET plan = 'free', updated_at = NOW() WHERE id = ?", [userId])
+
+    // 2. Marquer l'abonnement comme annulé dans la table subscriptions
+    await db.query("UPDATE subscriptions SET status = 'cancelled', current_period_end = NOW() WHERE user_id = ? AND status = 'active'", [userId])
+
+    res.json({ message: 'Plan annulé avec succès' })
+  } catch (error) {
+    console.error('Erreur annulation plan:', error)
+    res.status(500).json({ error: 'Erreur lors de l\'annulation du plan' })
   }
 })
 

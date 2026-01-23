@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 import toast from 'react-hot-toast'
-import { FiSearch, FiUserX, FiUserCheck, FiLoader, FiMail, FiClock } from 'react-icons/fi'
+import { FiSearch, FiUserX, FiUserCheck, FiLoader, FiMail, FiClock, FiLock, FiSlash } from 'react-icons/fi'
 import { Card } from '../../components/ui/Card'
 import Badge from '../../components/ui/Badge'
 import { useAuthStore } from '../../store/authStore'
@@ -76,6 +76,37 @@ const Users = () => {
     } catch (error) {
       console.error('Erreur mise à jour statut:', error)
       toast.error('Impossible de modifier le statut')
+    }
+  }
+
+  const handleResetPassword = async (userId) => {
+    const newPassword = window.prompt("Entrez le nouveau mot de passe (min 6 caractères) :")
+    if (!newPassword) return
+
+    if (newPassword.length < 6) {
+      toast.error("Le mot de passe doit faire au moins 6 caractères")
+      return
+    }
+
+    try {
+      await axios.post(`/admin/users/${userId}/reset-password`, { newPassword })
+      toast.success("Mot de passe réinitialisé")
+    } catch (error) {
+      console.error(error)
+      toast.error("Erreur lors de la réinitialisation")
+    }
+  }
+
+  const handleCancelPlan = async (userId) => {
+    if (!window.confirm("Êtes-vous sûr de vouloir annuler le plan de cet utilisateur ? Il repassera en 'Gratuit' immédiatement.")) return
+
+    try {
+      await axios.post(`/admin/users/${userId}/cancel-plan`)
+      toast.success("Plan annulé avec succès")
+      fetchUsers()
+    } catch (error) {
+      console.error(error)
+      toast.error("Erreur lors de l'annulation du plan")
     }
   }
 
@@ -163,13 +194,31 @@ const Users = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       {user.status === 'active' ? (
-                        <button
-                          onClick={() => handleUpdateStatus(user.id, 'banned')}
-                          className="text-red-600 hover:text-red-900 flex items-center ml-auto"
-                          title="Bannir"
-                        >
-                          <FiUserX className="w-5 h-5" />
-                        </button>
+                        <div className="flex items-center space-x-2 ml-auto">
+                          {user.plan !== 'free' && (
+                            <button
+                              onClick={() => handleCancelPlan(user.id)}
+                              className="text-orange-600 hover:text-orange-900 p-1"
+                              title="Annuler le plan"
+                            >
+                              <FiSlash className="w-5 h-5" />
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleResetPassword(user.id)}
+                            className="text-blue-600 hover:text-blue-900 p-1"
+                            title="Réinitialiser mot de passe"
+                          >
+                            <FiLock className="w-5 h-5" />
+                          </button>
+                          <button
+                            onClick={() => handleUpdateStatus(user.id, 'banned')}
+                            className="text-red-600 hover:text-red-900 p-1"
+                            title="Bannir"
+                          >
+                            <FiUserX className="w-5 h-5" />
+                          </button>
+                        </div>
                       ) : (
                         <button
                           onClick={() => handleUpdateStatus(user.id, 'active')}
