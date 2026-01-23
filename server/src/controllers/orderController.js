@@ -200,6 +200,12 @@ exports.createPublicOrder = async (req, res) => {
         }
 
         // 4. Créer ou récupérer le client
+        const addressJson = JSON.stringify({
+            street: address,
+            city: city,
+            full: `${address}, ${city}`
+        })
+
         let customerId
         const customerCheck = await db.query('SELECT id FROM customers WHERE phone = ?', [phone])
 
@@ -207,11 +213,7 @@ exports.createPublicOrder = async (req, res) => {
             customerId = customerCheck.rows[0].id
         } else {
             customerId = uuidv4()
-            const addressJson = JSON.stringify({
-                street: address,
-                city: city,
-                full: `${address}, ${city}`
-            })
+            // addressJson moved to outer scope
 
             await db.query(`
                 INSERT INTO customers (id, name, phone, address, created_at)
