@@ -229,10 +229,10 @@ exports.createPublicOrder = async (req, res) => {
         await db.query(`
             INSERT INTO orders (
                 id, shop_id, customer_id, total_amount, subtotal, currency, status, 
-                payment_status, payment_method, order_number, created_at, updated_at
+                payment_status, payment_method, order_number, shipping_address, created_at, updated_at
             )
-            VALUES (?, ?, ?, ?, ?, ?, 'pending', 'pending', 'cod', ?, NOW(), NOW())
-        `, [orderId, shopId, customerId, totalAmount, subtotal, currency, orderNumber])
+            VALUES (?, ?, ?, ?, ?, ?, 'pending', 'pending', 'cod', ?, ?, NOW(), NOW())
+        `, [orderId, shopId, customerId, totalAmount, subtotal, currency, orderNumber, addressJson])
 
         // FETCH to get the full object including defaults if needed, or construct it
         // Optimisation: use known values
@@ -242,6 +242,7 @@ exports.createPublicOrder = async (req, res) => {
             total_amount: totalAmount,
             subtotal,
             currency,
+            shipping_address: JSON.parse(addressJson),
             status: 'pending',
             created_at: new Date()
         }
