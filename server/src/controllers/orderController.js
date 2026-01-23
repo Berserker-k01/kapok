@@ -217,13 +217,16 @@ exports.createPublicOrder = async (req, res) => {
         const orderId = uuidv4()
         const orderNumber = `ORD-${Date.now().toString().slice(-6)}`
 
+        // Subtotal is same as totalAmount since tax/shipping are 0 default
+        const subtotal = totalAmount
+
         await db.query(`
             INSERT INTO orders (
-                id, shop_id, customer_id, total_amount, currency, status, 
+                id, shop_id, customer_id, total_amount, subtotal, currency, status, 
                 payment_status, payment_method, order_number, created_at, updated_at
             )
-            VALUES (?, ?, ?, ?, ?, 'pending', 'pending', 'cod', ?, NOW(), NOW())
-        `, [orderId, shopId, customerId, totalAmount, currency, orderNumber])
+            VALUES (?, ?, ?, ?, ?, ?, 'pending', 'pending', 'cod', ?, NOW(), NOW())
+        `, [orderId, shopId, customerId, totalAmount, subtotal, currency, orderNumber])
 
         // FETCH to get the full object including defaults if needed, or construct it
         // Optimisation: use known values
@@ -231,6 +234,7 @@ exports.createPublicOrder = async (req, res) => {
             id: orderId,
             order_number: orderNumber,
             total_amount: totalAmount,
+            subtotal,
             currency,
             status: 'pending',
             created_at: new Date()
@@ -239,10 +243,11 @@ exports.createPublicOrder = async (req, res) => {
         // 6. Insérer les items
         for (const item of verifiedItems) {
             const itemId = uuidv4()
+            const itemTotal = item.price * item.quantity;
             await db.query(`
-                INSERT INTO order_items (id, order_id, product_id, quantity, price)
-                VALUES (?, ?, ?, ?, ?)
-            `, [itemId, orderId, item.id, item.quantity, item.price])
+                INSERT INTO order_items (id, order_id, product_id, quantity, price, total)
+                VALUES (?, ?, ?, ?, ?, ?)
+            `, [itemId, orderId, item.id, item.quantity, item.price, itemTotal])
         }
 
         // 7. Synchro Sheet & Response
@@ -262,7 +267,7 @@ exports.createPublicOrder = async (req, res) => {
     } catch (error) {
         console.error('Erreur création commande publique:', error)
         res.status(500).json({
-            error: 'Erreur lors de la création de la commande',
+            error: `Erreur lors de la création de la commande: ${error.message}`,
             details: error.message,
             stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
         })
