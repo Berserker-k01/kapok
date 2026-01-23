@@ -15,17 +15,14 @@ exports.getOrdersByShop = async (req, res) => {
 
         let query = `
       SELECT o.*, 
-             JSON_OBJECT(
-               'name', c.name,
-               'email', c.email,
-               'phone', c.phone
-             ) as customer
+             c.name as customer_name,
+             c.email as customer_email,
+             c.phone as customer_phone
       FROM orders o
       LEFT JOIN customers c ON o.customer_id = c.id
       WHERE o.shop_id = ?
     `
         let queryParams = [req.params.shopId]
-        let paramCount = 1
 
         if (status && status !== 'all') {
             query += ` AND o.status = ?`
@@ -37,8 +34,17 @@ exports.getOrdersByShop = async (req, res) => {
 
         const result = await db.query(query, queryParams)
 
+        const ordersFormatted = result.rows.map(order => ({
+            ...order,
+            customer: {
+                name: order.customer_name,
+                email: order.customer_email,
+                phone: order.customer_phone
+            }
+        }))
+
         res.json({
-            orders: result.rows,
+            orders: ordersFormatted,
             pagination: {
                 page: parseInt(page),
                 limit: parseInt(limit)
