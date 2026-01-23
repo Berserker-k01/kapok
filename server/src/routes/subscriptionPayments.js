@@ -12,6 +12,7 @@ router.get('/payment-numbers', subscriptionPaymentController.getPaymentNumbers)
 router.post('/request', authenticateToken, subscriptionPaymentController.createPaymentRequest)
 router.post('/:paymentId/upload-proof', authenticateToken, subscriptionPaymentController.upload, subscriptionPaymentController.uploadPaymentProof)
 router.get('/my-payments', authenticateToken, subscriptionPaymentController.getUserPayments)
+router.get('/active', authenticateToken, subscriptionPaymentController.getActiveSubscription)
 router.get('/:paymentId', authenticateToken, subscriptionPaymentController.getPayment)
 
 // Routes admin

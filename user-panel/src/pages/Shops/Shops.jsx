@@ -16,7 +16,7 @@ const Shops = () => {
     slug: '',
     category: 'Mode & Vêtements'
   })
-  const { token } = useAuthStore()
+  const { token, user } = useAuthStore()
 
   // Configuration Axios
   useEffect(() => {
@@ -241,7 +241,7 @@ const Shops = () => {
       </div>
 
       {/* Upgrade Notice - Premium Banner */}
-      {!canCreateShop && (
+      {!canCreateShop && user?.plan === 'free' && (
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 text-white shadow-xl">
           <div className="absolute top-0 right-0 -mt-10 -mr-10 h-64 w-64 bg-primary-500 opacity-20 blur-3xl rounded-full"></div>
           <div className="absolute bottom-0 left-0 -mb-10 -ml-10 h-64 w-64 bg-purple-500 opacity-20 blur-3xl rounded-full"></div>

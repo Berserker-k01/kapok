@@ -22,7 +22,7 @@ class ShopService {
 
   async createShop(userId, shopData) {
     const { name, description, category, theme } = shopData;
-    const PLANS = require('../config/plans');
+    // PLANS config removed, using DB table plans_config
 
     // Récupérer le plan de l'utilisateur
     const userQuery = 'SELECT plan FROM users WHERE id = ?';
@@ -35,18 +35,23 @@ class ShopService {
     const userPlan = userResult.rows[0].plan || 'free';
 
     // Récupérer les limites dynamiques depuis la DB
-    let planLimit = 2; // Fallback
+    // Récupérer les limites dynamiques depuis la DB (Table plans_config)
+    let planLimit = 2; // Default fallback
 
-    if (userPlan === 'free') {
-      // FIX: 'key' est un mot clé réservé en MySQL -> `key`
+    const planConfigQuery = 'SELECT max_shops FROM plans_config WHERE plan_key = ?';
+    const planConfigResult = await db.query(planConfigQuery, [userPlan]);
+
+    if (planConfigResult.rows.length > 0) {
+      const limit = planConfigResult.rows[0].max_shops;
+      // Si NULL dans la DB, on considère illimité (ex: 9999)
+      planLimit = limit === null ? 9999 : limit;
+    } else {
+      // Fallback si plan inconnu, check legacy settings
       const settingsQuery = "SELECT value FROM platform_settings WHERE `key` = 'free_plan_shops_limit'";
       const settingsResult = await db.query(settingsQuery);
       if (settingsResult.rows.length > 0) {
         planLimit = parseInt(settingsResult.rows[0].value);
       }
-    } else {
-      // Pour les autres plans, on garde la config statique pour l'instant (ou on pourrait aussi la mettre en DB)
-      planLimit = PLANS[userPlan]?.maxShops || 2;
     }
 
     // Vérifier la limite de boutiques
@@ -183,7 +188,7 @@ class ShopService {
       SELECT 
         (SELECT COUNT(*) FROM products WHERE shop_id = ?) as total_products,
         (SELECT COUNT(*) FROM orders WHERE shop_id = ?) as total_orders,
-        (SELECT COALESCE(SUM(total_amount), 0) FROM orders WHERE shop_id = ? AND status = 'completed') as total_revenue,
+        (SELECT COALESCE(SUM(total_amount), 0) FROM orders WHERE shop_id = ? AND status IN ('completed', 'delivered', 'validated_by_customer')) as total_revenue,
         (SELECT COUNT(*) FROM orders WHERE shop_id = ? AND created_at >= CURRENT_DATE - INTERVAL 30 DAY) as orders_last_30_days
     `;
 
@@ -212,7 +217,7 @@ class ShopService {
       FROM order_items oi
       JOIN products p ON oi.product_id = p.id
       JOIN orders o ON oi.order_id = o.id
-      WHERE o.shop_id = ? AND o.status = 'completed'
+      WHERE o.shop_id = ? AND o.status IN ('completed', 'delivered', 'validated_by_customer')
       GROUP BY p.id, p.name
       ORDER BY revenue DESC
       LIMIT 5
@@ -227,7 +232,7 @@ class ShopService {
       FROM order_items oi
       JOIN products p ON oi.product_id = p.id
       JOIN orders o ON oi.order_id = o.id
-      WHERE o.shop_id = ? AND o.status = 'completed'
+      WHERE o.shop_id = ? AND o.status IN ('completed', 'delivered', 'validated_by_customer')
       GROUP BY p.category
     `;
     const categoryResult = await db.query(categoryQuery, [shopId]);

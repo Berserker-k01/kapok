@@ -86,9 +86,17 @@ const Dashboard = () => {
         setShops(shopsData);
 
         if (shopsData.length > 0) {
-          const firstShop = shopsData[0];
-          setSelectedShop(firstShop);
-          await fetchStats(firstShop.id);
+          const savedShopId = localStorage.getItem('selectedShopId');
+          const savedShop = shopsData.find(s => s.id === savedShopId);
+
+          if (savedShop) {
+            setSelectedShop(savedShop);
+            await fetchStats(savedShop.id);
+          } else {
+            const firstShop = shopsData[0];
+            setSelectedShop(firstShop);
+            await fetchStats(firstShop.id);
+          }
         } else {
           setLoading(false);
         }
@@ -133,6 +141,7 @@ const Dashboard = () => {
   const handleShopChange = (shop) => {
     setSelectedShop(shop);
     setIsShopSelectorOpen(false);
+    localStorage.setItem('selectedShopId', shop.id);
     fetchStats(shop.id);
   };
 

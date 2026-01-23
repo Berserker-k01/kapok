@@ -6,22 +6,29 @@ import { Card, CardBody, CardHeader } from '../../components/ui/Card'
 import Button from '../../components/ui/Button'
 import Badge from '../../components/ui/Badge'
 import { Check, Infinity, Store, Package, Headphones } from 'lucide-react'
+import SubscriptionTimer from '../../components/SubscriptionTimer'
 
 const PlanSelection = () => {
   const [plans, setPlans] = useState([])
+  const [activeSubscription, setActiveSubscription] = useState(null)
   const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
 
   useEffect(() => {
-    fetchPlans()
+    fetchData()
   }, [])
 
-  const fetchPlans = async () => {
+  const fetchData = async () => {
     try {
-      const response = await axios.get('/plans')
-      setPlans(response.data.plans)
+      const [plansRes, subRes] = await Promise.all([
+        axios.get('/plans'),
+        axios.get('/subscription-payments/active').catch(() => ({ data: { subscription: null } }))
+      ])
+
+      setPlans(plansRes.data.plans)
+      setActiveSubscription(subRes.data.subscription)
     } catch (error) {
-      toast.error('Erreur lors du chargement des plans')
+      toast.error('Erreur lors du chargement des données')
       console.error(error)
     } finally {
       setLoading(false)
@@ -49,12 +56,21 @@ const PlanSelection = () => {
   return (
     <div className="min-h-screen bg-secondary-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
+        {activeSubscription && (
+          <div className="mb-8 max-w-2xl mx-auto">
+            <SubscriptionTimer endDate={activeSubscription.current_period_end} />
+          </div>
+        )}
+
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-secondary-900 mb-4">
-            Choisissez votre plan
+            {activeSubscription ? 'Gérer votre abonnement' : 'Choisissez votre plan'}
           </h1>
           <p className="text-lg text-secondary-600">
-            Sélectionnez le plan qui correspond le mieux à vos besoins
+            {activeSubscription
+              ? `Votre plan actuel : ${activeSubscription.plan_name || 'Inconnu'}`
+              : 'Sélectionnez le plan qui correspond le mieux à vos besoins'
+            }
           </p>
         </div>
 
@@ -136,8 +152,12 @@ const PlanSelection = () => {
                     variant={plan.plan_key === 'pro' ? 'primary' : 'outline'}
                     className="w-full"
                     onClick={() => handleSelectPlan(plan.plan_key)}
+                    disabled={activeSubscription?.plan_name === plan.name} // Simple check
                   >
-                    {plan.price === 0 ? 'Utiliser gratuitement' : 'Choisir ce plan'}
+                    {activeSubscription?.plan_name === plan.name
+                      ? 'Plan Actuel'
+                      : (plan.price === 0 ? 'Utiliser gratuitement' : 'Choisir ce plan')
+                    }
                   </Button>
                 </CardBody>
               </Card>

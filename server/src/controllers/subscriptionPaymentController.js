@@ -362,6 +362,22 @@ exports.rejectPayment = catchAsync(async (req, res) => {
   })
 })
 
+// Obtenir l'abonnement actif
+exports.getActiveSubscription = catchAsync(async (req, res) => {
+  const userId = req.user.id
+  const query = `
+    SELECT * FROM subscriptions
+    WHERE user_id = ?
+    ORDER BY current_period_end DESC
+    LIMIT 1
+  `
+  const result = await db.query(query, [userId])
+  res.json({
+    success: true,
+    subscription: result.rows[0] || null
+  })
+})
+
 // Exporter multer pour l'utilisation dans les routes
 exports.upload = upload.single('proofImage')
 

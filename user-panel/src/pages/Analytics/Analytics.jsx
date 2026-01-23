@@ -43,10 +43,16 @@ const Analytics = () => {
         const response = await axios.get('/shops')
         const shopsList = response.data.data.shops
         setShops(shopsList)
-        if (shopsList.length > 0) {
+
+        // Logic de persistance
+        const savedShopId = localStorage.getItem('selectedShopId')
+
+        if (savedShopId && shopsList.find(s => s.id === savedShopId)) {
+          setSelectedShopId(savedShopId)
+        } else if (shopsList.length > 0) {
           setSelectedShopId(shopsList[0].id)
         } else {
-          setLoading(false) // Pas de boutique, fin de chargement
+          setLoading(false) // Pas de boutique
         }
       } catch (error) {
         console.error("Erreur chargement boutiques", error)
@@ -155,7 +161,10 @@ const Analytics = () => {
               {shops.map(shop => (
                 <button
                   key={shop.id}
-                  onClick={() => setSelectedShopId(shop.id)}
+                  onClick={() => {
+                    setSelectedShopId(shop.id)
+                    localStorage.setItem('selectedShopId', shop.id)
+                  }}
                   className={`w-full text-left px-4 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors
                       ${selectedShopId === shop.id ? 'bg-primary-50/50' : ''}
                     `}
