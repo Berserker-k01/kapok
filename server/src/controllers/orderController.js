@@ -207,10 +207,16 @@ exports.createPublicOrder = async (req, res) => {
             customerId = customerCheck.rows[0].id
         } else {
             customerId = uuidv4()
+            const addressJson = JSON.stringify({
+                street: address,
+                city: city,
+                full: `${address}, ${city}`
+            })
+
             await db.query(`
                 INSERT INTO customers (id, name, phone, address, created_at)
                 VALUES (?, ?, ?, ?, NOW())
-            `, [customerId, `${firstName} ${lastName}`, phone, `${address}, ${city}`])
+            `, [customerId, `${firstName} ${lastName}`, phone, addressJson])
         }
 
         // 5. Créer la commande
