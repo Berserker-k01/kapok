@@ -242,8 +242,9 @@ class ShopService {
     const userPlan = userResult.rows[0].plan || 'free';
 
     // 2. Get Limits from Config
+    // Normalisation: toujours chercher en minuscule dans la config
     const planConfigQuery = 'SELECT max_shops FROM plans_config WHERE plan_key = ?';
-    const planConfigResult = await db.query(planConfigQuery, [userPlan]);
+    const planConfigResult = await db.query(planConfigQuery, [userPlan.toLowerCase()]);
 
     let planLimit = 2; // Default fallback
 
