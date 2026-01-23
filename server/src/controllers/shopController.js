@@ -4,12 +4,20 @@ const catchAsync = require('../utils/catchAsync');
 exports.getAllShops = catchAsync(async (req, res, next) => {
     // DEBUG: Log user ID to verify coherence
     console.log(`[ShopController] Getting shops for UserID: ${req.user.id}`);
-    const shops = await shopService.getAllShops(req.user.id);
+
+    // Parallel fetch for perf
+    const [shops, limitData] = await Promise.all([
+        shopService.getAllShops(req.user.id),
+        shopService.getUserShopLimit(req.user.id)
+    ]);
 
     res.status(200).json({
         status: 'success',
         results: shops.length,
-        data: { shops }
+        data: {
+            shops,
+            limits: limitData
+        }
     });
 });
 

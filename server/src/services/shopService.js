@@ -24,35 +24,9 @@ class ShopService {
     const { name, description, category, theme } = shopData;
     // PLANS config removed, using DB table plans_config
 
-    // Récupérer le plan de l'utilisateur
-    const userQuery = 'SELECT plan FROM users WHERE id = ?';
-    const userResult = await db.query(userQuery, [userId]);
-
-    if (userResult.rows.length === 0) {
-      throw new AppError('Utilisateur non trouvé', 404);
-    }
-
-    const userPlan = userResult.rows[0].plan || 'free';
-
-    // Récupérer les limites dynamiques depuis la DB
-    // Récupérer les limites dynamiques depuis la DB (Table plans_config)
-    let planLimit = 2; // Default fallback
-
-    const planConfigQuery = 'SELECT max_shops FROM plans_config WHERE plan_key = ?';
-    const planConfigResult = await db.query(planConfigQuery, [userPlan]);
-
-    if (planConfigResult.rows.length > 0) {
-      const limit = planConfigResult.rows[0].max_shops;
-      // Si NULL dans la DB, on considère illimité (ex: 9999)
-      planLimit = limit === null ? 9999 : limit;
-    } else {
-      // Fallback si plan inconnu, check legacy settings
-      const settingsQuery = "SELECT value FROM platform_settings WHERE `key` = 'free_plan_shops_limit'";
-      const settingsResult = await db.query(settingsQuery);
-      if (settingsResult.rows.length > 0) {
-        planLimit = parseInt(settingsResult.rows[0].value);
-      }
-    }
+    // Récupérer les limites via la nouvelle méthode unifiée
+    // Note: createShop uses getUserShopLimit to ensure consistency
+    const { limit: planLimit, plan: userPlan } = await this.getUserShopLimit(userId);
 
     // Vérifier la limite de boutiques
     const countQuery = 'SELECT COUNT(*) FROM shops WHERE owner_id = ?';
@@ -257,6 +231,34 @@ class ShopService {
       categorySales: categoryResult.rows,
       recentActivity: recentActivityResult.rows
     };
+  }
+  async getUserShopLimit(userId) {
+    // 1. Get User Plan
+    const userQuery = 'SELECT plan FROM users WHERE id = ?';
+    const userResult = await db.query(userQuery, [userId]);
+
+    if (userResult.rows.length === 0) return { limit: 2, plan: 'free' };
+
+    const userPlan = userResult.rows[0].plan || 'free';
+
+    // 2. Get Limits from Config
+    const planConfigQuery = 'SELECT max_shops FROM plans_config WHERE plan_key = ?';
+    const planConfigResult = await db.query(planConfigQuery, [userPlan]);
+
+    let planLimit = 2; // Default fallback
+
+    if (planConfigResult.rows.length > 0) {
+      const limit = planConfigResult.rows[0].max_shops;
+      planLimit = limit === null ? 9999 : limit;
+    } else {
+      // Fallback checks
+      const settingsQuery = "SELECT value FROM platform_settings WHERE `key` = 'free_plan_shops_limit'";
+      const settingsResult = await db.query(settingsQuery);
+      if (settingsResult.rows.length > 0) {
+        planLimit = parseInt(settingsResult.rows[0].value);
+      }
+    }
+    return { limit: planLimit, plan: userPlan };
   }
 }
 

@@ -8,6 +8,7 @@ import { FiPlus, FiEdit, FiEye, FiSettings, FiGlobe, FiShoppingBag, FiTrash2, Fi
 const Shops = () => {
   const [shops, setShops] = useState([])
   const [loading, setLoading] = useState(true)
+  const [limits, setLimits] = useState({ limit: 2, plan: 'free' }) // Default
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [shopToDelete, setShopToDelete] = useState(null)
@@ -30,6 +31,11 @@ const Shops = () => {
       const response = await axios.get('/api/shops')
       // CORRECTION ROBUSTE: Gérer les deux formats (Admin vs User)
       setShops(response.data.shops || response.data.data?.shops || [])
+
+      // Update limits if available
+      if (response.data.data?.limits) {
+        setLimits(response.data.data.limits)
+      }
     } catch (error) {
       console.error('Erreur chargement boutiques:', error)
       toast.error('Impossible de charger vos boutiques')
@@ -83,7 +89,7 @@ const Shops = () => {
     }
   }
 
-  const canCreateShop = shops.length < 2 // Limite gratuite (à synchroniser avec le backend plus tard)
+  const canCreateShop = shops.length < limits.limit
 
   if (loading) {
     return (
@@ -99,7 +105,9 @@ const Shops = () => {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Mes Boutiques</h1>
-          <p className="text-gray-600">Gérez vos boutiques en ligne ({shops.length}/2 gratuites)</p>
+          <p className="text-gray-600">
+            Gérez vos boutiques en ligne ({shops.length}/{limits.limit > 1000 ? 'Illimité' : limits.limit} {limits.plan === 'free' ? 'gratuites' : ''})
+          </p>
         </div>
 
         {canCreateShop && (
@@ -234,7 +242,10 @@ const Shops = () => {
               Créer une boutique
             </h3>
             <p className="text-gray-500 max-w-[200px] group-hover:text-primary-600/70 transition-colors">
-              Il vous reste <span className="font-semibold">{2 - shops.length}</span> emplacement{2 - shops.length > 1 ? 's' : ''} gratuit{2 - shops.length > 1 ? 's' : ''}.
+              {limits.limit > 1000
+                ? 'Création illimitée avec votre plan.'
+                : <>Il vous reste <span className="font-semibold">{limits.limit - shops.length}</span> emplacement{limits.limit - shops.length > 1 ? 's' : ''}.</>
+              }
             </p>
           </div>
         )}
@@ -264,7 +275,7 @@ const Shops = () => {
                   Passez à la vitesse supérieure
                 </h3>
                 <p className="text-gray-300 max-w-xl text-lg leading-relaxed">
-                  Vous avez utilisé vos 2 boutiques gratuites. Débloquez la création illimitée et accédez à des thèmes exclusifs avec le plan Premium.
+                  Vous avez utilisé vos {limits.limit} boutiques gratuites. Débloquez la création illimitée et accédez à des thèmes exclusifs avec le plan Premium.
                 </p>
               </div>
             </div>
