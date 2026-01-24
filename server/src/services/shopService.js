@@ -243,13 +243,22 @@ class ShopService {
 
     // 2. Get Limits from Config
     // Normalisation: toujours chercher en minuscule dans la config
-    const planConfigQuery = 'SELECT max_shops FROM plans_config WHERE plan_key = ?';
-    const planConfigResult = await db.query(planConfigQuery, [userPlan.toLowerCase()]);
+    // 2. Get Limits from Config (Fetch ALL to avoid case sensitivity issues in SQL)
+    // On récupère tout pour matcher proprement en JS (plus sûr que SQL pour la case)
+    const planConfigQuery = 'SELECT * FROM plans_config';
+    const planConfigResult = await db.query(planConfigQuery);
 
     let planLimit = 2; // Default fallback
 
-    if (planConfigResult.rows.length > 0) {
-      const limit = planConfigResult.rows[0].max_shops;
+    // Find matching plan (Case Insensitive)
+    const matchedPlan = planConfigResult.rows.find(p =>
+      (p.plan_key && p.plan_key.toLowerCase() === userPlan.toLowerCase()) ||
+      (p.name && p.name.toLowerCase() === userPlan.toLowerCase())
+    );
+
+    if (matchedPlan) {
+      // Si NULL dans la DB, on considère illimité (ex: 9999)
+      const limit = matchedPlan.max_shops;
       planLimit = limit === null ? 9999 : limit;
     } else {
       // Fallback checks
@@ -257,6 +266,11 @@ class ShopService {
       const settingsResult = await db.query(settingsQuery);
       if (settingsResult.rows.length > 0) {
         planLimit = parseInt(settingsResult.rows[0].value);
+      } else {
+        // Hardcoded safety net for known plans if config is missing
+        if (['pro', 'gold', 'premium'].includes(userPlan.toLowerCase())) {
+          planLimit = 9999;
+        }
       }
     }
     return { limit: planLimit, plan: userPlan };
