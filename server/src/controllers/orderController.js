@@ -1,5 +1,5 @@
 const db = require('../config/database')
-const sheetService = require('../services/sheetService')
+const googleSheetService = require('../services/googleSheetService')
 const { v4: uuidv4 } = require('uuid')
 
 exports.getOrdersByShop = async (req, res) => {
@@ -268,11 +268,17 @@ exports.createPublicOrder = async (req, res) => {
         // 7. Synchro Sheet & Response
         const fullOrder = {
             ...order,
-            customer: { name: `${firstName} ${lastName}`, phone, address: `${address}, ${city}` },
-            items: verifiedItems.map(i => ({ quantity: i.quantity, product_name: i.name }))
+            customer: {
+                name: `${firstName} ${lastName}`,
+                email: 'N/A', // Public order might not have email, handled in service
+                phone,
+                address: `${address}, ${city}`
+            },
+            items: verifiedItems.map(i => ({ quantity: i.quantity, name: i.name }))
         }
 
-        sheetService.appendOrder(fullOrder).catch(err => console.error('Sheet sync error:', err))
+        // Fire and forget sync
+        googleSheetService.addOrder(fullOrder).catch(err => console.error('Sheet sync error:', err.message));
 
         res.status(201).json({
             message: 'Commande créée avec succès',

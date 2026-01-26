@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 import toast from 'react-hot-toast'
-import { FiSearch, FiUserX, FiUserCheck, FiLoader, FiMail, FiClock, FiLock, FiSlash } from 'react-icons/fi'
+import { FiSearch, FiUserX, FiUserCheck, FiLoader, FiMail, FiClock, FiLock, FiSlash, FiShoppingBag } from 'react-icons/fi'
 import { Card } from '../../components/ui/Card'
 import Badge from '../../components/ui/Badge'
 import { useAuthStore } from '../../store/authStore'
@@ -195,6 +195,13 @@ const Users = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       {user.status === 'active' ? (
                         <div className="flex items-center space-x-2 ml-auto">
+                          <button
+                            onClick={() => window.open(`/shops?impersonate=${user.id}`, '_blank')}
+                            className="text-purple-600 hover:text-purple-900 p-1"
+                            title="Voir les boutiques"
+                          >
+                            <FiShoppingBag className="w-5 h-5" />
+                          </button>
                           {user.plan !== 'free' && (
                             <button
                               onClick={() => handleCancelPlan(user.id)}

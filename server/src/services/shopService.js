@@ -256,11 +256,16 @@ class ShopService {
       (p.name && p.name.toLowerCase() === userPlan.toLowerCase())
     );
 
+    console.log(`[ShopLimit] UserID: ${userId}, Plan: ${userPlan}`);
+    console.log(`[ShopLimit] Configs found: ${planConfigResult.rows.length}`);
+
     if (matchedPlan) {
+      console.log(`[ShopLimit] Match found: ${matchedPlan.plan_key}, Max: ${matchedPlan.max_shops}`);
       // Si NULL dans la DB, on considère illimité (ex: 9999)
       const limit = matchedPlan.max_shops;
       planLimit = limit === null ? 9999 : limit;
     } else {
+      console.log(`[ShopLimit] No config match for plan '${userPlan}'. Using fallback.`);
       // Fallback checks
       const settingsQuery = "SELECT value FROM platform_settings WHERE `key` = 'free_plan_shops_limit'";
       const settingsResult = await db.query(settingsQuery);

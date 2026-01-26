@@ -124,7 +124,6 @@ const Products = () => {
     formData.append('description', newProduct.description)
     formData.append('category', newProduct.category)
     formData.append('stock', newProduct.stock)
-    formData.append('stock', newProduct.stock)
     formData.append('shopId', selectedShop)
     if (newProduct.collectionId) formData.append('collectionId', newProduct.collectionId) // [NEW]
 
