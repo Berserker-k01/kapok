@@ -24,8 +24,10 @@ function App() {
   // Configuration Axios Globale (Interceptor > useEffect pour éviter les race conditions)
   useEffect(() => {
     // Relative URL pour passer par le Proxy (Nginx ou Vite)
-    // HARDCODED HOSTINGER PRODUCTION
-    axios.defaults.baseURL = 'https://e-assime.com/api';
+    // Relative URL pour passer par le Proxy (Nginx ou Vite)
+    // Dynamic Environment Configuration
+    const isDev = import.meta.env.DEV;
+    axios.defaults.baseURL = isDev ? '/api' : 'https://e-assime.com/api';
 
     // Intercepteur pour injecter le token en temps réel
     const requestInterceptor = axios.interceptors.request.use(
