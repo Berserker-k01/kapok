@@ -1,10 +1,10 @@
-const { GoogleSpreadsheet } = require('google-spreadsheet');
-const { JWT } = require('google-auth-library');
+const { google } = require('googleapis');
 
 class GoogleSheetService {
     constructor() {
-        this.doc = null;
+        this.sheets = null;
         this.isReady = false;
+        this.spreadsheetId = null;
     }
 
     async init() {
@@ -14,16 +14,19 @@ class GoogleSheetService {
                 return;
             }
 
-            const serviceAccountAuth = new JWT({
-                email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-                key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+            const auth = new google.auth.GoogleAuth({
+                credentials: {
+                    client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+                    private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+                },
                 scopes: ['https://www.googleapis.com/auth/spreadsheets'],
             });
 
-            this.doc = new GoogleSpreadsheet(process.env.GOOGLE_SHEETS_ID, serviceAccountAuth);
-            await this.doc.loadInfo();
+            this.sheets = google.sheets({ version: 'v4', auth });
+            this.spreadsheetId = process.env.GOOGLE_SHEETS_ID;
             this.isReady = true;
-            console.log(`Google Sheets connected: ${this.doc.title}`);
+            console.log('Google Sheets service initialized (googleapis).');
+
         } catch (error) {
             console.error('Failed to initialize Google Sheets:', error.message);
         }
@@ -31,28 +34,34 @@ class GoogleSheetService {
 
     async addOrder(order) {
         if (!this.isReady) {
-            // Try to init if not ready (lazy init)
             await this.init();
             if (!this.isReady) return;
         }
 
         try {
-            const sheet = this.doc.sheetsByIndex[0]; // Use first sheet
+            // Prepare row data (Fixed Column Order assumption: A to I)
+            // Order ID | Date | Customer | Email | Phone | Total | Status | Payment | Items
+            const values = [[
+                order.order_number,
+                new Date(order.created_at).toLocaleString(),
+                order.customer?.name || 'Guest',
+                order.customer?.email || 'N/A',
+                order.customer?.phone || 'N/A',
+                `${order.total_amount} ${order.currency}`,
+                order.status,
+                order.payment_status,
+                order.items ? order.items.map(i => `${i.quantity}x ${i.name || 'Product'}`).join(', ') : ''
+            ]];
 
-            // Map order data to row
-            const row = {
-                'Order ID': order.order_number,
-                'Date': new Date(order.created_at).toLocaleString(),
-                'Customer': order.customer?.name || 'Guest',
-                'Email': order.customer?.email || 'N/A',
-                'Phone': order.customer?.phone || 'N/A',
-                'Total': `${order.total_amount} ${order.currency}`,
-                'Status': order.status,
-                'Payment': order.payment_status,
-                'Items': order.items ? order.items.map(i => `${i.quantity}x ${i.name || 'Product'}`).join(', ') : ''
-            };
+            await this.sheets.spreadsheets.values.append({
+                spreadsheetId: this.spreadsheetId,
+                range: 'Sheet1!A:I',
+                valueInputOption: 'USER_ENTERED',
+                resource: {
+                    values: values
+                }
+            });
 
-            await sheet.addRow(row);
             console.log(`Order ${order.order_number} added to Google Sheet.`);
         } catch (error) {
             console.error('Error adding order to Google Sheet:', error.message);
