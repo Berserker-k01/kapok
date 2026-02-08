@@ -30,9 +30,15 @@ const Settings = () => {
     setLoading(true)
 
     try {
-      const response = await axios.put('/api/users/profile', profileData)
-      updateUser(response.data.user)
-      toast.success('Profil mis à jour avec succès')
+      const response = await axios.put('/users/profile', profileData)
+      // Handle both response formats: response.data.user or response.data.data.user
+      const updatedUser = response.data.data?.user || response.data.user
+      if (updatedUser) {
+        updateUser(updatedUser)
+        toast.success('Profil mis à jour avec succès')
+      } else {
+        throw new Error('Invalid response format')
+      }
     } catch (error) {
       console.error(error)
       toast.error(error.response?.data?.error || 'Erreur lors de la mise à jour')
@@ -78,8 +84,8 @@ const Settings = () => {
           <button
             onClick={() => setActiveTab('profile')}
             className={`w-full flex items-center p-3 rounded-lg transition-colors ${activeTab === 'profile'
-                ? 'bg-primary-50 text-primary-700 font-medium'
-                : 'text-secondary-600 hover:bg-secondary-50'
+              ? 'bg-primary-50 text-primary-700 font-medium'
+              : 'text-secondary-600 hover:bg-secondary-50'
               }`}
           >
             <FiUser className="mr-3" />
@@ -88,8 +94,8 @@ const Settings = () => {
           <button
             onClick={() => setActiveTab('security')}
             className={`w-full flex items-center p-3 rounded-lg transition-colors ${activeTab === 'security'
-                ? 'bg-primary-50 text-primary-700 font-medium'
-                : 'text-secondary-600 hover:bg-secondary-50'
+              ? 'bg-primary-50 text-primary-700 font-medium'
+              : 'text-secondary-600 hover:bg-secondary-50'
               }`}
           >
             <FiLock className="mr-3" />

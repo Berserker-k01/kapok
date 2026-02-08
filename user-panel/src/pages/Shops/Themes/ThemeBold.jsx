@@ -1,11 +1,12 @@
-import { FiShoppingBag, FiArrowRight } from 'react-icons/fi'
+import { FiShoppingBag, FiArrowRight, FiX, FiImage } from 'react-icons/fi'
 import { Link } from 'react-router-dom'
 import { useCart } from '../../../context/CartContext'
 import { trackViewContent, isPixelReady } from '../../../utils/facebookPixel'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 const ThemeBold = ({ shop, products }) => {
     const { addToCart, setIsCartOpen, cartCount } = useCart()
+    const [selectedProduct, setSelectedProduct] = useState(null)
 
     // Tracker ViewContent pour chaque produit au chargement
     useEffect(() => {
@@ -86,7 +87,12 @@ const ThemeBold = ({ shop, products }) => {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         {products.map((product, index) => (
-                            <div key={product.id} className="group bg-zinc-900 border-2 border-zinc-800 hover:border-opacity-100 transition-all duration-500 overflow-hidden rounded-lg shadow-soft hover:shadow-glow animate-fade-in-up" style={{animationDelay: `${index * 100}ms`, ['--tw-border-opacity']: 0, ['--hover-border-color']: primaryColor}}>
+                            <div
+                                key={product.id}
+                                className="group bg-zinc-900 border-2 border-zinc-800 hover:border-opacity-100 transition-all duration-500 overflow-hidden rounded-lg shadow-soft hover:shadow-glow animate-fade-in-up cursor-pointer"
+                                style={{ animationDelay: `${index * 100}ms`, ['--tw-border-opacity']: 0, ['--hover-border-color']: primaryColor }}
+                                onClick={() => setSelectedProduct(product)}
+                            >
                                 <div className="aspect-square overflow-hidden relative">
                                     {product.image_url ? (
                                         <img
@@ -110,18 +116,25 @@ const ThemeBold = ({ shop, products }) => {
                                     <h3 className="text-2xl font-bold mb-2 truncate group-hover:text-yellow-400 transition-colors">{product.name}</h3>
                                     <div className="flex justify-between items-end mt-6">
                                         <span className="text-4xl font-black" style={{ color: primaryColor }}>
-                                            {product.price} {product.currency || '€'}
+                                            {product.price} {product.currency || 'F CFA'}
                                         </span>
                                         <div className="flex gap-3">
                                             <button
-                                                onClick={() => addToCart(product)}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    addToCart(product);
+                                                }}
                                                 className="text-white border-b-2 border-white pb-1 font-bold transition-all duration-300 text-sm hover:scale-110" style={{ ['--hover-border-color']: primaryColor }}
                                                 onMouseEnter={(e) => { e.target.style.color = primaryColor; e.target.style.borderColor = primaryColor; }}
                                                 onMouseLeave={(e) => { e.target.style.color = 'white'; e.target.style.borderColor = 'white'; }}
                                             >
                                                 AJOUTER
                                             </button>
-                                            <Link to={`/checkout/cod/${product.id}`} className="text-zinc-500 border-b-2 border-zinc-500 pb-1 font-bold hover:text-white hover:border-white transition-all duration-300 text-sm">
+                                            <Link
+                                                to={`/checkout/cod/${product.id}`}
+                                                className="text-zinc-500 border-b-2 border-zinc-500 pb-1 font-bold hover:text-white hover:border-white transition-all duration-300 text-sm"
+                                                onClick={(e) => e.stopPropagation()}
+                                            >
                                                 RAPIDE
                                             </Link>
                                         </div>
@@ -146,6 +159,58 @@ const ThemeBold = ({ shop, products }) => {
                     <p className="text-zinc-500">© {new Date().getFullYear()} ALL RIGHTS RESERVED.</p>
                 </div>
             </footer>
+
+            {/* Product Detail Modal */}
+            {selectedProduct && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={() => setSelectedProduct(null)}>
+                    <div className="bg-zinc-900 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border-2 border-zinc-800" onClick={(e) => e.stopPropagation()}>
+                        <div className="grid md:grid-cols-2 gap-8 p-8">
+                            {/* Image */}
+                            <div className="aspect-square bg-zinc-800 rounded-xl overflow-hidden">
+                                {selectedProduct.image_url ? (
+                                    <img src={selectedProduct.image_url} alt={selectedProduct.name} className="w-full h-full object-cover" />
+                                ) : (
+                                    <div className="w-full h-full flex flex-col items-center justify-center text-zinc-600">
+                                        <FiImage size={80} />
+                                        <span className="mt-4 font-bold">NO IMAGE</span>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Details */}
+                            <div className="flex flex-col text-white">
+                                <button onClick={() => setSelectedProduct(null)} className="self-end p-2 hover:bg-zinc-800 rounded-full transition-colors mb-4">
+                                    <FiX size={24} />
+                                </button>
+                                <h2 className="text-3xl font-black mb-4 uppercase">{selectedProduct.name}</h2>
+                                <p className="text-3xl font-black mb-6" style={{ color: primaryColor }}>
+                                    {selectedProduct.price} {selectedProduct.currency || 'F CFA'}
+                                </p>
+                                <p className="text-gray-400 mb-6 leading-relaxed">
+                                    {selectedProduct.description || 'Aucune description disponible.'}
+                                </p>
+                                <div className="flex gap-4 items-center mb-6">
+                                    <span className="text-sm text-gray-500 uppercase font-bold">Stock:</span>
+                                    <span className="font-bold">{selectedProduct.stock > 0 ? `${selectedProduct.stock} disponible(s)` : 'RUPTURE DE STOCK'}</span>
+                                </div>
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        addToCart(selectedProduct);
+                                        setSelectedProduct(null);
+                                    }}
+                                    disabled={selectedProduct.stock <= 0}
+                                    className="w-full py-4 rounded-lg font-black text-lg uppercase tracking-wide transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                    style={{ backgroundColor: primaryColor, color: secondaryColor }}
+                                >
+                                    <FiShoppingBag size={20} />
+                                    {selectedProduct.stock > 0 ? 'AJOUTER AU PANIER' : 'RUPTURE DE STOCK'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

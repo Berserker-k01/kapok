@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react'
-import { FiShoppingCart, FiImage, FiBox, FiHeart, FiEye, FiArrowRight, FiCheck } from 'react-icons/fi'
+import { FiShoppingCart, FiImage, FiBox, FiHeart, FiEye, FiArrowRight, FiCheck, FiX } from 'react-icons/fi'
 import { formatCurrency } from '../../../utils/currency'
+import { useCart } from '../../../context/CartContext'
 
-const ThemeMinimal = ({ shop, products, addToCart, cart }) => {
+const ThemeMinimal = ({ shop, products }) => {
+  const { addToCart, cart, setIsCartOpen } = useCart()
   const [scrolled, setScrolled] = useState(false)
   const [hoveredProduct, setHoveredProduct] = useState(null)
+  const [selectedProduct, setSelectedProduct] = useState(null)
 
   const {
     primary = '#000000',
@@ -47,6 +50,7 @@ const ThemeMinimal = ({ shop, products, addToCart, cart }) => {
           </div>
 
           <button
+            onClick={() => setIsCartOpen(true)}
             className="relative p-3 rounded-full hover:bg-gray-100 transition-colors"
             style={{ color: 'inherit' }}
           >
@@ -113,6 +117,7 @@ const ThemeMinimal = ({ shop, products, addToCart, cart }) => {
               <div
                 key={product.id}
                 className="group cursor-pointer"
+                onClick={() => setSelectedProduct(product)}
                 onMouseEnter={() => setHoveredProduct(product.id)}
                 onMouseLeave={() => setHoveredProduct(null)}
               >
@@ -153,7 +158,7 @@ const ThemeMinimal = ({ shop, products, addToCart, cart }) => {
                       {product.name}
                     </h3>
                     <p className="text-lg font-bold" style={{ color: text }}>
-                      {formatCurrency(product.price)}
+                      {product.price} {product.currency || 'F CFA'}
                     </p>
                   </div>
                   <p className="text-sm text-gray-500 mt-1 line-clamp-1">
@@ -209,6 +214,57 @@ const ThemeMinimal = ({ shop, products, addToCart, cart }) => {
           </div>
         </div>
       </footer>
+
+      {/* Product Detail Modal */}
+      {selectedProduct && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setSelectedProduct(null)}>
+          <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="grid md:grid-cols-2 gap-8 p-8">
+              {/* Image */}
+              <div className="aspect-square bg-gray-100 rounded-xl overflow-hidden">
+                {selectedProduct.image_url ? (
+                  <img src={selectedProduct.image_url} alt={selectedProduct.name} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-gray-300">
+                    <FiImage size={80} />
+                  </div>
+                )}
+              </div>
+
+              {/* Details */}
+              <div className="flex flex-col">
+                <button onClick={() => setSelectedProduct(null)} className="self-end p-2 hover:bg-gray-100 rounded-full transition-colors mb-4">
+                  <FiX size={24} />
+                </button>
+                <h2 className="text-3xl font-bold mb-4" style={{ color: text }}>{selectedProduct.name}</h2>
+                <p className="text-2xl font-bold mb-6" style={{ color: primary }}>
+                  {selectedProduct.price} {selectedProduct.currency || 'F CFA'}
+                </p>
+                <p className="text-gray-600 mb-6 leading-relaxed">
+                  {selectedProduct.description || 'Aucune description disponible.'}
+                </p>
+                <div className="flex gap-4 items-center mb-6">
+                  <span className="text-sm text-gray-500">Stock:</span>
+                  <span className="font-semibold">{selectedProduct.stock > 0 ? `${selectedProduct.stock} disponible(s)` : 'Rupture de stock'}</span>
+                </div>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    addToCart(selectedProduct);
+                    setSelectedProduct(null);
+                  }}
+                  disabled={selectedProduct.stock <= 0}
+                  className="w-full py-4 rounded-xl font-bold text-lg transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  style={{ backgroundColor: primary, color: secondary }}
+                >
+                  <FiShoppingCart size={20} />
+                  {selectedProduct.stock > 0 ? 'Ajouter au panier' : 'Rupture de stock'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -83,7 +83,7 @@ const CartDrawer = () => {
                                                                         <div>
                                                                             <div className="flex justify-between text-base font-medium text-gray-900">
                                                                                 <h3>{product.name}</h3>
-                                                                                <p className="ml-4">{product.price} {product.currency || '€'}</p>
+                                                                                <p className="ml-4">{product.price} {product.currency || 'F CFA'}</p>
                                                                             </div>
                                                                         </div>
                                                                         <div className="flex flex-1 items-end justify-between text-sm">
@@ -119,7 +119,7 @@ const CartDrawer = () => {
                                             <div className="border-t border-gray-200 px-4 py-6 sm:px-6">
                                                 <div className="flex justify-between text-base font-medium text-gray-900">
                                                     <p>Sous-total</p>
-                                                    <p>{cartTotal.toFixed(2)} €</p>
+                                                    <p>{cartTotal.toFixed(2)} F CFA</p>
                                                 </div>
                                                 <p className="mt-0.5 text-sm text-gray-500">Taxes et frais de livraison calculés à l'étape suivante.</p>
                                                 <div className="mt-6">

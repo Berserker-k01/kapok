@@ -14,6 +14,7 @@ const Orders = () => {
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedStatus, setSelectedStatus] = useState('all')
+  const [confirmAction, setConfirmAction] = useState(null) // { orderId, status, label }
   const { token } = useAuthStore()
 
   // Configuration Axios
@@ -30,8 +31,14 @@ const Orders = () => {
         const response = await axios.get('/shops')
         const shopsData = response.data.data?.shops || []
         setShops(shopsData)
-        if (shopsData.length > 0) {
+
+        // Restore from localStorage or default to first shop
+        const savedShopId = localStorage.getItem('selectedShopId')
+        if (savedShopId && shopsData.find(s => s.id === savedShopId)) {
+          setSelectedShop(savedShopId)
+        } else if (shopsData.length > 0) {
           setSelectedShop(shopsData[0].id)
+          localStorage.setItem('selectedShopId', shopsData[0].id)
         } else {
           setLoading(false)
         }
@@ -69,6 +76,7 @@ const Orders = () => {
       await axios.put(`/orders/${orderId}/status`, { status: newStatus })
       toast.success(`Commande ${newStatus === 'confirmed' ? 'confirmée' : newStatus === 'shipped' ? 'expédiée' : 'mise à jour'}`)
       fetchOrders() // Rafraîchir la liste
+      setConfirmAction(null) // Close modal
     } catch (error) {
       console.error('Erreur mise à jour statut:', error)
       toast.error('Impossible de mettre à jour le statut')
@@ -178,7 +186,10 @@ const Orders = () => {
           {shops.length > 0 ? (
             <select
               value={selectedShop}
-              onChange={(e) => setSelectedShop(e.target.value)}
+              onChange={(e) => {
+                setSelectedShop(e.target.value)
+                localStorage.setItem('selectedShopId', e.target.value)
+              }}
               className="input-field w-48"
             >
               {shops.map(shop => (
@@ -292,14 +303,14 @@ const Orders = () => {
                         {order.status === 'pending' && (
                           <>
                             <button
-                              onClick={() => handleUpdateStatus(order.id, 'confirmed')}
+                              onClick={() => setConfirmAction({ orderId: order.id, status: 'confirmed', label: 'Confirmer' })}
                               className="text-green-600 hover:text-green-900"
                               title="Confirmer"
                             >
                               <FiCheck className="h-5 w-5" />
                             </button>
                             <button
-                              onClick={() => handleUpdateStatus(order.id, 'cancelled')}
+                              onClick={() => setConfirmAction({ orderId: order.id, status: 'cancelled', label: 'Annuler' })}
                               className="text-red-600 hover:text-red-900"
                               title="Annuler"
                             >
@@ -309,7 +320,7 @@ const Orders = () => {
                         )}
                         {order.status === 'confirmed' && (
                           <button
-                            onClick={() => handleUpdateStatus(order.id, 'shipped')}
+                            onClick={() => setConfirmAction({ orderId: order.id, status: 'shipped', label: 'Expédier' })}
                             className="text-blue-600 hover:text-blue-900"
                             title="Expédier"
                           >
@@ -318,7 +329,7 @@ const Orders = () => {
                         )}
                         {order.status === 'shipped' && (
                           <button
-                            onClick={() => handleUpdateStatus(order.id, 'delivered')}
+                            onClick={() => setConfirmAction({ orderId: order.id, status: 'delivered', label: 'Marquer comme livré' })}
                             className="text-green-600 hover:text-green-900"
                             title="Marquer comme livré"
                           >
@@ -334,6 +345,32 @@ const Orders = () => {
           </table>
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      {confirmAction && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setConfirmAction(null)}>
+          <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-xl font-bold mb-4">Confirmer l'action</h3>
+            <p className="text-gray-600 mb-6">
+              Êtes-vous sûr de vouloir <strong>{confirmAction.label.toLowerCase()}</strong> cette commande ?
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setConfirmAction(null)}
+                className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={() => handleUpdateStatus(confirmAction.orderId, confirmAction.status)}
+                className="px-4 py-2 rounded-lg bg-primary-600 text-white hover:bg-primary-700 transition-colors"
+              >
+                Confirmer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

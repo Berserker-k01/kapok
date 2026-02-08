@@ -280,9 +280,11 @@ const Shops = () => {
               </div>
             </div>
 
-            <button className="flex-shrink-0 bg-white text-gray-900 hover:bg-gray-50 px-8 py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 whitespace-nowrap">
-              Passer au Premium
-            </button>
+            <Link to="/subscriptions" className="flex-shrink-0">
+              <button className="bg-white text-gray-900 hover:bg-gray-50 px-8 py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 whitespace-nowrap">
+                Passer au Premium
+              </button>
+            </Link>
           </div>
         </div>
       )}

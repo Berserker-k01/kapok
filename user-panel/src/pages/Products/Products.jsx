@@ -44,8 +44,14 @@ const Products = () => {
         const response = await axios.get('/shops')
         const shopsData = response.data.data?.shops || []
         setShops(shopsData)
-        if (shopsData.length > 0) {
+
+        // Restore from localStorage or default to first shop
+        const savedShopId = localStorage.getItem('selectedShopId')
+        if (savedShopId && shopsData.find(s => s.id === savedShopId)) {
+          setSelectedShop(savedShopId)
+        } else if (shopsData.length > 0) {
           setSelectedShop(shopsData[0].id)
+          localStorage.setItem('selectedShopId', shopsData[0].id)
         } else {
           setLoading(false)
         }
@@ -220,7 +226,10 @@ const Products = () => {
           {shops.length > 0 ? (
             <select
               value={selectedShop}
-              onChange={(e) => setSelectedShop(e.target.value)}
+              onChange={(e) => {
+                setSelectedShop(e.target.value)
+                localStorage.setItem('selectedShopId', e.target.value)
+              }}
               className="input-field w-48"
             >
               {shops.map(shop => (
@@ -525,6 +534,7 @@ const Products = () => {
                                 <option value="Beauté">💄 Beauté & Cosmétiques</option>
                                 <option value="Accessoires">👜 Accessoires</option>
                                 <option value="Sport">⚽ Sport & Loisirs</option>
+                                <option value="Autres">📦 Autres</option>
                               </select>
                             </div>
 
