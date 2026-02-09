@@ -8,9 +8,18 @@ const Input = React.forwardRef(({
     ...props
 }, ref) => {
     return (
-        <div className="space-y-1 w-full">
+        <div className="space-y-1 w-full" style={{ overflow: 'visible' }}>
             {label && (
-                <label className="block text-sm font-medium text-secondary-700 mb-1.5 w-full overflow-visible whitespace-normal break-words">
+                <label
+                    className="block text-sm font-medium text-secondary-700 mb-1.5 w-full pl-0.5"
+                    style={{
+                        overflow: 'visible',
+                        whiteSpace: 'normal',
+                        wordBreak: 'break-word',
+                        textOverflow: 'clip',
+                        paddingLeft: '2px'
+                    }}
+                >
                     {label}
                 </label>
             )}
