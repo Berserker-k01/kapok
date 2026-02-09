@@ -113,6 +113,13 @@ class ShopService {
   async updateShop(shopId, updateData) {
     const { name, description, category, theme, settings } = updateData;
 
+    // Convert undefined to null for SQL compatibility
+    const safeName = name !== undefined ? name : null;
+    const safeDescription = description !== undefined ? description : null;
+    const safeCategory = category !== undefined ? category : null;
+    const safeTheme = theme !== undefined ? theme : null;
+    const safeSettings = settings ? JSON.stringify(settings) : null;
+
     const updateQuery = `
       UPDATE shops 
       SET 
@@ -126,8 +133,8 @@ class ShopService {
     `;
 
     await db.query(updateQuery, [
-      name, description, category, theme,
-      settings ? JSON.stringify(settings) : null, shopId
+      safeName, safeDescription, safeCategory, safeTheme,
+      safeSettings, shopId
     ]);
 
     // FETCH AFTER UPDATE
