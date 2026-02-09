@@ -129,10 +129,13 @@ const ShopSettings = () => {
                 }
             });
 
-            toast.success('Paramètres sauvegardés !')
+            toast.success('Paramètres sauvegardés avec succès !')
+
+            // Recharger les données de la boutique pour afficher les changements
+            await fetchShop()
         } catch (error) {
-            console.error(error)
-            toast.error(`Erreur sauvegarde: ${error.response?.data?.error || error.response?.data?.message || 'Erreur inconnue'}`)
+            console.error('Erreur sauvegarde:', error)
+            toast.error(`Erreur: ${error.response?.data?.error || error.response?.data?.message || 'Impossible de sauvegarder'}`)
         }
     }
 
@@ -158,14 +161,14 @@ const ShopSettings = () => {
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
 
                         {/* Status Toggle */}
-                        <div className="bg-white p-4 rounded-lg border border-gray-200 flex items-center justify-between">
-                            <div>
-                                <h3 className="font-medium text-gray-900">Statut de la boutique</h3>
-                                <p className="text-sm text-gray-500">Activez ou désactivez l'accès public à votre boutique.</p>
+                        <div className="bg-white p-4 rounded-lg border border-gray-200 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                            <div className="flex-1">
+                                <h3 className="font-medium text-gray-900 text-sm md:text-base">Statut de la boutique</h3>
+                                <p className="text-xs md:text-sm text-gray-500 mt-1 leading-relaxed">Activez ou désactivez l'accès public à votre boutique.</p>
                             </div>
                             <select
                                 {...register('status')}
-                                className="input-field w-auto min-w-[150px]"
+                                className="input-field w-full md:w-auto md:min-w-[150px] text-sm md:text-base"
                             >
                                 <option value="active">🟢 Active</option>
                                 <option value="inactive">🔴 Inactive</option>
@@ -219,78 +222,76 @@ const ShopSettings = () => {
                         </div>
 
                         {/* Configuration des Couleurs - Pour TOUS les thèmes */}
-                        <div className="bg-gradient-to-br from-purple-50 to-blue-50 p-6 rounded-xl border-2 border-purple-200 space-y-6">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <h3 className="font-bold text-gray-900 text-lg flex items-center gap-2">
-                                        🎨 Personnalisation des Couleurs
-                                    </h3>
-                                    <p className="text-sm text-gray-600 mt-1">
-                                        Personnalisez les couleurs de votre boutique pour qu'elle corresponde à votre marque
-                                    </p>
-                                </div>
+                        <div className="bg-gradient-to-br from-purple-50 to-blue-50 p-4 md:p-6 rounded-xl border-2 border-purple-200 space-y-6">
+                            <div className="flex flex-col gap-2">
+                                <h3 className="font-bold text-gray-900 text-base md:text-lg flex items-center gap-2">
+                                    🎨 Personnalisation des Couleurs
+                                </h3>
+                                <p className="text-xs md:text-sm text-gray-600 leading-relaxed">
+                                    Personnalisez les couleurs de votre boutique pour qu'elle corresponde à votre marque
+                                </p>
                             </div>
 
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
                                 <div className="space-y-2">
-                                    <label className="block text-sm font-semibold text-gray-700">
+                                    <label className="block text-xs md:text-sm font-semibold text-gray-700 break-words">
                                         Couleur Primaire
                                     </label>
-                                    <div className="relative">
+                                    <div className="relative pb-6">
                                         <input
                                             type="color"
                                             {...register('themeConfig.colors.primary')}
-                                            className="h-12 w-full cursor-pointer rounded-lg border-2 border-gray-300 hover:border-purple-400 transition-colors"
+                                            className="h-10 md:h-12 w-full cursor-pointer rounded-lg border-2 border-gray-300 hover:border-purple-400 transition-colors"
                                         />
-                                        <span className="absolute -bottom-6 left-0 text-xs text-gray-500 font-mono">
+                                        <span className="absolute -bottom-1 left-0 text-[10px] md:text-xs text-gray-500 font-mono truncate w-full">
                                             {watch('themeConfig.colors.primary') || '#000000'}
                                         </span>
                                     </div>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="block text-sm font-semibold text-gray-700">
+                                    <label className="block text-xs md:text-sm font-semibold text-gray-700 break-words">
                                         Couleur Secondaire
                                     </label>
-                                    <div className="relative">
+                                    <div className="relative pb-6">
                                         <input
                                             type="color"
                                             {...register('themeConfig.colors.secondary')}
-                                            className="h-12 w-full cursor-pointer rounded-lg border-2 border-gray-300 hover:border-purple-400 transition-colors"
+                                            className="h-10 md:h-12 w-full cursor-pointer rounded-lg border-2 border-gray-300 hover:border-purple-400 transition-colors"
                                         />
-                                        <span className="absolute -bottom-6 left-0 text-xs text-gray-500 font-mono">
+                                        <span className="absolute -bottom-1 left-0 text-[10px] md:text-xs text-gray-500 font-mono truncate w-full">
                                             {watch('themeConfig.colors.secondary') || '#ffffff'}
                                         </span>
                                     </div>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="block text-sm font-semibold text-gray-700">
+                                    <label className="block text-xs md:text-sm font-semibold text-gray-700 break-words">
                                         Couleur de Fond
                                     </label>
-                                    <div className="relative">
+                                    <div className="relative pb-6">
                                         <input
                                             type="color"
                                             {...register('themeConfig.colors.background')}
-                                            className="h-12 w-full cursor-pointer rounded-lg border-2 border-gray-300 hover:border-purple-400 transition-colors"
+                                            className="h-10 md:h-12 w-full cursor-pointer rounded-lg border-2 border-gray-300 hover:border-purple-400 transition-colors"
                                         />
-                                        <span className="absolute -bottom-6 left-0 text-xs text-gray-500 font-mono">
+                                        <span className="absolute -bottom-1 left-0 text-[10px] md:text-xs text-gray-500 font-mono truncate w-full">
                                             {watch('themeConfig.colors.background') || '#ffffff'}
                                         </span>
                                     </div>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="block text-sm font-semibold text-gray-700">
+                                    <label className="block text-xs md:text-sm font-semibold text-gray-700 break-words">
                                         Couleur du Texte
                                     </label>
-                                    <div className="relative">
+                                    <div className="relative pb-6">
                                         <input
                                             type="color"
                                             {...register('themeConfig.colors.text')}
-                                            className="h-12 w-full cursor-pointer rounded-lg border-2 border-gray-300 hover:border-purple-400 transition-colors"
+                                            className="h-10 md:h-12 w-full cursor-pointer rounded-lg border-2 border-gray-300 hover:border-purple-400 transition-colors"
                                         />
-                                        <span className="absolute -bottom-6 left-0 text-xs text-gray-500 font-mono">
+                                        <span className="absolute -bottom-1 left-0 text-[10px] md:text-xs text-gray-500 font-mono truncate w-full">
                                             {watch('themeConfig.colors.text') || '#000000'}
                                         </span>
                                     </div>
@@ -298,16 +299,16 @@ const ShopSettings = () => {
                             </div>
 
                             {/* Preview */}
-                            <div className="mt-8 p-6 rounded-xl border-2 border-dashed border-gray-300"
+                            <div className="mt-6 p-4 md:p-6 rounded-xl border-2 border-dashed border-gray-300"
                                 style={{
                                     backgroundColor: watch('themeConfig.colors.background') || '#ffffff',
                                     color: watch('themeConfig.colors.text') || '#000000'
                                 }}>
-                                <h4 className="font-bold text-lg mb-2">Aperçu</h4>
-                                <p className="mb-4">Voici à quoi ressemblera votre boutique avec ces couleurs.</p>
+                                <h4 className="font-bold text-base md:text-lg mb-2">Aperçu</h4>
+                                <p className="mb-4 text-sm md:text-base">Voici à quoi ressemblera votre boutique avec ces couleurs.</p>
                                 <button
                                     type="button"
-                                    className="px-6 py-3 rounded-lg font-bold transition-transform hover:scale-105"
+                                    className="px-4 md:px-6 py-2 md:py-3 rounded-lg font-bold transition-transform hover:scale-105 text-sm md:text-base"
                                     style={{
                                         backgroundColor: watch('themeConfig.colors.primary') || '#000000',
                                         color: watch('themeConfig.colors.secondary') || '#ffffff'

@@ -74,9 +74,8 @@ exports.updateShop = catchAsync(async (req, res, next) => {
         return cleaned;
     };
 
-    // 1. Handle File Uploads (Banner/Logo)
+    // 1. Handle File Uploads (Banner/Logo) via Cloudinary
     let updateData = { ...req.body };
-    const baseUrl = process.env.API_URL || 'https://e-assime.com/api';
 
     // If FormData was sent, 'settings' might be a JSON string. Parse it first.
     if (typeof updateData.settings === 'string') {
@@ -92,12 +91,15 @@ exports.updateShop = catchAsync(async (req, res, next) => {
     if (!updateData.settings.themeConfig) updateData.settings.themeConfig = {};
     if (!updateData.settings.themeConfig.content) updateData.settings.themeConfig.content = {};
 
+    // Utiliser les URLs Cloudinary
     if (req.files) {
-        if (req.files['logo']) {
-            updateData.settings.themeConfig.content.logoUrl = `${baseUrl}/uploads/${req.files['logo'][0].filename}`;
+        if (req.files['logo'] && req.files['logo'][0].cloudinaryUrl) {
+            updateData.settings.themeConfig.content.logoUrl = req.files['logo'][0].cloudinaryUrl;
+            console.log('[Shop] ✅ Logo uploaded to Cloudinary:', updateData.settings.themeConfig.content.logoUrl);
         }
-        if (req.files['banner']) {
-            updateData.settings.themeConfig.content.bannerUrl = `${baseUrl}/uploads/${req.files['banner'][0].filename}`;
+        if (req.files['banner'] && req.files['banner'][0].cloudinaryUrl) {
+            updateData.settings.themeConfig.content.bannerUrl = req.files['banner'][0].cloudinaryUrl;
+            console.log('[Shop] ✅ Banner uploaded to Cloudinary:', updateData.settings.themeConfig.content.bannerUrl);
         }
     }
 

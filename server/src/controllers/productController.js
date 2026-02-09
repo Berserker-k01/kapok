@@ -21,21 +21,31 @@ exports.getProductsByShop = catchAsync(async (req, res, next) => {
 });
 
 exports.createProduct = catchAsync(async (req, res, next) => {
-    // Gestion de l'image uploadée
-    if (req.file) {
-        // Construction URL absolue ou relative selon config
-        const baseUrl = process.env.API_URL || 'https://e-assime.com/api';
-        req.body.image_url = `${baseUrl}/uploads/${req.file.filename}`;
+    console.log('[Product] Creating product...');
+    console.log('[Product] User ID:', req.user.id);
+    console.log('[Product] Has file:', !!req.file);
+
+    // Gestion de l'image uploadée via Cloudinary
+    if (req.file && req.file.cloudinaryUrl) {
+        req.body.image_url = req.file.cloudinaryUrl;
+
+        console.log('[Product] ✅ Image uploaded to Cloudinary:');
+        console.log('[Product]    URL:', req.body.image_url);
+        console.log('[Product]    Public ID:', req.file.cloudinaryPublicId);
+    } else {
+        console.log('[Product] ⚠️  No image uploaded');
     }
 
     const product = await productService.createProduct(req.user.id, req.body);
+    console.log('[Product] ✅ Product created with ID:', product.id);
 
     // [MODIFICATION] Ajout optionnel à une collection
     if (req.body.collectionId) {
         try {
             await collectionService.addProductToCollection(req.body.collectionId, product.id);
+            console.log('[Product] ✅ Added to collection:', req.body.collectionId);
         } catch (error) {
-            console.error('Erreur ajout collection:', error);
+            console.error('[Product] ❌ Error adding to collection:', error);
             // On ne bloque pas la création du produit si l'ajout à la collection échoue
         }
     }
@@ -57,10 +67,10 @@ exports.getProduct = catchAsync(async (req, res, next) => {
 });
 
 exports.updateProduct = catchAsync(async (req, res, next) => {
-    // Gestion de l'image uploadée
-    if (req.file) {
-        const baseUrl = process.env.API_URL || 'https://e-assime.com/api';
-        req.body.image_url = `${baseUrl}/uploads/${req.file.filename}`;
+    // Gestion de l'image uploadée via Cloudinary
+    if (req.file && req.file.cloudinaryUrl) {
+        req.body.image_url = req.file.cloudinaryUrl;
+        console.log('[Product] ✅ Image updated via Cloudinary:', req.body.image_url);
     }
 
     const product = await productService.updateProduct(req.user.id, req.params.productId, req.body);

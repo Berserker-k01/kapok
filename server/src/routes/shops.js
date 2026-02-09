@@ -2,6 +2,9 @@ const express = require('express');
 const shopController = require('../controllers/shopController');
 const { authenticateToken, requireShopOwnership } = require('../middleware/auth');
 
+// Utiliser le middleware Cloudinary au lieu du stockage local
+const { cloudinaryMultipleMiddleware } = require('../middleware/uploadCloudinary');
+
 const router = express.Router();
 
 // Route publique pour le storefront
@@ -16,17 +19,12 @@ router
   .post(shopController.createShop);
 
 // Routes nécessitant d'être propriétaire de la boutique
-const upload = require('../middleware/upload');
-
-// ... imports
-
-// Routes nécessitant d'être propriétaire de la boutique
 router
   .route('/:shopId')
   .get(requireShopOwnership, shopController.getShop)
   .put(
     requireShopOwnership,
-    upload.fields([
+    ...cloudinaryMultipleMiddleware([
       { name: 'logo', maxCount: 1 },
       { name: 'banner', maxCount: 1 }
     ]),
