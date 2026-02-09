@@ -1,23 +1,19 @@
-require('dotenv').config();
 const cloudinary = require('cloudinary').v2;
 const multer = require('multer');
 const { v4: uuidv4 } = require('uuid');
 const path = require('path');
 
-// Configuration Cloudinary (Hardcoded pour production)
-const cloudinaryConfig = {
-    cloud_name: 'dbjc6cloi',
-    api_key: '384423552485647',
-    api_secret: '7FWM2mlyay-bL_dtugw39FFBTY'
-};
+// Configuration Cloudinary
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
-cloudinary.config(cloudinaryConfig);
-
-console.log('[Cloudinary] Configuration loaded (HARDCODED)');
-console.log('[Cloudinary] Cloud Name:', cloudinaryConfig.cloud_name);
-console.log('[Cloudinary] API Key:', cloudinaryConfig.api_key ? '✅ Set' : '❌ Missing');
-
-console.log('[Cloudinary] API Secret:', cloudinaryConfig.api_secret ? '✅ Set' : '❌ Missing');
+console.log('[Cloudinary] Configuration loaded');
+console.log('[Cloudinary] Cloud Name:', process.env.CLOUDINARY_CLOUD_NAME ? '✅ Set' : '❌ Missing');
+console.log('[Cloudinary] API Key:', process.env.CLOUDINARY_API_KEY ? '✅ Set' : '❌ Missing');
+console.log('[Cloudinary] API Secret:', process.env.CLOUDINARY_API_SECRET ? '✅ Set' : '❌ Missing');
 
 // Stockage en mémoire temporaire avant upload vers Cloudinary
 const storage = multer.memoryStorage();

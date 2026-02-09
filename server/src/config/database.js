@@ -25,7 +25,7 @@ const parseDatabaseUrl = (url) => {
 // --- CONFIGURATION HYBRIDE (DOCKER / HOSTINGER) ---
 const poolConfig = {
   // CONFIGURATION HYBRIDE (Mode Hostinger ou Local via .env)
-  host: process.env.DB_HOST || 'localhost',
+  host: process.env.DB_HOST || '127.0.0.1',
   user: process.env.DB_USER || 'u980915146_admin',
   password: process.env.DB_PASSWORD || 'Daniel2005k@ssi',
   database: process.env.DB_NAME || 'u980915146_assimedb',
@@ -38,15 +38,6 @@ const poolConfig = {
   enableKeepAlive: true,
   keepAliveInitialDelay: 0,
 };
-
-console.log('🔌 DB CONFIG TRY:', {
-  host: poolConfig.host,
-  user: poolConfig.user,
-  database: poolConfig.database,
-  port: poolConfig.port,
-  passwordLen: poolConfig.password ? poolConfig.password.length : 0
-});
-
 
 const pool = mysql.createPool(poolConfig)
 

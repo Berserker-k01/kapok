@@ -156,41 +156,6 @@ app.get('/api/debug-schema', async (req, res) => {
   }
 });
 
-// --- ROUTE DIAGNOSTIC CONFIG DB (AFFICHER LA CONFIG UTILISÉE) ---
-app.get('/api/debug-db-config', async (req, res) => {
-  try {
-    const db = require('./config/database');
-
-    // Récupérer la config du pool (sans le mot de passe complet)
-    const config = db.pool.pool.config.connectionConfig;
-
-    res.json({
-      message: 'DB-CONFIG-CHECK',
-      config: {
-        host: config.host,
-        port: config.port,
-        user: config.user,
-        database: config.database,
-        passwordLength: config.password ? config.password.length : 0,
-        passwordFirstChar: config.password ? config.password[0] : null,
-        passwordLastChar: config.password ? config.password[config.password.length - 1] : null
-      },
-      env_vars: {
-        DB_HOST: process.env.DB_HOST || 'NOT SET',
-        DB_USER: process.env.DB_USER || 'NOT SET',
-        DB_NAME: process.env.DB_NAME || 'NOT SET',
-        DB_PORT: process.env.DB_PORT || 'NOT SET',
-        DB_PASSWORD_SET: !!process.env.DB_PASSWORD
-      }
-    });
-  } catch (e) {
-    res.status(500).json({
-      error: e.message,
-      stack: e.stack
-    });
-  }
-});
-
 // --- ROUTE DEBUG REGISTER (SIMULATION INSCRIPTION) ---
 app.get('/api/debug-register', async (req, res) => {
   const logs = [];
