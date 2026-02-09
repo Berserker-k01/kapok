@@ -203,7 +203,7 @@ const Checkout = () => {
                             <CardHeader className="bg-gradient-to-r from-gray-50 to-white">
                                 <div className="flex items-center gap-3">
                                     <div className="w-10 h-10 rounded-lg bg-primary-100 flex items-center justify-center">
-                                        <MapPin className="w-5 h-5 text-primary-600" />
+                                        <Truck className="w-5 h-5 text-primary-600" />
                                     </div>
                                     <div>
                                         <h2 className="text-xl font-bold text-gray-900">Informations de livraison</h2>
