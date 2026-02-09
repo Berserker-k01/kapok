@@ -1,5 +1,19 @@
 import { useState, useEffect } from 'react'
-import { FiShoppingCart, FiImage, FiBox, FiHeart, FiEye, FiArrowRight, FiCheck, FiX } from 'react-icons/fi'
+import {
+  FiShoppingCart,
+  FiImage,
+  FiBox,
+  FiHeart,
+  FiEye,
+  FiArrowRight,
+  FiCheck,
+  FiX,
+  FiTruck,
+  FiShield,
+  FiStar,
+  FiSearch,
+  FiFilter
+} from 'react-icons/fi'
 import { formatCurrency } from '../../../utils/currency'
 import { useCart } from '../../../context/CartContext'
 
@@ -8,12 +22,14 @@ const ThemeMinimal = ({ shop, products }) => {
   const [scrolled, setScrolled] = useState(false)
   const [hoveredProduct, setHoveredProduct] = useState(null)
   const [selectedProduct, setSelectedProduct] = useState(null)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState('all')
 
   const {
     primary = '#000000',
     secondary = '#ffffff',
     background = '#ffffff',
-    text = '#111827' // gray-900 equivalent
+    text = '#111827'
   } = shop?.settings?.themeConfig?.colors || {}
 
   useEffect(() => {
@@ -24,40 +40,50 @@ const ThemeMinimal = ({ shop, products }) => {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  // Get unique categories
+  const categories = ['all', ...new Set(products?.map(p => p.category).filter(Boolean))]
+
+  // Filter products
+  const filteredProducts = products?.filter(product => {
+    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory
+    return matchesSearch && matchesCategory
+  })
+
   return (
     <div className="min-h-screen font-sans selection:bg-black selection:text-white" style={{ backgroundColor: background, color: text }}>
       {/* Navbar - Sticky & Clean */}
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b ${scrolled
-          ? 'bg-white/90 backdrop-blur-md border-gray-100 py-4'
-          : 'bg-transparent border-transparent py-6'
+          ? 'bg-white/95 backdrop-blur-lg border-gray-200 shadow-sm py-3'
+          : 'bg-transparent border-transparent py-5'
           }`}
         style={{ color: scrolled ? text : (shop?.banner_url ? '#fff' : text) }}
       >
-        <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
             {shop?.logo_url ? (
               <img src={shop.logo_url} alt={shop.name} className="h-10 w-auto object-contain" />
             ) : (
               <div
-                className="h-10 w-10 rounded-full flex items-center justify-center font-bold text-xl"
+                className="h-10 w-10 rounded-full flex items-center justify-center font-bold text-xl shadow-lg"
                 style={{ backgroundColor: primary, color: secondary }}
               >
                 {shop?.name?.charAt(0) || 'S'}
               </div>
             )}
-            <span className={`font-bold text-xl tracking-tight`}>{shop?.name}</span>
+            <span className="font-bold text-xl tracking-tight hidden sm:block">{shop?.name}</span>
           </div>
 
           <button
             onClick={() => setIsCartOpen(true)}
-            className="relative p-3 rounded-full hover:bg-gray-100 transition-colors"
+            className="relative p-3 rounded-full hover:bg-gray-100 transition-all hover:scale-105"
             style={{ color: 'inherit' }}
           >
             <FiShoppingCart className="w-6 h-6" />
             {cart?.length > 0 && (
               <span
-                className="absolute top-1 right-1 text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center"
+                className="absolute -top-1 -right-1 text-xs font-bold h-5 w-5 rounded-full flex items-center justify-center shadow-lg animate-pulse"
                 style={{ backgroundColor: primary, color: secondary }}
               >
                 {cart.length}
@@ -67,30 +93,36 @@ const ThemeMinimal = ({ shop, products }) => {
         </div>
       </header>
 
-      {/* Hero Section - Full & Bold */}
-      <section className="relative pt-32 pb-20 px-6 overflow-hidden">
-        {/* Abstract Background if no banner */}
+      {/* Hero Section - Enhanced */}
+      <section className="relative pt-24 md:pt-32 pb-16 md:pb-24 px-4 md:px-6 overflow-hidden">
         <div className="absolute inset-0 z-0">
           {shop?.banner_url ? (
             <div className="absolute inset-0">
               <img src={shop.banner_url} alt="Cover" className="w-full h-full object-cover" />
-              <div className="absolute inset-0 bg-black/40"></div>
+              <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/40 to-black/60"></div>
             </div>
           ) : (
-            <div className="absolute inset-0 bg-gray-50"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-white to-gray-100">
+              <div className="absolute inset-0 opacity-10" style={{
+                backgroundImage: `radial-gradient(circle at 1px 1px, ${primary} 1px, transparent 0)`,
+                backgroundSize: '40px 40px'
+              }}></div>
+            </div>
           )}
         </div>
 
-        <div className="relative z-10 max-w-7xl mx-auto text-center py-20">
-          <h1 className={`text-5xl md:text-7xl font-black mb-6 tracking-tight leading-tight ${shop?.banner_url ? 'text-white' : ''}`} style={{ color: shop?.banner_url ? undefined : text }}>
+        <div className="relative z-10 max-w-7xl mx-auto text-center py-12 md:py-20">
+          <h1 className={`text-4xl md:text-6xl lg:text-7xl font-black mb-4 md:mb-6 tracking-tight leading-tight ${shop?.banner_url ? 'text-white drop-shadow-2xl' : ''}`}
+            style={{ color: shop?.banner_url ? undefined : text }}>
             {shop?.name || 'Bienvenue'}
           </h1>
-          <p className={`text-xl md:text-2xl max-w-2xl mx-auto font-medium ${shop?.banner_url ? 'text-gray-100' : 'text-gray-500'}`}>
-            {shop?.description || "Une sélection unique de produits pour vous."}
+          <p className={`text-lg md:text-xl lg:text-2xl max-w-3xl mx-auto font-medium px-4 ${shop?.banner_url ? 'text-gray-100' : 'text-gray-600'}`}>
+            {shop?.description || "Découvrez notre sélection unique de produits de qualité."}
           </p>
-          <div className="mt-10">
+          <div className="mt-8 md:mt-12 flex flex-col sm:flex-row gap-4 justify-center items-center">
             <button
-              className={`px-8 py-4 rounded-full font-bold text-lg transition-transform hover:scale-105 shadow-lg`}
+              onClick={() => document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' })}
+              className="px-8 py-4 rounded-full font-bold text-base md:text-lg transition-all hover:scale-105 shadow-2xl hover:shadow-3xl"
               style={{
                 backgroundColor: shop?.banner_url ? '#fff' : primary,
                 color: shop?.banner_url ? '#000' : secondary
@@ -98,22 +130,68 @@ const ThemeMinimal = ({ shop, products }) => {
             >
               Découvrir la collection
             </button>
+            <div className={`flex items-center gap-2 text-sm ${shop?.banner_url ? 'text-white' : 'text-gray-600'}`}>
+              <FiTruck className="w-5 h-5" />
+              <span className="font-medium">Livraison gratuite</span>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Product Grid - Clean & Spacious */}
-      <section className="max-w-7xl mx-auto px-6 py-20">
-        <div className="flex items-end justify-between mb-12 border-b border-gray-100 pb-4">
-          <h2 className="text-3xl font-bold tracking-tight" style={{ color: text }}>Nouveautés</h2>
-          <a href="#" className="hidden md:inline-flex items-center text-sm font-semibold border-b pb-0.5 hover:opacity-70" style={{ borderColor: text, color: text }}>
+      {/* Search & Filter Bar */}
+      <section className="max-w-7xl mx-auto px-4 md:px-6 -mt-8 mb-12 relative z-20">
+        <div className="bg-white rounded-2xl shadow-xl p-4 md:p-6 border border-gray-200">
+          <div className="flex flex-col md:flex-row gap-4">
+            {/* Search */}
+            <div className="flex-1 relative">
+              <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input
+                type="text"
+                placeholder="Rechercher un produit..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all"
+                style={{ focusRingColor: primary }}
+              />
+            </div>
+
+            {/* Category Filter */}
+            <div className="relative">
+              <FiFilter className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="pl-12 pr-8 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 appearance-none bg-white cursor-pointer min-w-[200px]"
+                style={{ focusRingColor: primary }}
+              >
+                {categories.map(cat => (
+                  <option key={cat} value={cat}>
+                    {cat === 'all' ? 'Toutes catégories' : cat}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Product Grid - Enhanced */}
+      <section id="products" className="max-w-7xl mx-auto px-4 md:px-6 py-12 md:py-20">
+        <div className="flex items-end justify-between mb-8 md:mb-12 border-b border-gray-200 pb-4">
+          <div>
+            <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-1" style={{ color: text }}>
+              {selectedCategory === 'all' ? 'Tous nos produits' : selectedCategory}
+            </h2>
+            <p className="text-sm text-gray-500">{filteredProducts?.length || 0} produit(s)</p>
+          </div>
+          <a href="#" className="hidden md:inline-flex items-center text-sm font-semibold border-b pb-0.5 hover:opacity-70 transition-opacity" style={{ borderColor: text, color: text }}>
             Voir tout <FiArrowRight className="ml-2" />
           </a>
         </div>
 
-        {products?.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12">
-            {products.map((product) => (
+        {filteredProducts?.length > 0 ? (
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
+            {filteredProducts.map((product) => (
               <div
                 key={product.id}
                 className="group cursor-pointer"
@@ -122,28 +200,35 @@ const ThemeMinimal = ({ shop, products }) => {
                 onMouseLeave={() => setHoveredProduct(null)}
               >
                 {/* Image Wrapper */}
-                <div className="relative aspect-[1/1.2] bg-gray-100 rounded-lg overflow-hidden mb-4">
+                <div className="relative aspect-[3/4] bg-gray-100 rounded-xl md:rounded-2xl overflow-hidden mb-3 md:mb-4 shadow-md hover:shadow-xl transition-shadow">
                   {product.image_url ? (
                     <img
                       src={product.image_url}
                       alt={product.name}
-                      className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out"
+                      className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-700 ease-out"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-300">
+                    <div className="w-full h-full flex items-center justify-center text-gray-300 bg-gradient-to-br from-gray-100 to-gray-200">
                       <FiImage size={40} />
                     </div>
                   )}
 
-                  {/* Quick Add Button - Floating */}
-                  <div className={`absolute bottom-4 left-4 right-4 transition-all duration-300 transform ${hoveredProduct === product.id ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
+                  {/* Stock Badge */}
+                  {product.stock <= 5 && product.stock > 0 && (
+                    <div className="absolute top-2 right-2 bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                      {product.stock} restant(s)
+                    </div>
+                  )}
+
+                  {/* Quick Add Button */}
+                  <div className={`absolute bottom-3 left-3 right-3 transition-all duration-300 transform ${hoveredProduct === product.id ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
                     }`}>
                     <button
                       onClick={(e) => {
-                        e.preventDefault();
+                        e.stopPropagation();
                         addToCart(product);
                       }}
-                      className="w-full font-bold py-3 rounded-lg shadow-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+                      className="w-full font-bold py-2.5 md:py-3 rounded-lg md:rounded-xl shadow-2xl hover:opacity-90 transition-all flex items-center justify-center gap-2 text-sm md:text-base"
                       style={{ backgroundColor: primary, color: secondary }}
                     >
                       <FiShoppingCart size={16} /> Ajouter
@@ -153,80 +238,109 @@ const ThemeMinimal = ({ shop, products }) => {
 
                 {/* Info */}
                 <div>
-                  <div className="flex justify-between items-start">
-                    <h3 className="text-lg font-medium group-hover:underline decoration-1 underline-offset-4" style={{ color: text }}>
-                      {product.name}
-                    </h3>
-                    <p className="text-lg font-bold" style={{ color: text }}>
-                      {product.price} {product.currency || 'F CFA'}
+                  <h3 className="text-sm md:text-base font-semibold group-hover:underline decoration-1 underline-offset-4 line-clamp-1 mb-1" style={{ color: text }}>
+                    {product.name}
+                  </h3>
+                  <div className="flex items-center justify-between">
+                    <p className="text-base md:text-lg font-bold" style={{ color: primary }}>
+                      {formatCurrency(product.price, product.currency || 'XOF')}
                     </p>
+                    {product.stock > 0 ? (
+                      <span className="text-xs text-green-600 font-medium flex items-center gap-1">
+                        <FiCheck size={12} /> En stock
+                      </span>
+                    ) : (
+                      <span className="text-xs text-red-600 font-medium">Épuisé</span>
+                    )}
                   </div>
-                  <p className="text-sm text-gray-500 mt-1 line-clamp-1">
-                    {product.description}
-                  </p>
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          <div className="text-center py-32 bg-gray-50 rounded-2xl">
-            <FiBox className="mx-auto h-12 w-12 text-gray-300" />
-            <h3 className="mt-2 text-sm font-semibold text-gray-900">Aucun produit</h3>
-            <p className="mt-1 text-sm text-gray-500">Commencez par ajouter des produits à votre boutique.</p>
+          <div className="text-center py-20 md:py-32 bg-gray-50 rounded-2xl">
+            <FiBox className="mx-auto h-16 w-16 text-gray-300 mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Aucun produit trouvé</h3>
+            <p className="text-sm text-gray-500">Essayez de modifier vos critères de recherche.</p>
           </div>
         )}
       </section>
 
-      {/* Trust / Features */}
-      <section className="bg-gray-50 py-20 px-6 border-t border-gray-200">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
-          <div>
-            <div className="w-12 h-12 mx-auto rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: primary, color: secondary }}>
-              <FiBox size={20} />
+      {/* Trust Features - Enhanced */}
+      <section className="bg-gradient-to-br from-gray-50 to-white py-16 md:py-24 px-4 md:px-6 border-y border-gray-200">
+        <div className="max-w-7xl mx-auto">
+          <h3 className="text-2xl md:text-3xl font-bold text-center mb-12" style={{ color: text }}>
+            Pourquoi nous choisir ?
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
+            <div className="text-center group">
+              <div className="w-16 h-16 mx-auto rounded-2xl flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform"
+                style={{ backgroundColor: primary, color: secondary }}>
+                <FiTruck size={28} />
+              </div>
+              <h4 className="font-bold text-lg mb-2" style={{ color: text }}>Livraison Rapide</h4>
+              <p className="text-sm text-gray-600 leading-relaxed">Expédition sous 24-48h partout au Sénégal</p>
             </div>
-            <h4 className="font-bold mb-2" style={{ color: text }}>Livraison Rapide</h4>
-            <p className="text-sm text-gray-500">Expédition sous 24h pour toutes les commandes.</p>
-          </div>
-          <div>
-            <div className="w-12 h-12 mx-auto rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: primary, color: secondary }}>
-              <FiHeart size={20} />
+            <div className="text-center group">
+              <div className="w-16 h-16 mx-auto rounded-2xl flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform"
+                style={{ backgroundColor: primary, color: secondary }}>
+                <FiShield size={28} />
+              </div>
+              <h4 className="font-bold text-lg mb-2" style={{ color: text }}>Paiement Sécurisé</h4>
+              <p className="text-sm text-gray-600 leading-relaxed">Paiement à la livraison en toute sécurité</p>
             </div>
-            <h4 className="font-bold mb-2" style={{ color: text }}>Service Client</h4>
-            <p className="text-sm text-gray-500">Une équipe dédiée à votre écoute 7j/7.</p>
-          </div>
-          <div>
-            <div className="w-12 h-12 mx-auto rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: primary, color: secondary }}>
-              <FiCheck size={20} />
+            <div className="text-center group">
+              <div className="w-16 h-16 mx-auto rounded-2xl flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform"
+                style={{ backgroundColor: primary, color: secondary }}>
+                <FiStar size={28} />
+              </div>
+              <h4 className="font-bold text-lg mb-2" style={{ color: text }}>Qualité Garantie</h4>
+              <p className="text-sm text-gray-600 leading-relaxed">Produits authentiques et de qualité supérieure</p>
             </div>
-            <h4 className="font-bold mb-2" style={{ color: text }}>Qualité Garantie</h4>
-            <p className="text-sm text-gray-500">Satisfait ou remboursé sous 30 jours.</p>
           </div>
         </div>
       </section>
 
-      {/* Minimal Footer */}
-      <footer className="bg-white border-t border-gray-200 py-12 px-6">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-          <p className="text-sm text-gray-500">© 2024 {shop?.name}. Powered by Kapok.</p>
-          <div className="flex gap-6">
-            <a href="#" className="text-gray-400 hover:text-black transition-colors"><FiShoppingCart /></a>
-            <a href="#" className="text-gray-400 hover:text-black transition-colors"><FiHeart /></a>
+      {/* Footer - Enhanced */}
+      <footer className="bg-white border-t border-gray-200 py-12 px-4 md:px-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-8">
+            <div className="flex items-center gap-3">
+              {shop?.logo_url ? (
+                <img src={shop.logo_url} alt={shop.name} className="h-8 w-auto object-contain" />
+              ) : (
+                <div className="h-8 w-8 rounded-full flex items-center justify-center font-bold"
+                  style={{ backgroundColor: primary, color: secondary }}>
+                  {shop?.name?.charAt(0) || 'S'}
+                </div>
+              )}
+              <span className="font-bold text-lg">{shop?.name}</span>
+            </div>
+            <div className="flex gap-6">
+              <a href="#" className="text-gray-400 hover:text-black transition-colors"><FiShoppingCart size={20} /></a>
+              <a href="#" className="text-gray-400 hover:text-black transition-colors"><FiHeart size={20} /></a>
+            </div>
+          </div>
+          <div className="text-center pt-6 border-t border-gray-200">
+            <p className="text-sm text-gray-500">
+              © 2024 {shop?.name}. Tous droits réservés. • Propulsé par <span className="font-semibold">e-Assime</span>
+            </p>
           </div>
         </div>
       </footer>
 
-      {/* Product Detail Modal */}
+      {/* Product Detail Modal - Enhanced */}
       {selectedProduct && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setSelectedProduct(null)}>
-          <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="grid md:grid-cols-2 gap-8 p-8">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md" onClick={() => setSelectedProduct(null)}>
+          <div className="bg-white rounded-3xl max-w-5xl w-full max-h-[95vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="grid md:grid-cols-2 gap-8 p-6 md:p-10">
               {/* Image */}
-              <div className="aspect-square bg-gray-100 rounded-xl overflow-hidden">
+              <div className="aspect-square bg-gray-100 rounded-2xl overflow-hidden shadow-lg">
                 {selectedProduct.image_url ? (
                   <img src={selectedProduct.image_url} alt={selectedProduct.name} className="w-full h-full object-cover" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-gray-300">
-                    <FiImage size={80} />
+                  <div className="w-full h-full flex items-center justify-center text-gray-300 bg-gradient-to-br from-gray-100 to-gray-200">
+                    <FiImage size={100} />
                   </div>
                 )}
               </div>
@@ -234,19 +348,40 @@ const ThemeMinimal = ({ shop, products }) => {
               {/* Details */}
               <div className="flex flex-col">
                 <button onClick={() => setSelectedProduct(null)} className="self-end p-2 hover:bg-gray-100 rounded-full transition-colors mb-4">
-                  <FiX size={24} />
+                  <FiX size={28} />
                 </button>
-                <h2 className="text-3xl font-bold mb-4" style={{ color: text }}>{selectedProduct.name}</h2>
-                <p className="text-2xl font-bold mb-6" style={{ color: primary }}>
-                  {selectedProduct.price} {selectedProduct.currency || 'F CFA'}
-                </p>
-                <p className="text-gray-600 mb-6 leading-relaxed">
-                  {selectedProduct.description || 'Aucune description disponible.'}
-                </p>
-                <div className="flex gap-4 items-center mb-6">
-                  <span className="text-sm text-gray-500">Stock:</span>
-                  <span className="font-semibold">{selectedProduct.stock > 0 ? `${selectedProduct.stock} disponible(s)` : 'Rupture de stock'}</span>
+
+                <h2 className="text-3xl md:text-4xl font-bold mb-3" style={{ color: text }}>{selectedProduct.name}</h2>
+
+                <div className="flex items-center gap-3 mb-6">
+                  <p className="text-3xl md:text-4xl font-bold" style={{ color: primary }}>
+                    {formatCurrency(selectedProduct.price, selectedProduct.currency || 'XOF')}
+                  </p>
+                  {selectedProduct.stock > 0 && (
+                    <span className="px-3 py-1 bg-green-100 text-green-700 text-sm font-semibold rounded-full">
+                      En stock
+                    </span>
+                  )}
                 </div>
+
+                <div className="bg-gray-50 rounded-xl p-4 mb-6">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-600">Catégorie:</span>
+                    <span className="font-semibold">{selectedProduct.category || 'Non spécifié'}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm mt-2">
+                    <span className="text-gray-600">Disponibilité:</span>
+                    <span className="font-semibold">{selectedProduct.stock > 0 ? `${selectedProduct.stock} en stock` : 'Rupture de stock'}</span>
+                  </div>
+                </div>
+
+                <div className="mb-6">
+                  <h3 className="font-bold text-lg mb-2">Description</h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    {selectedProduct.description || 'Aucune description disponible pour ce produit.'}
+                  </p>
+                </div>
+
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -254,10 +389,10 @@ const ThemeMinimal = ({ shop, products }) => {
                     setSelectedProduct(null);
                   }}
                   disabled={selectedProduct.stock <= 0}
-                  className="w-full py-4 rounded-xl font-bold text-lg transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="w-full py-4 md:py-5 rounded-2xl font-bold text-lg transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-3 shadow-xl"
                   style={{ backgroundColor: primary, color: secondary }}
                 >
-                  <FiShoppingCart size={20} />
+                  <FiShoppingCart size={24} />
                   {selectedProduct.stock > 0 ? 'Ajouter au panier' : 'Rupture de stock'}
                 </button>
               </div>
