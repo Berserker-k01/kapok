@@ -183,18 +183,39 @@ router.post('/admin/login', catchAsync(async (req, res, next) => {
 }))
 
 // Vérification du token
-router.get('/verify', authenticateToken, (req, res) => {
+router.get('/verify', authenticateToken, catchAsync(async (req, res) => {
+  // Récupérer les données fraîches de la base de données
+  const userQuery = 'SELECT id, name, email, role, plan, status FROM users WHERE id = ?'
+  const userResult = await db.query(userQuery, [req.user.id])
+
+  if (userResult.rows.length === 0) {
+    return res.status(404).json({
+      valid: false,
+      error: 'Utilisateur introuvable'
+    })
+  }
+
+  const user = userResult.rows[0]
+
+  // Vérifier que le compte est toujours actif
+  if (user.status !== 'active') {
+    return res.status(401).json({
+      valid: false,
+      error: 'Compte inactif'
+    })
+  }
+
   res.json({
     valid: true,
     user: {
-      id: req.user.id,
-      email: req.user.email,
-      role: req.user.role,
-      plan: req.user.plan,
-      name: req.user.name || req.user.email.split('@')[0]
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      plan: user.plan
     }
   })
-})
+}))
 
 // Déconnexion (côté client principalement)
 router.post('/logout', authenticateToken, (req, res) => {

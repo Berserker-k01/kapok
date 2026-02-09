@@ -13,9 +13,6 @@ import {
     CheckCircle,
     ArrowLeft,
     Lock,
-    MapPin,
-    Phone,
-    User,
     CreditCard,
     Package
 } from 'lucide-react'
@@ -217,59 +214,49 @@ const Checkout = () => {
                             <CardBody>
                                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div className="relative">
-                                            <User className="absolute left-3 top-10 w-4 h-4 text-gray-400" />
+                                        <div>
                                             <Input
                                                 label="Prénom *"
                                                 {...register('firstName')}
                                                 error={errors.firstName?.message}
                                                 placeholder="Jean"
-                                                className="pl-10"
                                             />
                                         </div>
-                                        <div className="relative">
-                                            <User className="absolute left-3 top-10 w-4 h-4 text-gray-400" />
+                                        <div>
                                             <Input
                                                 label="Nom *"
                                                 {...register('lastName')}
                                                 error={errors.lastName?.message}
                                                 placeholder="Dupont"
-                                                className="pl-10"
                                             />
                                         </div>
                                     </div>
 
-                                    <div className="relative">
-                                        <Phone className="absolute left-3 top-10 w-4 h-4 text-gray-400" />
+                                    <div>
                                         <Input
                                             label="Téléphone *"
                                             {...register('phone')}
                                             error={errors.phone?.message}
                                             placeholder="+221 77 123 45 67"
                                             type="tel"
-                                            className="pl-10"
                                         />
                                     </div>
 
-                                    <div className="relative">
-                                        <MapPin className="absolute left-3 top-10 w-4 h-4 text-gray-400" />
+                                    <div>
                                         <Input
                                             label="Adresse complète *"
                                             {...register('address')}
                                             error={errors.address?.message}
                                             placeholder="123 Rue de la République, Appartement 4B"
-                                            className="pl-10"
                                         />
                                     </div>
 
-                                    <div className="relative">
-                                        <MapPin className="absolute left-3 top-10 w-4 h-4 text-gray-400" />
+                                    <div>
                                         <Input
                                             label="Ville *"
                                             {...register('city')}
                                             error={errors.city?.message}
                                             placeholder="Dakar"
-                                            className="pl-10"
                                         />
                                     </div>
 

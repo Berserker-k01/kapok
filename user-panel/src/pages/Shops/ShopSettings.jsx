@@ -94,7 +94,7 @@ const ShopSettings = () => {
             const cleanData = (obj) => {
                 if (obj === null || obj === undefined) return null
                 if (typeof obj !== 'object') return obj
-                
+
                 const cleaned = {}
                 for (const [key, value] of Object.entries(obj)) {
                     if (value === undefined || value === '') {
@@ -218,37 +218,110 @@ const ShopSettings = () => {
                             </label>
                         </div>
 
-                        {/* Configuration du Thème Personnalisé */}
+                        {/* Configuration des Couleurs - Pour TOUS les thèmes */}
+                        <div className="bg-gradient-to-br from-purple-50 to-blue-50 p-6 rounded-xl border-2 border-purple-200 space-y-6">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h3 className="font-bold text-gray-900 text-lg flex items-center gap-2">
+                                        🎨 Personnalisation des Couleurs
+                                    </h3>
+                                    <p className="text-sm text-gray-600 mt-1">
+                                        Personnalisez les couleurs de votre boutique pour qu'elle corresponde à votre marque
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-semibold text-gray-700">
+                                        Couleur Primaire
+                                    </label>
+                                    <div className="relative">
+                                        <input
+                                            type="color"
+                                            {...register('themeConfig.colors.primary')}
+                                            className="h-12 w-full cursor-pointer rounded-lg border-2 border-gray-300 hover:border-purple-400 transition-colors"
+                                        />
+                                        <span className="absolute -bottom-6 left-0 text-xs text-gray-500 font-mono">
+                                            {watch('themeConfig.colors.primary') || '#000000'}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-semibold text-gray-700">
+                                        Couleur Secondaire
+                                    </label>
+                                    <div className="relative">
+                                        <input
+                                            type="color"
+                                            {...register('themeConfig.colors.secondary')}
+                                            className="h-12 w-full cursor-pointer rounded-lg border-2 border-gray-300 hover:border-purple-400 transition-colors"
+                                        />
+                                        <span className="absolute -bottom-6 left-0 text-xs text-gray-500 font-mono">
+                                            {watch('themeConfig.colors.secondary') || '#ffffff'}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-semibold text-gray-700">
+                                        Couleur de Fond
+                                    </label>
+                                    <div className="relative">
+                                        <input
+                                            type="color"
+                                            {...register('themeConfig.colors.background')}
+                                            className="h-12 w-full cursor-pointer rounded-lg border-2 border-gray-300 hover:border-purple-400 transition-colors"
+                                        />
+                                        <span className="absolute -bottom-6 left-0 text-xs text-gray-500 font-mono">
+                                            {watch('themeConfig.colors.background') || '#ffffff'}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-semibold text-gray-700">
+                                        Couleur du Texte
+                                    </label>
+                                    <div className="relative">
+                                        <input
+                                            type="color"
+                                            {...register('themeConfig.colors.text')}
+                                            className="h-12 w-full cursor-pointer rounded-lg border-2 border-gray-300 hover:border-purple-400 transition-colors"
+                                        />
+                                        <span className="absolute -bottom-6 left-0 text-xs text-gray-500 font-mono">
+                                            {watch('themeConfig.colors.text') || '#000000'}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Preview */}
+                            <div className="mt-8 p-6 rounded-xl border-2 border-dashed border-gray-300"
+                                style={{
+                                    backgroundColor: watch('themeConfig.colors.background') || '#ffffff',
+                                    color: watch('themeConfig.colors.text') || '#000000'
+                                }}>
+                                <h4 className="font-bold text-lg mb-2">Aperçu</h4>
+                                <p className="mb-4">Voici à quoi ressemblera votre boutique avec ces couleurs.</p>
+                                <button
+                                    type="button"
+                                    className="px-6 py-3 rounded-lg font-bold transition-transform hover:scale-105"
+                                    style={{
+                                        backgroundColor: watch('themeConfig.colors.primary') || '#000000',
+                                        color: watch('themeConfig.colors.secondary') || '#ffffff'
+                                    }}
+                                >
+                                    Bouton Exemple
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Configuration Avancée - Seulement pour thème Custom */}
                         {watch('theme') === 'custom' && (
                             <div className="bg-gray-50 p-6 rounded-xl border border-gray-200 space-y-6 animate-in fade-in slide-in-from-top-4">
-                                <h3 className="font-semibold text-gray-900 border-b pb-2">Personnalisation</h3>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <Input
-                                        label="Couleur Primaire"
-                                        type="color"
-                                        {...register('themeConfig.colors.primary')}
-                                        className="h-12 w-full cursor-pointer"
-                                    />
-                                    <Input
-                                        label="Couleur Secondaire"
-                                        type="color"
-                                        {...register('themeConfig.colors.secondary')}
-                                        className="h-12 w-full cursor-pointer"
-                                    />
-                                    <Input
-                                        label="Couleur de Fond"
-                                        type="color"
-                                        {...register('themeConfig.colors.background')}
-                                        className="h-12 w-full cursor-pointer"
-                                    />
-                                    <Input
-                                        label="Couleur du Texte"
-                                        type="color"
-                                        {...register('themeConfig.colors.text')}
-                                        className="h-12 w-full cursor-pointer"
-                                    />
-                                </div>
+                                <h3 className="font-semibold text-gray-900 border-b pb-2">Configuration Avancée (Thème Custom)</h3>
 
                                 <div className="space-y-4">
                                     {/* Inputs File au lieu de TEXT URL */}
