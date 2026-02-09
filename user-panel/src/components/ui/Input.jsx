@@ -8,9 +8,9 @@ const Input = React.forwardRef(({
     ...props
 }, ref) => {
     return (
-        <div className="space-y-1">
+        <div className="space-y-1 w-full">
             {label && (
-                <label className="block text-sm font-medium text-secondary-700">
+                <label className="block text-sm font-medium text-secondary-700 mb-1.5 w-full overflow-visible whitespace-normal break-words">
                     {label}
                 </label>
             )}
