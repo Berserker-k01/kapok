@@ -25,13 +25,18 @@ exports.createProduct = catchAsync(async (req, res, next) => {
     console.log('[Product] User ID:', req.user.id);
     console.log('[Product] Has file:', !!req.file);
 
-    // Gestion de l'image uploadée via Cloudinary
-    if (req.file && req.file.cloudinaryUrl) {
-        req.body.image_url = req.file.cloudinaryUrl;
+    // Gestion de l'image uploadée (STOCKAGE LOCAL)
+    if (req.file) {
+        // Construction URL absolue ou relative selon config
+        const baseUrl = process.env.API_URL || 'https://e-assime.com/api';
+        // Suppression du slash final si présent pour éviter //
+        const cleanBaseUrl = baseUrl.replace(/\/$/, '');
 
-        console.log('[Product] ✅ Image uploaded to Cloudinary:');
+        req.body.image_url = `${cleanBaseUrl}/uploads/${req.file.filename}`;
+
+        console.log('[Product] ✅ Image generated (Local):');
         console.log('[Product]    URL:', req.body.image_url);
-        console.log('[Product]    Public ID:', req.file.cloudinaryPublicId);
+        console.log('[Product]    Filename:', req.file.filename);
     } else {
         console.log('[Product] ⚠️  No image uploaded');
     }
@@ -67,10 +72,13 @@ exports.getProduct = catchAsync(async (req, res, next) => {
 });
 
 exports.updateProduct = catchAsync(async (req, res, next) => {
-    // Gestion de l'image uploadée via Cloudinary
-    if (req.file && req.file.cloudinaryUrl) {
-        req.body.image_url = req.file.cloudinaryUrl;
-        console.log('[Product] ✅ Image updated via Cloudinary:', req.body.image_url);
+    // Gestion de l'image uploadée (STOCKAGE LOCAL)
+    if (req.file) {
+        const baseUrl = process.env.API_URL || 'https://e-assime.com/api';
+        const cleanBaseUrl = baseUrl.replace(/\/$/, '');
+        req.body.image_url = `${cleanBaseUrl}/uploads/${req.file.filename}`;
+
+        console.log('[Product] ✅ Image updated (Local):', req.body.image_url);
     }
 
     const product = await productService.updateProduct(req.user.id, req.params.productId, req.body);

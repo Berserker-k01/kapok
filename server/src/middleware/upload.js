@@ -1,47 +1,61 @@
 const multer = require('multer');
 const path = require('path');
-const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
+const fs = require('fs');
+// Utiliser UPLOAD_PATH du .env si défini, sinon uploads à la racine du projet
+const UPLOAD_ROOT = process.env.UPLOAD_PATH
+    ? path.resolve(process.env.UPLOAD_PATH)
+    : path.join(process.cwd(), 'uploads');
 
-// Ensure upload directory exists and is writable
-const uploadDir = path.join(__dirname, '../../uploads');
+console.log('[Upload] 📂 Configuration du stockage local:', UPLOAD_ROOT);
 
-// Create directory if it doesn't exist
-if (!fs.existsSync(uploadDir)) {
-    console.log('[Upload] Creating uploads directory:', uploadDir);
-    fs.mkdirSync(uploadDir, { recursive: true });
+// S'assurer que le dossier existe
+if (!fs.existsSync(UPLOAD_ROOT)) {
+    console.log('[Upload] 🛠️ Création du dossier uploads...');
+    try {
+        fs.mkdirSync(UPLOAD_ROOT, { recursive: true });
+        console.log('[Upload] ✅ Dossier créé avec succès');
+
+        // Créer un fichier .gitkeep pour git
+        fs.writeFileSync(path.join(UPLOAD_ROOT, '.gitkeep'), '');
+    } catch (err) {
+        console.error('[Upload] ❌ Erreur création dossier:', err);
+    }
 }
 
-// Verify write permissions
+// Vérifier les permissions en écriture
 try {
-    fs.accessSync(uploadDir, fs.constants.W_OK);
-    console.log('[Upload] ✅ Uploads directory is writable:', uploadDir);
+    fs.accessSync(UPLOAD_ROOT, fs.constants.W_OK);
+    console.log('[Upload] ✅ Dossier accessible en écriture');
 } catch (err) {
-    console.error('[Upload] ❌ Uploads directory is NOT writable!');
-    console.error('[Upload] Error:', err.message);
-    console.error('[Upload] Path:', uploadDir);
+    console.error('[Upload] ❌ Dossier NON accessible en écriture:', err);
 }
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        console.log('[Upload] Saving file to:', uploadDir);
-        cb(null, uploadDir);
+        // Double vérification au moment de l'upload
+        if (!fs.existsSync(UPLOAD_ROOT)) {
+            fs.mkdirSync(UPLOAD_ROOT, { recursive: true });
+        }
+        cb(null, UPLOAD_ROOT);
     },
     filename: (req, file, cb) => {
+        // Nom unique: timestamp-uuid.ext
         const uniqueSuffix = `${Date.now()}-${uuidv4()}`;
-        const filename = `${uniqueSuffix}${path.extname(file.originalname)}`;
-        console.log('[Upload] Generated filename:', filename);
+        const ext = path.extname(file.originalname);
+        const filename = `${uniqueSuffix}${ext}`;
+
+        console.log(`[Upload] 💾 Enregistrement fichier: ${filename}`);
         cb(null, filename);
     }
 });
 
 const fileFilter = (req, file, cb) => {
-    console.log('[Upload] File received:', file.originalname, 'Type:', file.mimetype);
+    // Accepter uniquement les images
     if (file.mimetype.startsWith('image/')) {
         cb(null, true);
     } else {
-        console.error('[Upload] ❌ Invalid file type:', file.mimetype);
-        cb(new Error('Format de fichier non supporté (Images uniquement)'), false);
+        cb(new Error('Format de fichier non supporté (images uniquement)'), false);
     }
 };
 
@@ -49,13 +63,9 @@ const upload = multer({
     storage: storage,
     fileFilter: fileFilter,
     limits: {
-        fileSize: 5 * 1024 * 1024 // 5MB limit
+        fileSize: 10 * 1024 * 1024, // 10MB limite
+        files: 5
     }
 });
-
-// Log upload errors
-upload.onError = (err) => {
-    console.error('[Upload] ❌ Upload error:', err);
-};
 
 module.exports = upload;

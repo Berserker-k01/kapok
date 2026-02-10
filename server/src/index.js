@@ -99,10 +99,30 @@ app.get('/api/debug-requests', (req, res) => {
 });
 
 // Servir les fichiers statiques (images uploadées)
-// Servir les fichiers statiques (images uploadées) - Alias pour accès via API router
-app.use('/api/uploads', express.static(path.join(__dirname, '../uploads')));
+// Support configurable path via ENV (important for Hostinger persistence)
+const uploadDir = process.env.UPLOAD_PATH
+  ? path.resolve(process.env.UPLOAD_PATH)
+  : path.join(__dirname, '../uploads');
+
+console.log('------------------------------------------------');
+console.log('[Server] 📂 Static files configuration:');
+console.log(`[Server]    Path: ${uploadDir}`);
+try {
+  if (!fs.existsSync(uploadDir)) {
+    console.log('[Server]    Status: Missing (Creating now...)');
+    fs.mkdirSync(uploadDir, { recursive: true });
+  }
+  fs.accessSync(uploadDir, fs.constants.W_OK);
+  console.log('[Server]    Status: ✅ Writable');
+} catch (e) {
+  console.error(`[Server]    Status: ❌ Error (${e.message})`);
+}
+console.log(`[Server]    Public URL: ${process.env.API_URL || 'Not defined (using default)'}`);
+console.log('------------------------------------------------');
+
+app.use('/api/uploads', express.static(uploadDir));
 // Garder l'ancien alias au cas où
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+app.use('/uploads', express.static(uploadDir));
 
 // Routes Check
 app.get('/env-debug', (req, res) => {

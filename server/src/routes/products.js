@@ -2,8 +2,8 @@ const express = require('express');
 const productController = require('../controllers/productController');
 const { authenticateToken, requireShopOwnership } = require('../middleware/auth');
 
-// Utiliser le middleware Cloudinary au lieu du stockage local
-const { cloudinaryMiddleware } = require('../middleware/uploadCloudinary');
+// Utiliser le middleware storage local
+const upload = require('../middleware/upload');
 
 const router = express.Router();
 
@@ -15,11 +15,13 @@ router.get('/:productId', productController.getProduct);
 router.use(authenticateToken);
 
 router.get('/shop/:shopId', requireShopOwnership, productController.getProductsByShop);
-router.post('/', ...cloudinaryMiddleware('image'), productController.createProduct);
+
+// Utilisation de upload.single('image') au lieu de Cloudinary
+router.post('/', upload.single('image'), productController.createProduct);
 
 router
   .route('/:productId')
-  .put(...cloudinaryMiddleware('image'), productController.updateProduct)
+  .put(upload.single('image'), productController.updateProduct)
   .delete(productController.deleteProduct);
 
 module.exports = router;

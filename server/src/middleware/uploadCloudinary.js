@@ -3,21 +3,17 @@ const multer = require('multer');
 const { v4: uuidv4 } = require('uuid');
 const path = require('path');
 
-// Configuration Cloudinary DIRECTE (Sans .env)
-// Configuration Cloudinary DIRECTE via URL
-process.env.CLOUDINARY_URL = 'cloudinary://384423552485647:7FWM2mIyay-bi_-d1ugw39FFBTY@dbjc6c1oi';
+// Configuration Cloudinary
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
-// La librairie détecte automatiquement process.env.CLOUDINARY_URL
-cloudinary.config();
-
-console.log('[Cloudinary] Configuration loaded via CLOUDINARY_URL');
-const isConfigured = true; // URL fournie directement
-
-if (isConfigured) {
-    console.log('[Cloudinary] ✅ Configuré via URL');
-} else {
-    console.error('❌ [Cloudinary] ATTENTION: Vous devez modifier le fichier server/src/middleware/uploadCloudinary.js avec vos vraies clés !');
-}
+console.log('[Cloudinary] Configuration loaded');
+console.log('[Cloudinary] Cloud Name:', process.env.CLOUDINARY_CLOUD_NAME ? '✅ Set' : '❌ Missing');
+console.log('[Cloudinary] API Key:', process.env.CLOUDINARY_API_KEY ? '✅ Set' : '❌ Missing');
+console.log('[Cloudinary] API Secret:', process.env.CLOUDINARY_API_SECRET ? '✅ Set' : '❌ Missing');
 
 // Stockage en mémoire temporaire avant upload vers Cloudinary
 const storage = multer.memoryStorage();

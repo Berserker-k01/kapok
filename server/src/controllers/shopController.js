@@ -91,15 +91,18 @@ exports.updateShop = catchAsync(async (req, res, next) => {
     if (!updateData.settings.themeConfig) updateData.settings.themeConfig = {};
     if (!updateData.settings.themeConfig.content) updateData.settings.themeConfig.content = {};
 
-    // Utiliser les URLs Cloudinary
+    // Utiliser les fichiers locaux
     if (req.files) {
-        if (req.files['logo'] && req.files['logo'][0].cloudinaryUrl) {
-            updateData.settings.themeConfig.content.logoUrl = req.files['logo'][0].cloudinaryUrl;
-            console.log('[Shop] ✅ Logo uploaded to Cloudinary:', updateData.settings.themeConfig.content.logoUrl);
+        const baseUrl = process.env.API_URL || 'https://e-assime.com/api';
+        const cleanBaseUrl = baseUrl.replace(/\/$/, '');
+
+        if (req.files['logo'] && req.files['logo'][0]) {
+            updateData.settings.themeConfig.content.logoUrl = `${cleanBaseUrl}/uploads/${req.files['logo'][0].filename}`;
+            console.log('[Shop] ✅ Logo updated (Local):', updateData.settings.themeConfig.content.logoUrl);
         }
-        if (req.files['banner'] && req.files['banner'][0].cloudinaryUrl) {
-            updateData.settings.themeConfig.content.bannerUrl = req.files['banner'][0].cloudinaryUrl;
-            console.log('[Shop] ✅ Banner uploaded to Cloudinary:', updateData.settings.themeConfig.content.bannerUrl);
+        if (req.files['banner'] && req.files['banner'][0]) {
+            updateData.settings.themeConfig.content.bannerUrl = `${cleanBaseUrl}/uploads/${req.files['banner'][0].filename}`;
+            console.log('[Shop] ✅ Banner updated (Local):', updateData.settings.themeConfig.content.bannerUrl);
         }
     }
 
