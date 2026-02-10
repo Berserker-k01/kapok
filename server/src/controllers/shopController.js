@@ -74,27 +74,49 @@ exports.updateShop = catchAsync(async (req, res, next) => {
         return cleaned;
     };
 
-    // 1. Handle File Uploads (Banner/Logo) via Cloudinary
+    // 1. Gérer les données de la requête
     let updateData = { ...req.body };
 
-    // If FormData was sent, 'settings' might be a JSON string. Parse it first.
+    console.log('[ShopController] Received update for:', req.params.shopId);
+    console.log('[ShopController] Body keys:', Object.keys(req.body));
+    console.log('[ShopController] Files keys:', req.files ? Object.keys(req.files) : 'None');
+
+    // Parse 'settings' JSON si c'est une string (cas FormData)
     if (typeof updateData.settings === 'string') {
         try {
             updateData.settings = JSON.parse(updateData.settings);
+            console.log('[ShopController] Parsed settings successfully');
         } catch (e) {
-            updateData.settings = {};
+            console.error('[ShopController] Failed to parse settings JSON:', e.message);
+            // Fallback: on garde la string ou on met null ? 
+            // Si on met null, le service ignorera l'update (COALESCE). C'est plus sûr que {} qui écrase tout.
+            updateData.settings = undefined;
         }
     }
 
-    // Ensure structure exists
-    if (!updateData.settings) updateData.settings = {};
-    if (!updateData.settings.themeConfig) updateData.settings.themeConfig = {};
-    if (!updateData.settings.themeConfig.content) updateData.settings.themeConfig.content = {};
+    // Ensure structure ONLY if we have settings (avoid overwriting with empty object if not provided)
+    if (updateData.settings) {
+        if (!updateData.settings.themeConfig) updateData.settings.themeConfig = {};
+        if (!updateData.settings.themeConfig.content) updateData.settings.themeConfig.content = {};
+    }
 
     // Utiliser les fichiers locaux
     if (req.files) {
         const baseUrl = process.env.API_URL || 'https://e-assime.com/api';
         const cleanBaseUrl = baseUrl.replace(/\/$/, '');
+
+        // On doit s'assurer que settings existe pour y mettre les URLs
+        if (!updateData.settings) {
+            // Si pas de settings fourni mais des fichiers, on doit récupérer l'existant ou créer structure min
+            updateData.settings = { themeConfig: { content: {} } };
+            // Note: Ceci est risqué si on écrase, mais shopService fait COALESCE.
+            // Le mieux serait que le Service fasse un merge, ou que le controller fasse un GET avant.
+            // Pour l'instant, on suppose que le front envoie tout ou rien.
+        }
+
+        // Réassurance structure (au cas où on vient de le créer)
+        if (!updateData.settings.themeConfig) updateData.settings.themeConfig = {};
+        if (!updateData.settings.themeConfig.content) updateData.settings.themeConfig.content = {};
 
         if (req.files['logo'] && req.files['logo'][0]) {
             updateData.settings.themeConfig.content.logoUrl = `${cleanBaseUrl}/uploads/${req.files['logo'][0].filename}`;
@@ -106,8 +128,16 @@ exports.updateShop = catchAsync(async (req, res, next) => {
         }
     }
 
-    // Clean all data to convert undefined to null
-    updateData = cleanData(updateData);
+    // Clean data (MAIS ne pas toucher à settings qui est déjà un objet propre)
+    // On nettoie manuellement pour éviter de casser settings
+    const keysToClean = ['name', 'description', 'category', 'theme', 'status']; // status ajouté
+    keysToClean.forEach(key => {
+        if (updateData[key] === '' || updateData[key] === 'null' || updateData[key] === 'undefined') {
+            updateData[key] = null;
+        }
+    });
+
+    // On ne passe PAS par cleanData global qui est récursif et agressif sur 'settings'
 
     const shop = await shopService.updateShop(req.params.shopId, updateData);
 

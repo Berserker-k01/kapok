@@ -222,7 +222,7 @@ const ShopSettings = () => {
                         </div>
 
                         {/* Configuration des Couleurs - Pour TOUS les thèmes */}
-                        <div className="bg-gradient-to-br from-purple-50 to-blue-50 p-4 md:p-6 rounded-xl border-2 border-purple-200 space-y-6">
+                        <div className="bg-gradient-to-br from-purple-50 to-blue-50 p-4 md:p-6 rounded-xl border-2 border-purple-200 space-y-6 overflow-hidden">
                             <div className="flex flex-col gap-2">
                                 <h3 className="font-bold text-gray-900 text-base md:text-lg flex items-center gap-2">
                                     🎨 Personnalisation des Couleurs
@@ -232,9 +232,9 @@ const ShopSettings = () => {
                                 </p>
                             </div>
 
-                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                                 <div className="space-y-2">
-                                    <label className="block text-xs md:text-sm font-semibold text-gray-700 break-words">
+                                    <label className="block text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
                                         Couleur Primaire
                                     </label>
                                     <div className="relative pb-6">
@@ -250,7 +250,7 @@ const ShopSettings = () => {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="block text-xs md:text-sm font-semibold text-gray-700 break-words">
+                                    <label className="block text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
                                         Couleur Secondaire
                                     </label>
                                     <div className="relative pb-6">
@@ -266,7 +266,7 @@ const ShopSettings = () => {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="block text-xs md:text-sm font-semibold text-gray-700 break-words">
+                                    <label className="block text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
                                         Couleur de Fond
                                     </label>
                                     <div className="relative pb-6">
@@ -282,7 +282,7 @@ const ShopSettings = () => {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="block text-xs md:text-sm font-semibold text-gray-700 break-words">
+                                    <label className="block text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
                                         Couleur du Texte
                                     </label>
                                     <div className="relative pb-6">
