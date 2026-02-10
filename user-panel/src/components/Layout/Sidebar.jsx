@@ -216,7 +216,17 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                     {user?.name || 'Utilisateur Démo'}
                   </p>
                   <p className="text-xs text-muted-foreground truncate">
-                    Plan Gratuit • 2/2 boutiques
+                    {user?.plan ? (
+                      user.plan === 'pro' ? (
+                        `Plan Pro • ${user.shopCount || 0} boutique${(user.shopCount || 0) > 1 ? 's' : ''}`
+                      ) : user.plan === 'basic' ? (
+                        `Plan Basic • ${user.shopCount || 0}/${user.maxShops || 5} boutiques`
+                      ) : (
+                        `Plan Gratuit • ${user.shopCount || 0}/${user.maxShops || 2} boutiques`
+                      )
+                    ) : (
+                      `Plan Gratuit • ${user.shopCount || 0}/${user.maxShops || 2} boutiques`
+                    )}
                   </p>
                 </div>
                 <button

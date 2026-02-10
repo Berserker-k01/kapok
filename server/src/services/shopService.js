@@ -249,42 +249,45 @@ class ShopService {
     const userPlan = userResult.rows[0].plan || 'free';
 
     // 2. Get Limits from Config
-    // Normalisation: toujours chercher en minuscule dans la config
-    // 2. Get Limits from Config (Fetch ALL to avoid case sensitivity issues in SQL)
-    // On récupère tout pour matcher proprement en JS (plus sûr que SQL pour la case)
     const planConfigQuery = 'SELECT * FROM plans_config';
     const planConfigResult = await db.query(planConfigQuery);
 
-    let planLimit = 2; // Default fallback
+    let planLimit = 2; // Default fallback for free
+
+    // DEBUG:
+    console.log(`[ShopLimit] Checking limits for UserID: ${userId}, Plan: ${userPlan}`);
+    console.log(`[ShopLimit] Available plans in DB:`, planConfigResult.rows.map(p => p.plan_key));
 
     // Find matching plan (Case Insensitive)
     const matchedPlan = planConfigResult.rows.find(p =>
-      (p.plan_key && p.plan_key.toLowerCase() === userPlan.toLowerCase()) ||
-      (p.name && p.name.toLowerCase() === userPlan.toLowerCase())
+      (p.plan_key && p.plan_key.toLowerCase() === userPlan.toLowerCase())
     );
 
-    console.log(`[ShopLimit] UserID: ${userId}, Plan: ${userPlan}`);
-    console.log(`[ShopLimit] Configs found: ${planConfigResult.rows.length}`);
-
     if (matchedPlan) {
-      console.log(`[ShopLimit] Match found: ${matchedPlan.plan_key}, Max: ${matchedPlan.max_shops}`);
-      // Si NULL dans la DB, on considère illimité (ex: 9999)
-      const limit = matchedPlan.max_shops;
-      planLimit = limit === null ? 9999 : limit;
+      console.log(`[ShopLimit] Match found in DB for ${userPlan}: max_shops=${matchedPlan.max_shops}`);
+      planLimit = matchedPlan.max_shops === null ? 9999 : parseInt(matchedPlan.max_shops);
     } else {
-      console.log(`[ShopLimit] No config match for plan '${userPlan}'. Using fallback.`);
-      // Fallback checks
-      const settingsQuery = "SELECT value FROM platform_settings WHERE `key` = 'free_plan_shops_limit'";
-      const settingsResult = await db.query(settingsQuery);
-      if (settingsResult.rows.length > 0) {
-        planLimit = parseInt(settingsResult.rows[0].value);
+      console.log(`[ShopLimit] No DB match for plan '${userPlan}'. Using hardcoded fallbacks.`);
+
+      // Hardcoded safety net
+      if (['pro', 'premium', 'gold', 'unlimited'].includes(userPlan.toLowerCase())) {
+        planLimit = 9999;
+      } else if (['basic', 'starter'].includes(userPlan.toLowerCase())) {
+        planLimit = 5;
       } else {
-        // Hardcoded safety net for known plans if config is missing
-        if (['pro', 'gold', 'premium'].includes(userPlan.toLowerCase())) {
-          planLimit = 9999;
+        // Free plan fallback check in settings
+        try {
+          const settingsQuery = "SELECT value FROM platform_settings WHERE `key` = 'free_plan_shops_limit'";
+          const settingsResult = await db.query(settingsQuery);
+          if (settingsResult.rows.length > 0) {
+            planLimit = parseInt(settingsResult.rows[0].value);
+          }
+        } catch (e) {
+          console.warn('[ShopLimit] Could not fetch platform settings, using default 2');
         }
       }
     }
+
     return { limit: planLimit, plan: userPlan };
   }
 }

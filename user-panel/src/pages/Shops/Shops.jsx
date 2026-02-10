@@ -6,9 +6,14 @@ import { useAuthStore } from '../../store/authStore'
 import { FiPlus, FiEdit, FiEye, FiSettings, FiGlobe, FiShoppingBag, FiTrash2, FiStar } from 'react-icons/fi'
 
 const Shops = () => {
+  const { token, user } = useAuthStore()
   const [shops, setShops] = useState([])
   const [loading, setLoading] = useState(true)
-  const [limits, setLimits] = useState({ limit: 2, plan: 'free' }) // Default
+  // Utiliser les infos du user store pour l'initialisation immédiate
+  const [limits, setLimits] = useState({
+    limit: user?.maxShops || 2,
+    plan: user?.plan || 'free'
+  })
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [shopToDelete, setShopToDelete] = useState(null)
@@ -17,7 +22,7 @@ const Shops = () => {
     slug: '',
     category: 'Mode & Vêtements'
   })
-  const { token, user } = useAuthStore()
+
 
   // Configuration Axios
   useEffect(() => {

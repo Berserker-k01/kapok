@@ -50,6 +50,18 @@ router.post('/register', catchAsync(async (req, res, next) => {
   const result = await db.query(selectQuery, [userId])
   const user = result.rows[0]
 
+  // Récupérer les limites par défaut pour un nouvel utilisateur (généralement plan gratuit)
+  let maxShops = 2;
+  const planLimitsQuery = 'SELECT max_shops FROM plans_config WHERE LOWER(plan_key) = LOWER(?)'
+  try {
+    const planLimitsResult = await db.query(planLimitsQuery, [user.plan || 'free'])
+    if (planLimitsResult.rows.length > 0) {
+      maxShops = planLimitsResult.rows[0].max_shops;
+    } else {
+      if (['pro', 'premium', 'gold'].includes((user.plan || '').toLowerCase())) maxShops = 9999;
+    }
+  } catch (e) { console.warn('Erreur limites register:', e); }
+
   // Générer le token
   const token = generateToken(user.id, user.role)
 
@@ -61,7 +73,9 @@ router.post('/register', catchAsync(async (req, res, next) => {
       name: user.name,
       email: user.email,
       role: user.role,
-      plan: user.plan
+      plan: user.plan,
+      shopCount: 0, // Nouvel utilisateur = 0 boutiques
+      maxShops: maxShops
     },
     token
   })
@@ -103,6 +117,29 @@ router.post('/login', catchAsync(async (req, res, next) => {
   // Générer le token
   const token = generateToken(user.id, user.role)
 
+  // Récupérer le nombre de boutiques de l'utilisateur
+  const shopCountQuery = 'SELECT COUNT(*) as count FROM shops WHERE user_id = ?'
+  const shopCountResult = await db.query(shopCountQuery, [user.id])
+  const shopCount = parseInt(shopCountResult.rows[0].count) || 0
+
+  // Récupérer les limites du plan
+  let maxShops = 2; // Default
+  const planLimitsQuery = 'SELECT max_shops FROM plans_config WHERE LOWER(plan_key) = LOWER(?)'
+  try {
+    const planLimitsResult = await db.query(planLimitsQuery, [user.plan || 'free'])
+    if (planLimitsResult.rows.length > 0) {
+      maxShops = planLimitsResult.rows[0].max_shops;
+    } else {
+      // Fallback hardcodé si pas de config en base
+      if (['pro', 'premium', 'gold'].includes((user.plan || '').toLowerCase())) maxShops = 9999;
+      else if (['basic'].includes((user.plan || '').toLowerCase())) maxShops = 5;
+    }
+  } catch (e) {
+    console.warn('Erreur chargement limites plan:', e);
+    // Fallback en cas d'erreur SQL
+    if (['pro', 'premium', 'gold'].includes((user.plan || '').toLowerCase())) maxShops = 9999;
+  }
+
   res.json({
     status: 'success',
     message: 'Connexion réussie',
@@ -111,7 +148,9 @@ router.post('/login', catchAsync(async (req, res, next) => {
       name: user.name,
       email: user.email,
       role: user.role,
-      plan: user.plan
+      plan: user.plan,
+      shopCount: shopCount,
+      maxShops: maxShops
     },
     token
   })
@@ -205,6 +244,29 @@ router.get('/verify', authenticateToken, catchAsync(async (req, res) => {
     })
   }
 
+  // Récupérer le nombre de boutiques de l'utilisateur
+  const shopCountQuery = 'SELECT COUNT(*) as count FROM shops WHERE user_id = ?'
+  const shopCountResult = await db.query(shopCountQuery, [user.id])
+  const shopCount = parseInt(shopCountResult.rows[0].count) || 0
+
+  // Récupérer les limites du plan
+  let maxShops = 2; // Default
+  const planLimitsQuery = 'SELECT max_shops FROM plans_config WHERE LOWER(plan_key) = LOWER(?)'
+  try {
+    const planLimitsResult = await db.query(planLimitsQuery, [user.plan || 'free'])
+    if (planLimitsResult.rows.length > 0) {
+      maxShops = planLimitsResult.rows[0].max_shops;
+    } else {
+      // Fallback hardcodé si pas de config en base
+      if (['pro', 'premium', 'gold'].includes((user.plan || '').toLowerCase())) maxShops = 9999;
+      else if (['basic'].includes((user.plan || '').toLowerCase())) maxShops = 5;
+    }
+  } catch (e) {
+    console.warn('Erreur chargement limites plan verify:', e);
+    // Fallback en cas d'erreur SQL
+    if (['pro', 'premium', 'gold'].includes((user.plan || '').toLowerCase())) maxShops = 9999;
+  }
+
   res.json({
     valid: true,
     user: {
@@ -212,7 +274,9 @@ router.get('/verify', authenticateToken, catchAsync(async (req, res) => {
       name: user.name,
       email: user.email,
       role: user.role,
-      plan: user.plan
+      plan: user.plan,
+      shopCount: shopCount,
+      maxShops: maxShops
     }
   })
 }))
