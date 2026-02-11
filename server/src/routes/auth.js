@@ -92,13 +92,19 @@ router.post('/login', catchAsync(async (req, res, next) => {
 
   // Trouver l'utilisateur
   const userQuery = 'SELECT id, name, email, password, role, status, plan FROM users WHERE email = ?'
+
+  console.log(`[AuthDebug] Tentative de connexion pour: ${email}`);
+
   const userResult = await db.query(userQuery, [email])
 
   if (userResult.rows.length === 0) {
-    return next(new AppError('Identifiants invalides', 401));
+    console.log(`[AuthDebug] Utilisateur non trouvé: ${email}`);
+    // TEMPORAIRE: Message explicite pour debug
+    return next(new AppError('Utilisateur non trouvé avec cet email', 401));
   }
 
   const user = userResult.rows[0]
+  console.log(`[AuthDebug] Utilisateur trouvé, ID: ${user.id}, Role: ${user.role}`);
 
   // Vérifier le statut du compte
   if (user.status !== 'active') {
@@ -107,8 +113,11 @@ router.post('/login', catchAsync(async (req, res, next) => {
 
   // Vérifier le mot de passe
   const isValidPassword = await bcrypt.compare(password, user.password)
+  console.log(`[AuthDebug] Mot de passe valide: ${isValidPassword}`);
+
   if (!isValidPassword) {
-    return next(new AppError('Identifiants invalides', 401));
+    // TEMPORAIRE: Message explicite pour debug
+    return next(new AppError('Mot de passe incorrect pour cet utilisateur', 401));
   }
 
   // Mettre à jour la dernière connexion
