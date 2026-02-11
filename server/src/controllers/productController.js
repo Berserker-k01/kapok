@@ -28,9 +28,10 @@ exports.createProduct = catchAsync(async (req, res, next) => {
     // Gestion de l'image uploadée (STOCKAGE LOCAL)
     if (req.file) {
         // Construction URL absolue ou relative selon config
-        const baseUrl = process.env.API_URL || 'https://e-assime.com/api';
-        // Suppression du slash final si présent pour éviter //
+        // URL EN DUR
+        const baseUrl = 'https://e-assime.com/api';
         const cleanBaseUrl = baseUrl.replace(/\/$/, '');
+
 
         req.body.image_url = `${cleanBaseUrl}/uploads/${req.file.filename}`;
 
@@ -74,7 +75,7 @@ exports.getProduct = catchAsync(async (req, res, next) => {
 exports.updateProduct = catchAsync(async (req, res, next) => {
     // Gestion de l'image uploadée (STOCKAGE LOCAL)
     if (req.file) {
-        const baseUrl = process.env.API_URL || 'https://e-assime.com/api';
+        const baseUrl = 'https://e-assime.com/api';
         const cleanBaseUrl = baseUrl.replace(/\/$/, '');
         req.body.image_url = `${cleanBaseUrl}/uploads/${req.file.filename}`;
 

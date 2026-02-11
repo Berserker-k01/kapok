@@ -132,10 +132,17 @@ const ShopSettings = () => {
             toast.success('Paramètres sauvegardés avec succès !')
 
             // Recharger les données de la boutique pour afficher les changements
-            await fetchShop()
+            try {
+                await fetchShop()
+            } catch (reloadError) {
+                console.error('Erreur rechargement après save:', reloadError);
+                toast.error('Sauvegarde OK, mais erreur lors du rechargement des données.');
+            }
+
         } catch (error) {
             console.error('Erreur sauvegarde:', error)
-            toast.error(`Erreur: ${error.response?.data?.error || error.response?.data?.message || 'Impossible de sauvegarder'}`)
+            const msg = error.response?.data?.error || error.response?.data?.message || 'Impossible de sauvegarder';
+            toast.error(`Erreur: ${msg}`)
         }
     }
 

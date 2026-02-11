@@ -1,5 +1,27 @@
+
 const shopService = require('../services/shopService');
 const catchAsync = require('../utils/catchAsync');
+
+function isObject(item) {
+    return (item && typeof item === 'object' && !Array.isArray(item));
+}
+
+function deepMerge(target, source) {
+    let output = Object.assign({}, target);
+    if (isObject(target) && isObject(source)) {
+        Object.keys(source).forEach(key => {
+            if (isObject(source[key])) {
+                if (!(key in target))
+                    Object.assign(output, { [key]: source[key] });
+                else
+                    output[key] = deepMerge(target[key], source[key]);
+            } else {
+                Object.assign(output, { [key]: source[key] });
+            }
+        });
+    }
+    return output;
+}
 
 exports.getAllShops = catchAsync(async (req, res, next) => {
     // DEBUG: Log user ID to verify coherence
@@ -78,66 +100,76 @@ exports.updateShop = catchAsync(async (req, res, next) => {
     let updateData = { ...req.body };
 
     console.log('[ShopController] Received update for:', req.params.shopId);
-    console.log('[ShopController] Body keys:', Object.keys(req.body));
-    console.log('[ShopController] Files keys:', req.files ? Object.keys(req.files) : 'None');
 
-    // Parse 'settings' JSON si c'est une string (cas FormData)
-    if (typeof updateData.settings === 'string') {
-        try {
-            updateData.settings = JSON.parse(updateData.settings);
-            console.log('[ShopController] Parsed settings successfully');
-        } catch (e) {
-            console.error('[ShopController] Failed to parse settings JSON:', e.message);
-            // Fallback: on garde la string ou on met null ? 
-            // Si on met null, le service ignorera l'update (COALESCE). C'est plus sûr que {} qui écrase tout.
-            updateData.settings = undefined;
+    // Récupérer la boutique actuelle pour ne rien perdre
+    let currentShop;
+    try {
+        currentShop = await shopService.getShopById(req.params.shopId);
+    } catch (error) {
+        return res.status(404).json({ status: 'fail', message: 'Boutique introuvable avant mise à jour' });
+    }
+
+    let currentSettings = currentShop.settings || {};
+    // Si c'est une string JSON en base, on parse
+    if (typeof currentSettings === 'string') {
+        try { currentSettings = JSON.parse(currentSettings); } catch (e) { currentSettings = {}; }
+    }
+
+    // Préparer les nouveaux settings
+    let newSettings = {};
+    if (updateData.settings) {
+        if (typeof updateData.settings === 'string') {
+            try {
+                newSettings = JSON.parse(updateData.settings);
+            } catch (e) {
+                console.error('[ShopController] Failed to parse settings JSON:', e.message);
+                return res.status(400).json({
+                    status: 'fail',
+                    message: 'Format des paramètres (settings) invalide.',
+                    error: e.message
+                });
+            }
+        } else {
+            newSettings = updateData.settings;
         }
     }
 
-    // Ensure structure ONLY if we have settings (avoid overwriting with empty object if not provided)
-    if (updateData.settings) {
-        if (!updateData.settings.themeConfig) updateData.settings.themeConfig = {};
-        if (!updateData.settings.themeConfig.content) updateData.settings.themeConfig.content = {};
-    }
+    // FUSION INTELLIGENTE (Deep Merge)
+    // On part de l'existant et on applique les changements
+    updateData.settings = deepMerge(currentSettings, newSettings);
+
+    // S'assurer que la structure minimale existe pour les images
+    if (!updateData.settings.themeConfig) updateData.settings.themeConfig = {};
+    if (!updateData.settings.themeConfig.content) updateData.settings.themeConfig.content = {};
 
     // Utiliser les fichiers locaux
     if (req.files) {
-        const baseUrl = process.env.API_URL || 'https://e-assime.com/api';
+        // URL EN DUR pour éviter les soucis de .env
+        const baseUrl = 'https://e-assime.com/api';
         const cleanBaseUrl = baseUrl.replace(/\/$/, '');
 
-        // On doit s'assurer que settings existe pour y mettre les URLs
-        if (!updateData.settings) {
-            // Si pas de settings fourni mais des fichiers, on doit récupérer l'existant ou créer structure min
-            updateData.settings = { themeConfig: { content: {} } };
-            // Note: Ceci est risqué si on écrase, mais shopService fait COALESCE.
-            // Le mieux serait que le Service fasse un merge, ou que le controller fasse un GET avant.
-            // Pour l'instant, on suppose que le front envoie tout ou rien.
-        }
-
-        // Réassurance structure (au cas où on vient de le créer)
-        if (!updateData.settings.themeConfig) updateData.settings.themeConfig = {};
-        if (!updateData.settings.themeConfig.content) updateData.settings.themeConfig.content = {};
-
         if (req.files['logo'] && req.files['logo'][0]) {
-            updateData.settings.themeConfig.content.logoUrl = `${cleanBaseUrl}/uploads/${req.files['logo'][0].filename}`;
-            console.log('[Shop] ✅ Logo updated (Local):', updateData.settings.themeConfig.content.logoUrl);
+            const logoUrl = `${cleanBaseUrl}/uploads/${req.files['logo'][0].filename}`;
+            updateData.settings.themeConfig.content.logoUrl = logoUrl;
+            console.log('[Shop] ✅ Logo updated (Local/Merged):', logoUrl);
         }
         if (req.files['banner'] && req.files['banner'][0]) {
-            updateData.settings.themeConfig.content.bannerUrl = `${cleanBaseUrl}/uploads/${req.files['banner'][0].filename}`;
-            console.log('[Shop] ✅ Banner updated (Local):', updateData.settings.themeConfig.content.bannerUrl);
+            const bannerUrl = `${cleanBaseUrl}/uploads/${req.files['banner'][0].filename}`;
+            updateData.settings.themeConfig.content.bannerUrl = bannerUrl;
+            console.log('[Shop] ✅ Banner updated (Local/Merged):', bannerUrl);
         }
     }
 
-    // Clean data (MAIS ne pas toucher à settings qui est déjà un objet propre)
-    // On nettoie manuellement pour éviter de casser settings
-    const keysToClean = ['name', 'description', 'category', 'theme', 'status']; // status ajouté
+    // Clean data (simple cleanup for top-level fields)
+    const keysToClean = ['name', 'description', 'category', 'theme', 'status'];
     keysToClean.forEach(key => {
         if (updateData[key] === '' || updateData[key] === 'null' || updateData[key] === 'undefined') {
             updateData[key] = null;
         }
     });
 
-    // On ne passe PAS par cleanData global qui est récursif et agressif sur 'settings'
+    // On passe updateData avec le settings fusionné au service
+    // Le service fera COALESCE(?, settings), mais comme on passe un objet complet fusionné, c'est bon.
 
     const shop = await shopService.updateShop(req.params.shopId, updateData);
 
