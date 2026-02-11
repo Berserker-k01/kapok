@@ -24,12 +24,12 @@ const parseDatabaseUrl = (url) => {
 
 // --- CONFIGURATION HYBRIDE (DOCKER / HOSTINGER) ---
 const poolConfig = {
-  // CONFIGURATION HYBRIDE (Mode Hostinger ou Local via .env)
-  host: process.env.DB_HOST || '127.0.0.1',
-  user: process.env.DB_USER || 'u980915146_admin',
-  password: process.env.DB_PASSWORD || 'Daniel2005k@ssi',
-  database: process.env.DB_NAME || 'u980915146_assimedb',
-  port: process.env.DB_PORT ? parseInt(process.env.DB_PORT) : 3306,
+  // CONFIGURATION EN DUR (PRODUCTION HOSTINGER)
+  host: '127.0.0.1',
+  user: 'u980915146_admin',
+  password: 'Daniel2005k@ssi',
+  database: 'u980915146_assimedb',
+  port: 3306,
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
