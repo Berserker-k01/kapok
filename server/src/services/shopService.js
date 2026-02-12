@@ -111,13 +111,14 @@ class ShopService {
   }
 
   async updateShop(shopId, updateData) {
-    const { name, description, category, theme, settings } = updateData;
+    const { name, description, category, theme, settings, status } = updateData;
 
     // Convert undefined to null for SQL compatibility
     const safeName = name !== undefined ? name : null;
     const safeDescription = description !== undefined ? description : null;
     const safeCategory = category !== undefined ? category : null;
     const safeTheme = theme !== undefined ? theme : null;
+    const safeStatus = status !== undefined ? status : null;
     const safeSettings = settings ? JSON.stringify(settings) : null;
 
     const updateQuery = `
@@ -127,13 +128,14 @@ class ShopService {
         description = COALESCE(?, description),
         category = COALESCE(?, category),
         theme = COALESCE(?, theme),
+        status = COALESCE(?, status),
         settings = COALESCE(?, settings),
         updated_at = NOW()
       WHERE id = ?
     `;
 
     await db.query(updateQuery, [
-      safeName, safeDescription, safeCategory, safeTheme,
+      safeName, safeDescription, safeCategory, safeTheme, safeStatus,
       safeSettings, shopId
     ]);
 

@@ -45,9 +45,19 @@ exports.getAllShops = catchAsync(async (req, res, next) => {
 
 exports.getShopBySlug = catchAsync(async (req, res, next) => {
     const shop = await shopService.getShopBySlug(req.params.slug);
+
     if (!shop) {
         return res.status(404).json({ status: 'fail', message: 'Boutique non trouvée' });
     }
+
+    // Vérifier si la boutique est active
+    if (shop.status !== 'active') {
+        return res.status(503).json({
+            status: 'fail',
+            message: 'Cette boutique est actuellement indisponible ou en maintenance.'
+        });
+    }
+
     res.status(200).json({
         status: 'success',
         data: { shop }
