@@ -2,10 +2,11 @@ const multer = require('multer');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
-// Utiliser UPLOAD_PATH du .env si défini, sinon uploads à la racine du projet
+// Utiliser UPLOAD_PATH du .env si défini, sinon uploads relatif au dossier server/
+// IMPORTANT: Doit correspondre au chemin static dans index.js (path.join(__dirname, '../uploads'))
 const UPLOAD_ROOT = process.env.UPLOAD_PATH
     ? path.resolve(process.env.UPLOAD_PATH)
-    : path.join(process.cwd(), 'uploads');
+    : path.join(__dirname, '../../uploads');
 
 console.log('[Upload] 📂 Configuration du stockage local:', UPLOAD_ROOT);
 

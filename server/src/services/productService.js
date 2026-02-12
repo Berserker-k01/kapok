@@ -2,6 +2,39 @@ const db = require('../config/database');
 const { v4: uuidv4 } = require('uuid');
 const AppError = require('../utils/AppError');
 
+/**
+ * Normalise une URL d'image pour toujours retourner un chemin relatif.
+ * Corrige les anciennes URLs absolues (http://127.0.0.1:5000/..., http://localhost:5000/..., etc.)
+ */
+function normalizeImageUrl(url) {
+    if (!url || typeof url !== 'string') return null;
+
+    // Si c'est déjà un chemin relatif commençant par /, c'est bon
+    if (url.startsWith('/api/uploads/') || url.startsWith('/uploads/')) {
+        // Uniformiser vers /api/uploads/
+        return url.startsWith('/uploads/') ? '/api' + url : url;
+    }
+
+    // Si c'est une URL absolue, extraire le chemin
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+        try {
+            const urlObj = new URL(url);
+            const pathname = urlObj.pathname;
+            // Si c'est une URL d'upload locale, extraire le chemin relatif
+            if (pathname.includes('/uploads/')) {
+                const uploadsIndex = pathname.indexOf('/uploads/');
+                return '/api' + pathname.substring(uploadsIndex);
+            }
+            // Si c'est une URL externe (Cloudinary, etc.), garder telle quelle
+            return url;
+        } catch (e) {
+            return url;
+        }
+    }
+
+    return url;
+}
+
 class ProductService {
     async getProductsByShop(shopId, queryParams) {
         const { page = 1, limit = 20, category, search } = queryParams;
@@ -47,8 +80,13 @@ class ProductService {
                     images = [];
                 }
             }
+            // Normaliser toutes les URLs d'images
+            if (Array.isArray(images)) {
+                images = images.map(img => normalizeImageUrl(img));
+            }
             return {
                 ...p,
+                images,
                 image_url: (Array.isArray(images) && images.length > 0) ? images[0] : null
             };
         });
@@ -123,6 +161,10 @@ class ProductService {
         let images = product.images;
         if (typeof images === 'string') {
             try { images = JSON.parse(images); } catch (e) { images = []; }
+        }
+        // Normaliser toutes les URLs d'images
+        if (Array.isArray(images)) {
+            images = images.map(img => normalizeImageUrl(img));
         }
         product.images = images;
         product.image_url = (Array.isArray(images) && images.length > 0) ? images[0] : null;

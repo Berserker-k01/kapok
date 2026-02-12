@@ -2,6 +2,45 @@ const db = require('../config/database');
 const { v4: uuidv4 } = require('uuid');
 const AppError = require('../utils/AppError');
 
+/**
+ * Normalise une URL d'image pour toujours retourner un chemin relatif.
+ * Corrige les anciennes URLs absolues (http://127.0.0.1:5000/..., http://localhost:5000/..., etc.)
+ */
+function normalizeImageUrl(url) {
+    if (!url || typeof url !== 'string') return null;
+    if (url.startsWith('/api/uploads/') || url.startsWith('/uploads/')) {
+        return url.startsWith('/uploads/') ? '/api' + url : url;
+    }
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+        try {
+            const urlObj = new URL(url);
+            const pathname = urlObj.pathname;
+            if (pathname.includes('/uploads/')) {
+                const uploadsIndex = pathname.indexOf('/uploads/');
+                return '/api' + pathname.substring(uploadsIndex);
+            }
+            return url; // URL externe (Cloudinary, etc.)
+        } catch (e) { return url; }
+    }
+    return url;
+}
+
+/**
+ * Normalise toutes les URLs d'images dans un objet shop
+ */
+function normalizeShopImages(shop) {
+    if (!shop) return shop;
+    if (shop.logo_url) shop.logo_url = normalizeImageUrl(shop.logo_url);
+    if (shop.banner_url) shop.banner_url = normalizeImageUrl(shop.banner_url);
+    // Normaliser aussi dans les settings
+    if (shop.settings?.themeConfig?.content) {
+        const content = shop.settings.themeConfig.content;
+        if (content.logoUrl) content.logoUrl = normalizeImageUrl(content.logoUrl);
+        if (content.bannerUrl) content.bannerUrl = normalizeImageUrl(content.bannerUrl);
+    }
+    return shop;
+}
+
 class ShopService {
   async getAllShops(userId) {
     const query = `
@@ -23,7 +62,7 @@ class ShopService {
       if (shop.settings && typeof shop.settings === 'string') {
         try { shop.settings = JSON.parse(shop.settings); } catch (e) { shop.settings = {}; }
       }
-      return shop;
+      return normalizeShopImages(shop);
     });
   }
 
@@ -107,7 +146,7 @@ class ShopService {
       try { shop.settings = JSON.parse(shop.settings); } catch (e) { shop.settings = {}; }
     }
 
-    return shop;
+    return normalizeShopImages(shop);
   }
 
   async getShopBySlug(slug) {
@@ -133,7 +172,7 @@ class ShopService {
       googleAnalyticsId: shop.settings?.googleAnalyticsId || null,
     };
 
-    return shop;
+    return normalizeShopImages(shop);
   }
 
   async updateShop(shopId, updateData) {
@@ -183,7 +222,7 @@ class ShopService {
       try { shop.settings = JSON.parse(shop.settings); } catch (e) { shop.settings = {}; }
     }
 
-    return shop;
+    return normalizeShopImages(shop);
   }
 
   async deleteShop(shopId) {
