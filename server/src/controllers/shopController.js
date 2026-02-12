@@ -154,9 +154,10 @@ exports.updateShop = catchAsync(async (req, res, next) => {
 
     // Utiliser les fichiers locaux
     if (req.files) {
-        // URL EN DUR pour éviter les soucis de .env
-        const baseUrl = 'https://e-assime.com/api';
-        const cleanBaseUrl = baseUrl.replace(/\/$/, '');
+        // URL DYNAMIQUE (Marche en Local ET en Prod)
+        const protocol = req.protocol;
+        const host = req.get('host');
+        const cleanBaseUrl = `${protocol}://${host}/api`;
 
         if (req.files['logo'] && req.files['logo'][0]) {
             const logoUrl = `${cleanBaseUrl}/uploads/${req.files['logo'][0].filename}`;
