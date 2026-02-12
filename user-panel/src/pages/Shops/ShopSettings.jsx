@@ -327,43 +327,40 @@ const ShopSettings = () => {
                             </div>
                         </div>
 
-                        {/* Configuration Avancée - Seulement pour thème Custom */}
-                        {watch('theme') === 'custom' && (
-                            <div className="bg-gray-50 p-6 rounded-xl border border-gray-200 space-y-6 animate-in fade-in slide-in-from-top-4">
-                                <h3 className="font-semibold text-gray-900 border-b pb-2">Configuration Avancée (Thème Custom)</h3>
+                        {/* Identité Visuelle - Pour TOUS les thèmes */}
+                        <div className="bg-gray-50 p-6 rounded-xl border border-gray-200 space-y-6 animate-in fade-in slide-in-from-top-4 mt-6">
+                            <h3 className="font-semibold text-gray-900 border-b pb-2">Identité Visuelle (Logo & Bannière)</h3>
 
-                                <div className="space-y-4">
-                                    {/* Inputs File au lieu de TEXT URL */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Logo</label>
-                                        <input
-                                            type="file"
-                                            accept="image/*"
-                                            {...register('logoFile')}
-                                            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
-                                        />
-                                        {watch('themeConfig.content.logoUrl') && <p className="text-xs text-green-600 mt-1">Logo actuel: Chargé</p>}
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Bannière (Grand Format)</label>
-                                        <input
-                                            type="file"
-                                            accept="image/*"
-                                            {...register('bannerFile')}
-                                            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
-                                        />
-                                        {watch('themeConfig.content.bannerUrl') && <p className="text-xs text-green-600 mt-1">Bannière actuelle: Chargée</p>}
-                                    </div>
-
-                                    <Input
-                                        label="Nom de la Boutique (si pas de logo)"
-                                        placeholder="Ma Super Boutique"
-                                        {...register('themeConfig.content.shopName')}
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Logo</label>
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        {...register('logoFile')}
+                                        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
                                     />
+                                    {watch('themeConfig.content.logoUrl') && <p className="text-xs text-green-600 mt-1">Logo actuel: Chargé</p>}
                                 </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Bannière (Grand Format)</label>
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        {...register('bannerFile')}
+                                        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
+                                    />
+                                    {watch('themeConfig.content.bannerUrl') && <p className="text-xs text-green-600 mt-1">Bannière actuelle: Chargée</p>}
+                                </div>
+
+                                <Input
+                                    label="Nom de la Boutique (si pas de logo)"
+                                    placeholder="Ma Super Boutique"
+                                    {...register('themeConfig.content.shopName')}
+                                />
                             </div>
-                        )}
+                        </div>
 
                         <div className="border-t pt-6">
                             <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
@@ -405,8 +402,8 @@ const ShopSettings = () => {
                         </div>
                     </form>
                 </CardBody>
-            </Card>
-        </div>
+            </Card >
+        </div >
     )
 }
 
