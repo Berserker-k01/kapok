@@ -30,60 +30,64 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex">
-      {/* Left Panel - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-primary-600 via-primary-700 to-primary-900">
-        {/* Abstract Background Pattern */}
-        <div className="absolute inset-0">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-primary-500/30 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
-          <div className="absolute bottom-0 left-0 w-80 h-80 bg-primary-400/20 rounded-full blur-3xl translate-y-1/3 -translate-x-1/3"></div>
-          <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-white/5 rounded-full blur-2xl -translate-x-1/2 -translate-y-1/2"></div>
-        </div>
+      {/* Left Panel - Branding with Background Image */}
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
+        {/* Background Image */}
+        <img
+          src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=1400&q=80"
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        {/* Dark Gradient Overlay for readability */}
+        <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/50 to-primary-900/70"></div>
+        {/* Subtle warm accent glow */}
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-primary-600/20 rounded-full blur-3xl translate-y-1/3 -translate-x-1/4"></div>
 
         <div className="relative z-10 flex flex-col justify-between p-12 w-full">
           {/* Logo */}
           <div>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-lg">
+              <div className="w-11 h-11 bg-white/95 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg shadow-black/20">
                 <span className="text-primary-600 font-black text-xl">A</span>
               </div>
-              <span className="text-white text-2xl font-bold tracking-tight">Assimε</span>
+              <span className="text-white text-2xl font-bold tracking-tight drop-shadow-md">Assimε</span>
             </div>
           </div>
 
           {/* Hero Content */}
           <div className="space-y-8">
-            <h1 className="text-4xl xl:text-5xl font-black text-white leading-tight">
+            <h1 className="text-4xl xl:text-5xl font-black text-white leading-tight drop-shadow-lg">
               Lancez votre boutique en ligne en quelques minutes
             </h1>
-            <p className="text-lg text-primary-100 leading-relaxed max-w-lg">
+            <p className="text-lg text-white/85 leading-relaxed max-w-lg drop-shadow-sm">
               La plateforme e-commerce la plus simple d'Afrique. Créez, personnalisez et vendez — sans aucune compétence technique.
             </p>
 
             {/* Features */}
             <div className="space-y-4">
               <div className="flex items-center gap-4 text-white/90">
-                <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">
+                <div className="w-10 h-10 rounded-lg bg-white/15 backdrop-blur-sm flex items-center justify-center flex-shrink-0 border border-white/10">
                   <FiShoppingBag className="w-5 h-5" />
                 </div>
-                <span className="font-medium">Boutique personnalisable avec thèmes premium</span>
+                <span className="font-medium drop-shadow-sm">Boutique personnalisable avec thèmes premium</span>
               </div>
               <div className="flex items-center gap-4 text-white/90">
-                <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">
+                <div className="w-10 h-10 rounded-lg bg-white/15 backdrop-blur-sm flex items-center justify-center flex-shrink-0 border border-white/10">
                   <FiTrendingUp className="w-5 h-5" />
                 </div>
-                <span className="font-medium">Analytics et suivi des ventes en temps réel</span>
+                <span className="font-medium drop-shadow-sm">Analytics et suivi des ventes en temps réel</span>
               </div>
               <div className="flex items-center gap-4 text-white/90">
-                <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">
+                <div className="w-10 h-10 rounded-lg bg-white/15 backdrop-blur-sm flex items-center justify-center flex-shrink-0 border border-white/10">
                   <FiGlobe className="w-5 h-5" />
                 </div>
-                <span className="font-medium">Paiement à la livraison et mobile money</span>
+                <span className="font-medium drop-shadow-sm">Paiement à la livraison et mobile money</span>
               </div>
             </div>
           </div>
 
           {/* Footer */}
-          <p className="text-primary-200 text-sm">
+          <p className="text-white/50 text-sm">
             © 2025 Assimε. Propulsé par e-Assime.
           </p>
         </div>

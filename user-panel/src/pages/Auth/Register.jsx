@@ -41,49 +41,54 @@ const Register = () => {
 
     return (
         <div className="min-h-screen flex">
-            {/* Left Panel - Branding */}
-            <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-secondary-800 via-secondary-900 to-black">
-                {/* Abstract Background */}
-                <div className="absolute inset-0">
-                    <div className="absolute top-0 left-0 w-96 h-96 bg-primary-600/15 rounded-full blur-3xl -translate-y-1/3 -translate-x-1/4"></div>
-                    <div className="absolute bottom-0 right-0 w-80 h-80 bg-primary-500/10 rounded-full blur-3xl translate-y-1/3 translate-x-1/4"></div>
-                </div>
+            {/* Left Panel - Branding with Background Image */}
+            <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
+                {/* Background Image */}
+                <img
+                  src="https://images.unsplash.com/photo-1607082349566-187342175e2f?auto=format&fit=crop&w=1400&q=80"
+                  alt=""
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+                {/* Dark Gradient Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-br from-black/75 via-secondary-900/60 to-black/70"></div>
+                {/* Subtle accent glow */}
+                <div className="absolute top-0 left-0 w-96 h-96 bg-primary-600/15 rounded-full blur-3xl -translate-y-1/3 -translate-x-1/4"></div>
 
                 <div className="relative z-10 flex flex-col justify-between p-12 w-full">
                     {/* Logo */}
                     <div>
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-primary-600 rounded-xl flex items-center justify-center shadow-lg">
-                                <span className="text-white font-black text-xl">A</span>
+                            <div className="w-11 h-11 bg-white/95 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg shadow-black/20">
+                                <span className="text-primary-600 font-black text-xl">A</span>
                             </div>
-                            <span className="text-white text-2xl font-bold tracking-tight">Assimε</span>
+                            <span className="text-white text-2xl font-bold tracking-tight drop-shadow-md">Assimε</span>
                         </div>
                     </div>
 
                     {/* Hero */}
                     <div className="space-y-8">
-                        <h1 className="text-4xl xl:text-5xl font-black text-white leading-tight">
+                        <h1 className="text-4xl xl:text-5xl font-black text-white leading-tight drop-shadow-lg">
                             Commencez à vendre en ligne dès aujourd'hui
                         </h1>
-                        <p className="text-lg text-secondary-300 leading-relaxed max-w-lg">
+                        <p className="text-lg text-white/80 leading-relaxed max-w-lg drop-shadow-sm">
                             Rejoignez des centaines de marchands qui font confiance à Assimε pour développer leur activité en ligne.
                         </p>
 
                         {/* Features List */}
                         <div className="space-y-3">
                             {features.map((feature, i) => (
-                                <div key={i} className="flex items-center gap-3 text-white/85">
-                                    <div className="w-6 h-6 rounded-full bg-primary-600/20 flex items-center justify-center flex-shrink-0">
-                                        <FiCheck className="w-3.5 h-3.5 text-primary-400" />
+                                <div key={i} className="flex items-center gap-3 text-white/90">
+                                    <div className="w-6 h-6 rounded-full bg-white/15 backdrop-blur-sm flex items-center justify-center flex-shrink-0 border border-white/10">
+                                        <FiCheck className="w-3.5 h-3.5 text-white" />
                                     </div>
-                                    <span className="font-medium text-sm">{feature}</span>
+                                    <span className="font-medium text-sm drop-shadow-sm">{feature}</span>
                                 </div>
                             ))}
                         </div>
                     </div>
 
                     {/* Footer */}
-                    <p className="text-secondary-500 text-sm">
+                    <p className="text-white/40 text-sm">
                         © 2025 Assimε. Propulsé par e-Assime.
                     </p>
                 </div>
