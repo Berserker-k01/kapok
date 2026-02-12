@@ -27,7 +27,7 @@ class ProductService {
         const result = await db.query(query, sqlParams);
 
         // Compter le total
-        let countQuery = 'SELECT COUNT(*) FROM products WHERE shop_id = ?';
+        let countQuery = 'SELECT COUNT(*) AS count FROM products WHERE shop_id = ?';
         let countParams = [shopId];
 
         if (category) {
@@ -117,7 +117,17 @@ class ProductService {
             throw new AppError('Produit non trouvé', 404);
         }
 
-        return result.rows[0];
+        const product = result.rows[0];
+
+        // Parser images JSON (mysql2 execute retourne string)
+        let images = product.images;
+        if (typeof images === 'string') {
+            try { images = JSON.parse(images); } catch (e) { images = []; }
+        }
+        product.images = images;
+        product.image_url = (Array.isArray(images) && images.length > 0) ? images[0] : null;
+
+        return product;
     }
 
     async updateProduct(userId, productId, updateData) {

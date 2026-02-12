@@ -63,8 +63,8 @@ const ThemeBold = ({ shop, products }) => {
             <header className="fixed top-0 w-full z-50 p-4 md:p-6 backdrop-blur-md bg-black/30 border-b border-white/10 transition-all duration-300">
                 <div className="flex justify-between items-center max-w-7xl mx-auto">
                     <div className="flex items-center gap-3">
-                        {shop?.logo_url && (
-                            <img src={shop.logo_url} alt={shop.name} className="h-10 w-auto object-contain" />
+                        {(shop?.settings?.themeConfig?.content?.logoUrl || shop?.logo_url) && (
+                            <img src={shop?.settings?.themeConfig?.content?.logoUrl || shop.logo_url} alt={shop.name} className="h-10 w-auto object-contain" />
                         )}
                         <div className="text-2xl md:text-4xl font-black tracking-tighter italic hover:scale-105 transition-transform duration-300"
                             style={{ color: primaryColor }}>

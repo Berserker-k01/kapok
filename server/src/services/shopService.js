@@ -17,7 +17,14 @@ class ShopService {
       ORDER BY s.created_at DESC
     `;
     const result = await db.query(query, [userId]);
-    return result.rows;
+
+    // Parser settings pour chaque boutique (mysql2 execute retourne string)
+    return result.rows.map(shop => {
+      if (shop.settings && typeof shop.settings === 'string') {
+        try { shop.settings = JSON.parse(shop.settings); } catch (e) { shop.settings = {}; }
+      }
+      return shop;
+    });
   }
 
   async createShop(userId, shopData) {
@@ -29,7 +36,7 @@ class ShopService {
     const { limit: planLimit, plan: userPlan } = await this.getUserShopLimit(userId);
 
     // Vérifier la limite de boutiques
-    const countQuery = 'SELECT COUNT(*) FROM shops WHERE owner_id = ?';
+    const countQuery = 'SELECT COUNT(*) AS count FROM shops WHERE owner_id = ?';
     const countResult = await db.query(countQuery, [userId]);
     const shopCount = parseInt(countResult.rows[0].count);
 
@@ -93,25 +100,44 @@ class ShopService {
       throw new AppError('Boutique non trouvée', 404);
     }
 
-    return result.rows[0];
+    const shop = result.rows[0];
+
+    // Parser settings si c'est une string JSON (mysql2 execute retourne string)
+    if (shop.settings && typeof shop.settings === 'string') {
+      try { shop.settings = JSON.parse(shop.settings); } catch (e) { shop.settings = {}; }
+    }
+
+    return shop;
   }
 
   async getShopBySlug(slug) {
     const query = `
-      SELECT s.*, 
-      JSON_OBJECT(
-        'facebookPixelId', JSON_UNQUOTE(JSON_EXTRACT(s.settings, '$.facebookPixelId')),
-        'googleAnalyticsId', JSON_UNQUOTE(JSON_EXTRACT(s.settings, '$.googleAnalyticsId'))
-      ) as tracking
+      SELECT s.*
       FROM shops s
       WHERE slug = ?
     `;
     const result = await db.query(query, [slug]);
-    return result.rows[0];
+    
+    if (result.rows.length === 0) return null;
+
+    const shop = result.rows[0];
+
+    // Parser settings si c'est une string JSON (mysql2 execute retourne string)
+    if (shop.settings && typeof shop.settings === 'string') {
+      try { shop.settings = JSON.parse(shop.settings); } catch (e) { shop.settings = {}; }
+    }
+
+    // Extraire tracking depuis settings pour compatibilité
+    shop.tracking = {
+      facebookPixelId: shop.settings?.facebookPixelId || null,
+      googleAnalyticsId: shop.settings?.googleAnalyticsId || null,
+    };
+
+    return shop;
   }
 
   async updateShop(shopId, updateData) {
-    const { name, description, category, theme, settings, status } = updateData;
+    const { name, description, category, theme, settings, status, logo_url, banner_url } = updateData;
 
     // Convert undefined to null for SQL compatibility
     const safeName = name !== undefined ? name : null;
@@ -120,6 +146,8 @@ class ShopService {
     const safeTheme = theme !== undefined ? theme : null;
     const safeStatus = status !== undefined ? status : null;
     const safeSettings = settings ? JSON.stringify(settings) : null;
+    const safeLogoUrl = logo_url !== undefined ? logo_url : null;
+    const safeBannerUrl = banner_url !== undefined ? banner_url : null;
 
     const updateQuery = `
       UPDATE shops 
@@ -130,13 +158,15 @@ class ShopService {
         theme = COALESCE(?, theme),
         status = COALESCE(?, status),
         settings = COALESCE(?, settings),
+        logo_url = COALESCE(?, logo_url),
+        banner_url = COALESCE(?, banner_url),
         updated_at = NOW()
       WHERE id = ?
     `;
 
     await db.query(updateQuery, [
       safeName, safeDescription, safeCategory, safeTheme, safeStatus,
-      safeSettings, shopId
+      safeSettings, safeLogoUrl, safeBannerUrl, shopId
     ]);
 
     // FETCH AFTER UPDATE
@@ -146,13 +176,20 @@ class ShopService {
       throw new AppError('Boutique non trouvée', 404);
     }
 
-    return result.rows[0];
+    const shop = result.rows[0];
+
+    // Parser settings si c'est une string JSON
+    if (shop.settings && typeof shop.settings === 'string') {
+      try { shop.settings = JSON.parse(shop.settings); } catch (e) { shop.settings = {}; }
+    }
+
+    return shop;
   }
 
   async deleteShop(shopId) {
     // Vérifier s'il y a des commandes en cours
     const ordersQuery = `
-      SELECT COUNT(*) FROM orders 
+      SELECT COUNT(*) AS count FROM orders 
       WHERE shop_id = ? AND status IN ('pending', 'processing', 'shipped')
     `;
     const ordersResult = await db.query(ordersQuery, [shopId]);

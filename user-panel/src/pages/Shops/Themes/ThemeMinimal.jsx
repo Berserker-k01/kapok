@@ -58,12 +58,12 @@ const ThemeMinimal = ({ shop, products }) => {
           ? 'bg-white/95 backdrop-blur-lg border-gray-200 shadow-sm py-3'
           : 'bg-transparent border-transparent py-5'
           }`}
-        style={{ color: scrolled ? text : (shop?.banner_url ? '#fff' : text) }}
+        style={{ color: scrolled ? text : ((shop?.settings?.themeConfig?.content?.bannerUrl || shop?.banner_url) ? '#fff' : text) }}
       >
         <div className="max-w-7xl mx-auto px-4 md:px-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            {shop?.logo_url ? (
-              <img src={shop.logo_url} alt={shop.name} className="h-10 w-auto object-contain" />
+            {(shop?.settings?.themeConfig?.content?.logoUrl || shop?.logo_url) ? (
+              <img src={shop?.settings?.themeConfig?.content?.logoUrl || shop.logo_url} alt={shop.name} className="h-10 w-auto object-contain" />
             ) : (
               <div
                 className="h-10 w-10 rounded-full flex items-center justify-center font-bold text-xl shadow-lg"
@@ -96,9 +96,9 @@ const ThemeMinimal = ({ shop, products }) => {
       {/* Hero Section - Enhanced */}
       <section className="relative pt-24 md:pt-32 pb-16 md:pb-24 px-4 md:px-6 overflow-hidden">
         <div className="absolute inset-0 z-0">
-          {shop?.banner_url ? (
+          {(shop?.settings?.themeConfig?.content?.bannerUrl || shop?.banner_url) ? (
             <div className="absolute inset-0">
-              <img src={shop.banner_url} alt="Cover" className="w-full h-full object-cover" />
+              <img src={shop?.settings?.themeConfig?.content?.bannerUrl || shop.banner_url} alt="Cover" className="w-full h-full object-cover" />
               <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/40 to-black/60"></div>
             </div>
           ) : (
@@ -112,11 +112,11 @@ const ThemeMinimal = ({ shop, products }) => {
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto text-center py-12 md:py-20">
-          <h1 className={`text-4xl md:text-6xl lg:text-7xl font-black mb-4 md:mb-6 tracking-tight leading-tight ${shop?.banner_url ? 'text-white drop-shadow-2xl' : ''}`}
-            style={{ color: shop?.banner_url ? undefined : text }}>
+          <h1 className={`text-4xl md:text-6xl lg:text-7xl font-black mb-4 md:mb-6 tracking-tight leading-tight ${(shop?.settings?.themeConfig?.content?.bannerUrl || shop?.banner_url) ? 'text-white drop-shadow-2xl' : ''}`}
+            style={{ color: (shop?.settings?.themeConfig?.content?.bannerUrl || shop?.banner_url) ? undefined : text }}>
             {shop?.name || 'Bienvenue'}
           </h1>
-          <p className={`text-lg md:text-xl lg:text-2xl max-w-3xl mx-auto font-medium px-4 ${shop?.banner_url ? 'text-gray-100' : 'text-gray-600'}`}>
+          <p className={`text-lg md:text-xl lg:text-2xl max-w-3xl mx-auto font-medium px-4 ${(shop?.settings?.themeConfig?.content?.bannerUrl || shop?.banner_url) ? 'text-gray-100' : 'text-gray-600'}`}>
             {shop?.description || "Découvrez notre sélection unique de produits de qualité."}
           </p>
           <div className="mt-8 md:mt-12 flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -124,13 +124,13 @@ const ThemeMinimal = ({ shop, products }) => {
               onClick={() => document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' })}
               className="px-8 py-4 rounded-full font-bold text-base md:text-lg transition-all hover:scale-105 shadow-2xl hover:shadow-3xl"
               style={{
-                backgroundColor: shop?.banner_url ? '#fff' : primary,
-                color: shop?.banner_url ? '#000' : secondary
+                backgroundColor: (shop?.settings?.themeConfig?.content?.bannerUrl || shop?.banner_url) ? '#fff' : primary,
+                color: (shop?.settings?.themeConfig?.content?.bannerUrl || shop?.banner_url) ? '#000' : secondary
               }}
             >
               Découvrir la collection
             </button>
-            <div className={`flex items-center gap-2 text-sm ${shop?.banner_url ? 'text-white' : 'text-gray-600'}`}>
+            <div className={`flex items-center gap-2 text-sm ${(shop?.settings?.themeConfig?.content?.bannerUrl || shop?.banner_url) ? 'text-white' : 'text-gray-600'}`}>
               <FiTruck className="w-5 h-5" />
               <span className="font-medium">Livraison gratuite</span>
             </div>
@@ -306,8 +306,8 @@ const ThemeMinimal = ({ shop, products }) => {
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-8">
             <div className="flex items-center gap-3">
-              {shop?.logo_url ? (
-                <img src={shop.logo_url} alt={shop.name} className="h-8 w-auto object-contain" />
+              {(shop?.settings?.themeConfig?.content?.logoUrl || shop?.logo_url) ? (
+                <img src={shop?.settings?.themeConfig?.content?.logoUrl || shop.logo_url} alt={shop.name} className="h-8 w-auto object-contain" />
               ) : (
                 <div className="h-8 w-8 rounded-full flex items-center justify-center font-bold"
                   style={{ backgroundColor: primary, color: secondary }}>

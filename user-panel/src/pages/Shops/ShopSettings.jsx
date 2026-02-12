@@ -27,6 +27,9 @@ const shopSettingsSchema = z.object({
             shopName: z.string().optional(),
         }).optional(),
     }).optional(),
+    // Fichiers d'upload (FileList) — passthrough pour ne pas être supprimés par Zod
+    logoFile: z.any().optional(),
+    bannerFile: z.any().optional(),
 })
 
 const ShopSettings = () => {
@@ -38,52 +41,58 @@ const ShopSettings = () => {
         resolver: zodResolver(shopSettingsSchema)
     })
 
-    useEffect(() => {
-        const fetchShop = async () => {
-            try {
-                // Force /api prefix + Log for debugging
-                const response = await axios.get(`/api/shops/${shopId}`)
-                console.log('Shop Response Headers:', response.headers);
+    // Fonction fetchShop extraite du useEffect pour être réutilisable dans onSubmit
+    const fetchShop = async () => {
+        try {
+            // Force /api prefix + Log for debugging
+            const response = await axios.get(`/api/shops/${shopId}`)
+            console.log('Shop Response Headers:', response.headers);
 
-                // Support both structures (User Panel vs Admin Panel style)
-                const shop = response.data.shop || response.data?.data?.shop
+            // Support both structures (User Panel vs Admin Panel style)
+            const shop = response.data.shop || response.data?.data?.shop
 
-                if (!shop) {
-                    console.error('Shop Fetch Error: Shop object missing in response', response.data);
-                    throw new Error(`Impossible de récupérer les informations de la boutique (ID: ${shopId})`)
-                }
-
-                const settings = shop.settings || {}
-
-                reset({
-                    theme: shop.theme || 'minimal',
-                    status: shop.status || 'active',
-                    facebookPixelId: settings.facebookPixelId || '',
-                    googleAnalyticsId: settings.googleAnalyticsId || '',
-                    themeConfig: settings.themeConfig || {
-                        colors: {
-                            primary: '#000000',
-                            secondary: '#ffffff',
-                            background: '#ffffff',
-                            text: '#000000'
-                        },
-                        content: {
-                            logoUrl: '',
-                            shopName: ''
-                        }
-                    }
-                })
-            } catch (error) {
-                console.error('ShopSettings Load Error:', error)
-                const status = error.response?.status || 'Client Error';
-                const message = error.response?.data?.error || error.response?.data?.message || error.message;
-                toast.error(`Erreur ${status}: ${message}`)
-            } finally {
-                setLoading(false)
+            if (!shop) {
+                console.error('Shop Fetch Error: Shop object missing in response', response.data);
+                throw new Error(`Impossible de récupérer les informations de la boutique (ID: ${shopId})`)
             }
+
+            // Parser settings si c'est une string JSON (MySQL retourne string via execute)
+            let settings = shop.settings || {}
+            if (typeof settings === 'string') {
+                try { settings = JSON.parse(settings) } catch (e) { settings = {} }
+            }
+
+            reset({
+                theme: shop.theme || 'minimal',
+                status: shop.status || 'active',
+                facebookPixelId: settings.facebookPixelId || '',
+                googleAnalyticsId: settings.googleAnalyticsId || '',
+                themeConfig: settings.themeConfig || {
+                    colors: {
+                        primary: '#000000',
+                        secondary: '#ffffff',
+                        background: '#ffffff',
+                        text: '#000000'
+                    },
+                    content: {
+                        logoUrl: '',
+                        shopName: ''
+                    }
+                }
+            })
+        } catch (error) {
+            console.error('ShopSettings Load Error:', error)
+            const status = error.response?.status || 'Client Error';
+            const message = error.response?.data?.error || error.response?.data?.message || error.message;
+            toast.error(`Erreur ${status}: ${message}`)
+        } finally {
+            setLoading(false)
         }
+    }
+
+    useEffect(() => {
         fetchShop()
-    }, [shopId, reset])
+    }, [shopId])
 
     const onSubmit = async (data) => {
         try {

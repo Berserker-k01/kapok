@@ -27,13 +27,8 @@ exports.createProduct = catchAsync(async (req, res, next) => {
 
     // Gestion de l'image uploadée (STOCKAGE LOCAL)
     if (req.file) {
-        // Construction URL absolue ou relative selon config
-        // URL DYNAMIQUE (Marche en Local ET en Prod)
-        const protocol = req.protocol;
-        const host = req.get('host');
-        const cleanBaseUrl = `${protocol}://${host}/api`;
-
-        req.body.image_url = `${cleanBaseUrl}/uploads/${req.file.filename}`;
+        // URL RELATIVE pour compatibilité reverse proxy (Nginx/Hostinger)
+        req.body.image_url = `/api/uploads/${req.file.filename}`;
 
         console.log('[Product] ✅ Image generated (Local):');
         console.log('[Product]    URL:', req.body.image_url);
@@ -75,10 +70,8 @@ exports.getProduct = catchAsync(async (req, res, next) => {
 exports.updateProduct = catchAsync(async (req, res, next) => {
     // Gestion de l'image uploadée (STOCKAGE LOCAL)
     if (req.file) {
-        const protocol = req.protocol;
-        const host = req.get('host');
-        const cleanBaseUrl = `${protocol}://${host}/api`;
-        req.body.image_url = `${cleanBaseUrl}/uploads/${req.file.filename}`;
+        // URL RELATIVE pour compatibilité reverse proxy (Nginx/Hostinger)
+        req.body.image_url = `/api/uploads/${req.file.filename}`;
 
         console.log('[Product] ✅ Image updated (Local):', req.body.image_url);
     }

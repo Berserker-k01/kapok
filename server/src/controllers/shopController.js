@@ -77,15 +77,7 @@ exports.createShop = catchAsync(async (req, res, next) => {
 exports.getShop = catchAsync(async (req, res, next) => {
     const shop = await shopService.getShopById(req.params.shopId);
 
-    // Ensure settings is valid JSON object
-    if (shop.settings && typeof shop.settings === 'string') {
-        try {
-            shop.settings = JSON.parse(shop.settings);
-        } catch (e) {
-            console.error('[ShopController] Failed to parse settings on GET:', e);
-            shop.settings = {};
-        }
-    }
+    // Settings est déjà parsé par le service (shopService.getShopById)
 
     res.status(200).json({
         status: 'success',
@@ -162,21 +154,20 @@ exports.updateShop = catchAsync(async (req, res, next) => {
     if (!updateData.settings.themeConfig) updateData.settings.themeConfig = {};
     if (!updateData.settings.themeConfig.content) updateData.settings.themeConfig.content = {};
 
-    // Utiliser les fichiers locaux
+    // Utiliser les fichiers locaux — URL RELATIVE pour compatibilité reverse proxy
     if (req.files) {
-        // URL DYNAMIQUE (Marche en Local ET en Prod)
-        const protocol = req.protocol;
-        const host = req.get('host');
-        const cleanBaseUrl = `${protocol}://${host}/api`;
-
         if (req.files['logo'] && req.files['logo'][0]) {
-            const logoUrl = `${cleanBaseUrl}/uploads/${req.files['logo'][0].filename}`;
+            const logoUrl = `/api/uploads/${req.files['logo'][0].filename}`;
             updateData.settings.themeConfig.content.logoUrl = logoUrl;
+            // Aussi mettre à jour la colonne top-level pour les thèmes qui lisent shop.logo_url
+            updateData.logo_url = logoUrl;
             console.log('[Shop] ✅ Logo updated (Local/Merged):', logoUrl);
         }
         if (req.files['banner'] && req.files['banner'][0]) {
-            const bannerUrl = `${cleanBaseUrl}/uploads/${req.files['banner'][0].filename}`;
+            const bannerUrl = `/api/uploads/${req.files['banner'][0].filename}`;
             updateData.settings.themeConfig.content.bannerUrl = bannerUrl;
+            // Aussi mettre à jour la colonne top-level pour les thèmes qui lisent shop.banner_url
+            updateData.banner_url = bannerUrl;
             console.log('[Shop] ✅ Banner updated (Local/Merged):', bannerUrl);
         }
     }
