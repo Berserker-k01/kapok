@@ -67,6 +67,16 @@ exports.createShop = catchAsync(async (req, res, next) => {
 exports.getShop = catchAsync(async (req, res, next) => {
     const shop = await shopService.getShopById(req.params.shopId);
 
+    // Ensure settings is valid JSON object
+    if (shop.settings && typeof shop.settings === 'string') {
+        try {
+            shop.settings = JSON.parse(shop.settings);
+        } catch (e) {
+            console.error('[ShopController] Failed to parse settings on GET:', e);
+            shop.settings = {};
+        }
+    }
+
     res.status(200).json({
         status: 'success',
         data: { shop }

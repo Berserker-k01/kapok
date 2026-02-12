@@ -136,7 +136,8 @@ const ShopSettings = () => {
                 await fetchShop()
             } catch (reloadError) {
                 console.error('Erreur rechargement après save:', reloadError);
-                toast.error('Sauvegarde OK, mais erreur lors du rechargement des données.');
+                const reloadMsg = reloadError.response?.data?.error || reloadError.response?.data?.message || reloadError.message;
+                toast.error(`Sauvegarde OK, mais erreur rechargement: ${reloadMsg}`);
             }
 
         } catch (error) {
