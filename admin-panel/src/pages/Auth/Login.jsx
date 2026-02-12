@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useAuthStore } from '../../store/authStore'
 import toast from 'react-hot-toast'
-import logoFull from '../../assets/logo-full.png'
+// Logo texte (remplace l'image cassée logo-full.png)
 
 const Login = () => {
   const [credentials, setCredentials] = useState({ email: '', password: '' })
@@ -37,7 +37,12 @@ const Login = () => {
       <div className="max-w-md w-full space-y-8">
         <div>
           <div className="flex justify-center mb-6">
-            <img src={logoFull} alt="Assime Admin" className="h-12 w-auto" />
+            <div className="flex items-center gap-2.5">
+              <div className="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center shadow-lg">
+                <span className="text-white font-black text-xl">A</span>
+              </div>
+              <span className="text-gray-900 text-2xl font-bold tracking-tight">Assimε</span>
+            </div>
           </div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
             Panel Administrateur

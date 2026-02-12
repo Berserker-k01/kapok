@@ -15,8 +15,7 @@ import {
   Phone
 } from 'lucide-react';
 import Button from '../ui/Button';
-import logoFull from '../../assets/logo-full.png';
-import logoIcon from '../../assets/logo-icon.png';
+// Logo texte (remplace les images cassées logo-full.png / logo-icon.png)
 
 const Layout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -46,11 +45,16 @@ const Layout = ({ children }) => {
           {/* Logo */}
           <div className="h-16 flex items-center justify-center border-b border-secondary-800">
             {sidebarOpen ? (
-              <div className="flex items-center space-x-2 px-4">
-                <img src={logoFull} alt="Assime Admin" className="h-8 w-auto filter invert brightness-0 invert" />
+              <div className="flex items-center gap-2.5 px-4">
+                <div className="w-8 h-8 bg-red-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <span className="text-white font-black text-sm">A</span>
+                </div>
+                <span className="text-white text-lg font-bold tracking-tight">Assimε</span>
               </div>
             ) : (
-              <img src={logoIcon} alt="Assime Admin" className="h-8 w-auto filter invert brightness-0 invert" />
+              <div className="w-8 h-8 bg-red-500 rounded-lg flex items-center justify-center">
+                <span className="text-white font-black text-sm">A</span>
+              </div>
             )}
           </div>
 

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useLocation, useNavigate, Link } from 'react-router-dom'
 import { useAuthStore } from '../../store/authStore'
-import logoFull from '../../assets/logo-full.png'
+// Logo texte (remplace l'image cassée logo-full.png)
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
   const { user, logout } = useAuthStore()
@@ -119,8 +119,11 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="flex items-center justify-center h-16 px-6 border-b border-secondary-200">
-            <div className="flex items-center">
-              <img src={logoFull} alt="Assime Logo" className="h-10 w-auto" />
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center shadow-sm">
+                <span className="text-white font-black text-sm">A</span>
+              </div>
+              <span className="text-secondary-900 text-lg font-bold tracking-tight">Assimε</span>
             </div>
             <button
               onClick={() => setIsOpen(false)}
