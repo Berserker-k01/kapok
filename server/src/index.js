@@ -24,8 +24,22 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
-// Middleware de sécurité
-app.use(helmet())
+// Middleware de sécurité — Helmet avec CSP permissif pour les images/styles
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://connect.facebook.net", "https://www.googletagmanager.com"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      imgSrc: ["'self'", "data:", "blob:", "https:", "http:"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
+      connectSrc: ["'self'", "https:", "http:", "ws:", "wss:"],
+      frameSrc: ["'self'"],
+      objectSrc: ["'none'"],
+    },
+  },
+}))
 
 // Rate limiting (DÉSACTIVÉ TEMPORAIREMENT POUR DEBUG)
 // const limiter = rateLimit({
@@ -123,6 +137,15 @@ console.log('------------------------------------------------');
 app.use('/api/uploads', express.static(uploadDir));
 // Garder l'ancien alias au cas où
 app.use('/uploads', express.static(uploadDir));
+
+// Fallback: aussi servir depuis process.cwd()/uploads/ (ancien chemin d'upload)
+// Ceci permet de retrouver les images uploadées avant la correction du chemin
+const oldUploadDir = path.join(process.cwd(), 'uploads');
+if (oldUploadDir !== uploadDir && fs.existsSync(oldUploadDir)) {
+  console.log(`[Server] 📂 Fallback uploads: ${oldUploadDir}`);
+  app.use('/api/uploads', express.static(oldUploadDir));
+  app.use('/uploads', express.static(oldUploadDir));
+}
 
 // Routes Check
 app.get('/env-debug', (req, res) => {

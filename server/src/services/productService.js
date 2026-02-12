@@ -87,7 +87,8 @@ class ProductService {
             return {
                 ...p,
                 images,
-                image_url: (Array.isArray(images) && images.length > 0) ? images[0] : null
+                image_url: (Array.isArray(images) && images.length > 0) ? images[0] : null,
+                stock: p.inventory ?? p.stock ?? 0
             };
         });
 
@@ -168,6 +169,7 @@ class ProductService {
         }
         product.images = images;
         product.image_url = (Array.isArray(images) && images.length > 0) ? images[0] : null;
+        product.stock = product.inventory ?? product.stock ?? 0;
 
         return product;
     }

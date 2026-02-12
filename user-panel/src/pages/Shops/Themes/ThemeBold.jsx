@@ -17,6 +17,7 @@ import {
 import { useCart } from '../../../context/CartContext'
 import { trackViewContent, isPixelReady } from '../../../utils/facebookPixel'
 import { formatCurrency } from '../../../utils/currency'
+import { resolveImageUrl } from '../../../utils/imageUrl'
 
 const ThemeBold = ({ shop, products }) => {
     const { addToCart, setIsCartOpen, cartCount } = useCart()
@@ -47,8 +48,8 @@ const ThemeBold = ({ shop, products }) => {
     const bgColor = colors.background || '#0a0a0a'
     const textColor = colors.text || '#ffffff'
 
-    const logoUrl = shop?.settings?.themeConfig?.content?.logoUrl || shop?.logo_url
-    const bannerUrl = shop?.settings?.themeConfig?.content?.bannerUrl || shop?.banner_url
+    const logoUrl = resolveImageUrl(shop?.settings?.themeConfig?.content?.logoUrl || shop?.logo_url)
+    const bannerUrl = resolveImageUrl(shop?.settings?.themeConfig?.content?.bannerUrl || shop?.banner_url)
 
     // Categories
     const categories = ['all', ...new Set(products?.map(p => p.category).filter(Boolean))]
@@ -250,7 +251,7 @@ const ThemeBold = ({ shop, products }) => {
                                     style={{ backgroundColor: `${textColor}08` }}>
                                     {product.image_url ? (
                                         <img
-                                            src={product.image_url}
+                                            src={resolveImageUrl(product.image_url)}
                                             alt={product.name}
                                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
                                             loading="lazy"
@@ -396,7 +397,7 @@ const ThemeBold = ({ shop, products }) => {
                             <div className="aspect-square rounded-xl overflow-hidden mb-6 sm:mb-0"
                                 style={{ backgroundColor: `${textColor}05` }}>
                                 {selectedProduct.image_url ? (
-                                    <img src={selectedProduct.image_url} alt={selectedProduct.name} className="w-full h-full object-cover" />
+                                    <img src={resolveImageUrl(selectedProduct.image_url)} alt={selectedProduct.name} className="w-full h-full object-cover" />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center">
                                         <FiImage className="w-16 h-16" style={{ color: `${textColor}20` }} />

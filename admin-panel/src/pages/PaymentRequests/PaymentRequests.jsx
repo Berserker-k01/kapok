@@ -5,6 +5,7 @@ import { Card, CardBody } from '../../components/ui/Card'
 import Button from '../../components/ui/Button'
 import Badge from '../../components/ui/Badge'
 import { Check, X, Eye, Clock } from 'lucide-react'
+import { resolveImageUrl } from '../../utils/imageUrl'
 
 const PaymentRequests = () => {
   const [payments, setPayments] = useState([])
@@ -238,7 +239,7 @@ const PaymentRequests = () => {
                   <div>
                     <p className="text-sm text-secondary-600 mb-2">Preuve de paiement</p>
                     <img
-                      src={selectedPayment.proof_image_url}
+                      src={resolveImageUrl(selectedPayment.proof_image_url)}
                       alt="Preuve de paiement"
                       className="max-w-full rounded-lg border border-secondary-200"
                     />

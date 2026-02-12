@@ -5,6 +5,7 @@ import { FiPlus, FiEdit, FiTrash2, FiImage, FiSearch, FiLoader, FiLayers, FiX } 
 import { motion, AnimatePresence } from 'framer-motion'
 import Button from '../../components/ui/Button'
 import { useAuthStore } from '../../store/authStore'
+import { resolveImageUrl } from '../../utils/imageUrl'
 
 const Collections = () => {
     const [collections, setCollections] = useState([])
@@ -215,7 +216,7 @@ const Collections = () => {
                                         <td className="px-6 py-4">
                                             <div className="flex items-center">
                                                 <div className="h-10 w-10 bg-gray-100 rounded-lg flex items-center justify-center mr-3 overflow-hidden">
-                                                    {col.image_url ? <img src={col.image_url} alt="" className="h-full w-full object-cover" /> : <FiLayers className="text-gray-400" />}
+                                                    {col.image_url ? <img src={resolveImageUrl(col.image_url)} alt="" className="h-full w-full object-cover" /> : <FiLayers className="text-gray-400" />}
                                                 </div>
                                                 <div>
                                                     <div className="font-medium text-gray-900">{col.name}</div>

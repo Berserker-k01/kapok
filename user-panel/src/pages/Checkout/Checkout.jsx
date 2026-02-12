@@ -5,6 +5,7 @@ import { z } from 'zod'
 import axios from 'axios'
 import toast from 'react-hot-toast'
 import { Card, CardBody, CardHeader } from '../../components/ui/Card'
+import { resolveImageUrl } from '../../utils/imageUrl'
 import Input from '../../components/ui/Input'
 import Button from '../../components/ui/Button'
 import {
@@ -313,7 +314,7 @@ const Checkout = () => {
                                             <div key={item.id} className="flex gap-3 py-2 border-b border-gray-100 last:border-0">
                                                 <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border-2 border-gray-200 shadow-sm">
                                                     {item.image_url ? (
-                                                        <img src={item.image_url} alt={item.name} className="h-full w-full object-cover object-center" />
+                                                        <img src={resolveImageUrl(item.image_url)} alt={item.name} className="h-full w-full object-cover object-center" />
                                                     ) : (
                                                         <div className="h-full w-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
                                                             <Package className="w-6 h-6 text-gray-400" />

@@ -6,6 +6,7 @@ import { z } from 'zod'
 import axios from 'axios'
 import toast from 'react-hot-toast'
 import { Card, CardBody, CardHeader } from '../../components/ui/Card'
+import { resolveImageUrl } from '../../utils/imageUrl'
 import Input from '../../components/ui/Input'
 import Button from '../../components/ui/Button'
 import { ShoppingBag, Truck, CheckCircle, Loader } from 'lucide-react'
@@ -125,7 +126,7 @@ const CheckoutCOD = () => {
                         <CardBody>
                             <div className="flex gap-4">
                                 {product.image_url ? (
-                                    <img src={product.image_url} alt={product.name} className="w-24 h-24 object-cover rounded-md" />
+                                    <img src={resolveImageUrl(product.image_url)} alt={product.name} className="w-24 h-24 object-cover rounded-md" />
                                 ) : (
                                     <div className="w-24 h-24 bg-gray-200 rounded-md flex items-center justify-center text-gray-400">
                                         <ShoppingBag />

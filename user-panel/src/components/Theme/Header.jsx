@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ShoppingCart, Search, Menu, X } from 'lucide-react';
+import { resolveImageUrl } from '../../utils/imageUrl';
 
 const Header = ({ config }) => {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -27,7 +28,7 @@ const Header = ({ config }) => {
                         <div className="header-item header-item--logo text-center md:text-left flex-1 md:flex-none">
                             <Link to="/" className="text-2xl font-bold tracking-tight text-gray-900">
                                 {logoUrl ? (
-                                    <img src={logoUrl} alt={shopName} className="h-10 w-auto object-contain" />
+                                    <img src={resolveImageUrl(logoUrl)} alt={shopName} className="h-10 w-auto object-contain" />
                                 ) : (
                                     shopName
                                 )}

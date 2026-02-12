@@ -18,6 +18,7 @@ import {
   FiRefreshCw
 } from 'react-icons/fi'
 import { formatCurrency } from '../../../utils/currency'
+import { resolveImageUrl } from '../../../utils/imageUrl'
 import { useCart } from '../../../context/CartContext'
 
 const ThemeMinimal = ({ shop, products }) => {
@@ -35,8 +36,8 @@ const ThemeMinimal = ({ shop, products }) => {
     text = '#111827'
   } = shop?.settings?.themeConfig?.colors || {}
 
-  const logoUrl = shop?.settings?.themeConfig?.content?.logoUrl || shop?.logo_url
-  const bannerUrl = shop?.settings?.themeConfig?.content?.bannerUrl || shop?.banner_url
+  const logoUrl = resolveImageUrl(shop?.settings?.themeConfig?.content?.logoUrl || shop?.logo_url)
+  const bannerUrl = resolveImageUrl(shop?.settings?.themeConfig?.content?.bannerUrl || shop?.banner_url)
   const hasBanner = !!bannerUrl
 
   useEffect(() => {
@@ -242,7 +243,7 @@ const ThemeMinimal = ({ shop, products }) => {
                 <div className="relative aspect-[3/4] bg-gray-100 rounded-xl overflow-hidden mb-3">
                   {product.image_url ? (
                     <img
-                      src={product.image_url}
+                      src={resolveImageUrl(product.image_url)}
                       alt={product.name}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
                       loading="lazy"
@@ -383,7 +384,7 @@ const ThemeMinimal = ({ shop, products }) => {
               {/* Image */}
               <div className="aspect-square bg-gray-50 rounded-xl overflow-hidden mb-6 sm:mb-0">
                 {selectedProduct.image_url ? (
-                  <img src={selectedProduct.image_url} alt={selectedProduct.name} className="w-full h-full object-cover" />
+                  <img src={resolveImageUrl(selectedProduct.image_url)} alt={selectedProduct.name} className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
                     <FiImage className="w-16 h-16 text-gray-300" />

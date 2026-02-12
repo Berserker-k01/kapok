@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import Button from '../../components/ui/Button'
 import { useAuthStore } from '../../store/authStore'
 import { formatCurrency } from '../../utils/currency'
+import { resolveImageUrl } from '../../utils/imageUrl'
 
 const Products = () => {
   const [products, setProducts] = useState([])
@@ -115,7 +116,7 @@ const Products = () => {
       stock: product.inventory || product.stock || 0, // Fallback naming
       shopId: product.shop_id
     })
-    setImagePreview(product.image_url)
+    setImagePreview(resolveImageUrl(product.image_url))
     setEditingId(product.id)
     setIsEditing(true)
     setShowAddModal(true)
@@ -329,7 +330,7 @@ const Products = () => {
                       <div className="flex items-center">
                         <div className="h-10 w-10 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
                           {product.image_url ? (
-                            <img src={product.image_url} alt={product.name} className="h-full w-full object-cover" />
+                            <img src={resolveImageUrl(product.image_url)} alt={product.name} className="h-full w-full object-cover" />
                           ) : (
                             <FiImage className="h-5 w-5 text-gray-400" />
                           )}

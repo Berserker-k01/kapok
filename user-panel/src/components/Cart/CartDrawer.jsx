@@ -4,6 +4,7 @@ import { X, Trash2, Plus, Minus } from 'lucide-react'
 import { useCart } from '../../context/CartContext'
 import { useNavigate } from 'react-router-dom'
 import Button from '../ui/Button'
+import { resolveImageUrl } from '../../utils/imageUrl'
 
 const CartDrawer = () => {
     const { cartItems, isCartOpen, setIsCartOpen, removeFromCart, updateQuantity, cartTotal } = useCart()
@@ -70,7 +71,7 @@ const CartDrawer = () => {
                                                                     <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-md border border-gray-200">
                                                                         {product.image_url ? (
                                                                             <img
-                                                                                src={product.image_url}
+                                                                                src={resolveImageUrl(product.image_url)}
                                                                                 alt={product.name}
                                                                                 className="h-full w-full object-cover object-center"
                                                                             />
