@@ -358,9 +358,9 @@ ON CONFLICT (key) DO NOTHING;
 
 -- Plans
 INSERT INTO plans_config (plan_key, name, description, price, currency, duration_months, max_shops, features, is_active, display_order) VALUES
-('free', 'Gratuit', 'Plan gratuit avec fonctionnalités de base', 0, 'XOF', 1, 2, '["2 boutiques", "100 produits par boutique", "Support email"]', TRUE, 1),
-('basic', 'Basic', 'Plan basique pour les petites entreprises', 29999, 'XOF', 1, 5, '["5 boutiques", "Produits illimités", "Support prioritaire", "Analytics avancées"]', TRUE, 2),
-('pro', 'Pro', 'Plan professionnel avec toutes les fonctionnalités', 99999, 'XOF', 1, NULL, '["Boutiques illimitées", "Produits illimités", "Support 24/7", "Analytics complètes", "Thèmes premium"]', TRUE, 3)
+('basic', 'Basic', '01 Mois d''accès à Assime', 30000, 'XOF', 1, 2, '["2 boutiques", "05 Produits gagnants offerts", "Formation vidéo complète", "Accès Ecom Mastery Gold", "01 Mois de suivi Groupe"]', TRUE, 1),
+('premium', 'Premium', '03 Mois d''accès à Assime', 50000, 'XOF', 3, 5, '["5 boutiques", "10 Produits gagnants offerts", "Formation vidéo complète", "Accès Ecom Mastery Gold", "03 Mois de suivi Groupe"]', TRUE, 2),
+('gold', 'Gold', '06 Mois d''accès à Assime', 99000, 'XOF', 6, 10, '["10 boutiques", "50 Produits gagnants offerts", "Liste de fournisseurs", "Équipe de vente Afrique", "Accès Ecom Mastery Gold", "Suivi Illimité Groupe"]', TRUE, 3)
 ON CONFLICT (plan_key) DO NOTHING;
 
 -- Moyens de paiement

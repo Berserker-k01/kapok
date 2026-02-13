@@ -34,17 +34,30 @@ exports.getPlan = catchAsync(async (req, res) => {
 // Créer un nouveau plan
 exports.createPlan = catchAsync(async (req, res) => {
   const b = req.body
+  console.log('[Plans] createPlan body:', JSON.stringify(b))
+
   const planKey = b.planKey || b.plan_key
   const name = b.name
   const description = b.description
   const price = b.price
   const currency = b.currency
   const durationMonths = b.durationMonths || b.duration_months
-  const maxShops = b.maxShops || b.max_shops
+  const maxShops = b.maxShops !== undefined ? b.maxShops : b.max_shops
   const features = b.features
-  const discountPercent = b.discountPercent || b.discount_percent
+  const discountPercent = b.discountPercent !== undefined ? b.discountPercent : b.discount_percent
   const isActive = b.isActive !== undefined ? b.isActive : b.is_active
-  const displayOrder = b.displayOrder || b.display_order
+  const displayOrder = b.displayOrder !== undefined ? b.displayOrder : b.display_order
+
+  // Validation obligatoire
+  if (!planKey) {
+    throw new AppError('La clé du plan (plan_key) est obligatoire', 400)
+  }
+  if (!name) {
+    throw new AppError('Le nom du plan est obligatoire', 400)
+  }
+  if (price === undefined || price === null) {
+    throw new AppError('Le prix du plan est obligatoire', 400)
+  }
 
   // Vérifier que la clé du plan est unique
   const checkQuery = 'SELECT id FROM plans_config WHERE plan_key = ?'
@@ -56,10 +69,13 @@ exports.createPlan = catchAsync(async (req, res) => {
 
   const planId = uuidv4()
 
+  // Préparer les features en JSON
+  const featuresJson = Array.isArray(features) ? JSON.stringify(features) : JSON.stringify(features || [])
+
   const insertQuery = `
     INSERT INTO plans_config 
     (id, plan_key, name, description, price, currency, duration_months, max_shops, features, discount_percent, is_active, display_order)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?::jsonb, ?, ?, ?)
   `
 
   await db.query(insertQuery, [
@@ -67,14 +83,14 @@ exports.createPlan = catchAsync(async (req, res) => {
     planKey,
     name,
     description || null,
-    price,
+    parseFloat(price) || 0,
     currency || 'XOF',
-    durationMonths || 1,
-    maxShops || null,
-    JSON.stringify(features || []),
-    discountPercent || 0,
+    parseInt(durationMonths) || 1,
+    maxShops ? parseInt(maxShops) : null,
+    featuresJson,
+    parseFloat(discountPercent) || 0,
     isActive !== undefined ? isActive : true,
-    displayOrder || 0
+    parseInt(displayOrder) || 0
   ])
 
   // Récupérer le plan créé
