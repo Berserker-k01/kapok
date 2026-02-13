@@ -23,7 +23,8 @@ const Plans = () => {
     features: '',
     discount_percent: '0',
     is_active: true,
-    display_order: '0'
+    display_order: '0',
+    payment_link: ''
   })
 
   useEffect(() => {
@@ -60,7 +61,8 @@ const Plans = () => {
         features: features,
         discount_percent: plan.discount_percent ? plan.discount_percent.toString() : '0',
         is_active: plan.is_active,
-        display_order: plan.display_order ? plan.display_order.toString() : '0'
+        display_order: plan.display_order ? plan.display_order.toString() : '0',
+        payment_link: plan.payment_link || ''
       })
     } else {
       setEditingPlan(null)
@@ -75,7 +77,8 @@ const Plans = () => {
         features: '',
         discount_percent: '0',
         is_active: true,
-        display_order: '0'
+        display_order: '0',
+        payment_link: ''
       })
     }
     setShowModal(true)
@@ -97,7 +100,8 @@ const Plans = () => {
         max_shops: formData.max_shops ? parseInt(formData.max_shops) : null,
         features: featuresArray,
         discount_percent: parseFloat(formData.discount_percent),
-        display_order: parseInt(formData.display_order)
+        display_order: parseInt(formData.display_order),
+        payment_link: formData.payment_link || null
       }
 
       if (editingPlan) {
@@ -384,6 +388,21 @@ const Plans = () => {
                       onChange={(e) => setFormData({ ...formData, display_order: e.target.value })}
                     />
                   </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-secondary-700 mb-1">
+                    Lien de paiement Maketou
+                  </label>
+                  <Input
+                    type="url"
+                    value={formData.payment_link}
+                    onChange={(e) => setFormData({ ...formData, payment_link: e.target.value })}
+                    placeholder="https://assime.mymaketou.store/fr/products/.../checkout"
+                  />
+                  <p className="text-xs text-secondary-500 mt-1">
+                    URL de redirection vers la page de paiement Maketou pour ce plan
+                  </p>
                 </div>
 
                 <div>

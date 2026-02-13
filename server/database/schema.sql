@@ -211,6 +211,7 @@ CREATE TABLE IF NOT EXISTS plans_config (
     discount_percent DECIMAL(5,2) DEFAULT 0,
     is_active BOOLEAN DEFAULT TRUE,
     display_order INTEGER DEFAULT 0,
+    payment_link TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -357,10 +358,10 @@ INSERT INTO platform_settings (key, value, description) VALUES
 ON CONFLICT (key) DO NOTHING;
 
 -- Plans
-INSERT INTO plans_config (plan_key, name, description, price, currency, duration_months, max_shops, features, is_active, display_order) VALUES
-('basic', 'Basic', '01 Mois d''accès à Assime', 30000, 'XOF', 1, 2, '["2 boutiques", "05 Produits gagnants offerts", "Formation vidéo complète", "Accès Ecom Mastery Gold", "01 Mois de suivi Groupe"]', TRUE, 1),
-('premium', 'Premium', '03 Mois d''accès à Assime', 50000, 'XOF', 3, 5, '["5 boutiques", "10 Produits gagnants offerts", "Formation vidéo complète", "Accès Ecom Mastery Gold", "03 Mois de suivi Groupe"]', TRUE, 2),
-('gold', 'Gold', '06 Mois d''accès à Assime', 99000, 'XOF', 6, 10, '["10 boutiques", "50 Produits gagnants offerts", "Liste de fournisseurs", "Équipe de vente Afrique", "Accès Ecom Mastery Gold", "Suivi Illimité Groupe"]', TRUE, 3)
+INSERT INTO plans_config (plan_key, name, description, price, currency, duration_months, max_shops, features, is_active, display_order, payment_link) VALUES
+('basic', 'Basic', '01 Mois d''accès à Assime', 30000, 'XOF', 1, 2, '["2 boutiques", "05 Produits gagnants offerts", "Formation vidéo complète", "Accès Ecom Mastery Gold", "01 Mois de suivi Groupe"]', TRUE, 1, 'https://assime.mymaketou.store/fr/products/licence-starter-assime-01-mois/checkout'),
+('premium', 'Premium', '03 Mois d''accès à Assime', 50000, 'XOF', 3, 5, '["5 boutiques", "10 Produits gagnants offerts", "Formation vidéo complète", "Accès Ecom Mastery Gold", "03 Mois de suivi Groupe"]', TRUE, 2, 'https://assime.mymaketou.store/fr/products/licence-premium-assime-03-mois/checkout'),
+('gold', 'Gold', '06 Mois d''accès à Assime', 99000, 'XOF', 6, 10, '["10 boutiques", "50 Produits gagnants offerts", "Liste de fournisseurs", "Équipe de vente Afrique", "Accès Ecom Mastery Gold", "Suivi Illimité Groupe"]', TRUE, 3, 'https://assime.mymaketou.store/fr/products/licence-premium-assime-03-mois-0/checkout')
 ON CONFLICT (plan_key) DO NOTHING;
 
 -- Moyens de paiement

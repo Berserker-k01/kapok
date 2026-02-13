@@ -47,6 +47,7 @@ exports.createPlan = catchAsync(async (req, res) => {
   const discountPercent = b.discountPercent !== undefined ? b.discountPercent : b.discount_percent
   const isActive = b.isActive !== undefined ? b.isActive : b.is_active
   const displayOrder = b.displayOrder !== undefined ? b.displayOrder : b.display_order
+  const paymentLink = b.paymentLink || b.payment_link || null
 
   // Validation obligatoire
   if (!planKey) {
@@ -74,8 +75,8 @@ exports.createPlan = catchAsync(async (req, res) => {
 
   const insertQuery = `
     INSERT INTO plans_config 
-    (id, plan_key, name, description, price, currency, duration_months, max_shops, features, discount_percent, is_active, display_order)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?::jsonb, ?, ?, ?)
+    (id, plan_key, name, description, price, currency, duration_months, max_shops, features, discount_percent, is_active, display_order, payment_link)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?::jsonb, ?, ?, ?, ?)
   `
 
   await db.query(insertQuery, [
@@ -90,7 +91,8 @@ exports.createPlan = catchAsync(async (req, res) => {
     featuresJson,
     parseFloat(discountPercent) || 0,
     isActive !== undefined ? isActive : true,
-    parseInt(displayOrder) || 0
+    parseInt(displayOrder) || 0,
+    paymentLink
   ])
 
   // Récupérer le plan créé
@@ -122,6 +124,7 @@ exports.updatePlan = catchAsync(async (req, res) => {
   const discountPercent = b.discountPercent !== undefined ? b.discountPercent : b.discount_percent
   const isActive = b.isActive !== undefined ? b.isActive : b.is_active
   const displayOrder = b.displayOrder !== undefined ? b.displayOrder : b.display_order
+  const paymentLink = b.paymentLink !== undefined ? b.paymentLink : b.payment_link
 
   if (name !== undefined) {
     updates.push('name = ?')
@@ -162,6 +165,10 @@ exports.updatePlan = catchAsync(async (req, res) => {
   if (displayOrder !== undefined) {
     updates.push('display_order = ?')
     values.push(displayOrder)
+  }
+  if (paymentLink !== undefined) {
+    updates.push('payment_link = ?')
+    values.push(paymentLink)
   }
 
   if (updates.length === 0) {

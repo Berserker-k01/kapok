@@ -99,8 +99,11 @@ exports.createPaymentRequest = catchAsync(async (req, res) => {
     throw new AppError('Vous avez déjà un paiement en attente de validation', 400)
   }
 
-  // Créer la demande de paiement
+  // Créer la demande de paiement (Maketou ou autre provider)
   const paymentId = uuidv4();
+  const provider = paymentProvider || 'Maketou'
+  const phone = paymentPhone || null
+
   const insertQuery = `
     INSERT INTO subscription_payments 
     (id, user_id, plan_key, plan_name, amount, currency, payment_provider, payment_phone, status, created_at, updated_at)
@@ -114,8 +117,8 @@ exports.createPaymentRequest = catchAsync(async (req, res) => {
     plan.name,
     finalAmount,
     plan.currency,
-    paymentProvider,
-    paymentPhone
+    provider,
+    phone
   ])
 
   // Fetch created payment
