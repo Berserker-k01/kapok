@@ -26,6 +26,7 @@ app.use(cors({
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" },
   contentSecurityPolicy: {
+    useDefaults: false,
     directives: {
       defaultSrc: ["'self'"],
       scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://connect.facebook.net", "https://www.googletagmanager.com"],
@@ -35,6 +36,7 @@ app.use(helmet({
       connectSrc: ["'self'", "https:", "http:", "ws:", "wss:"],
       frameSrc: ["'self'"],
       objectSrc: ["'none'"],
+      // PAS de upgradeInsecureRequests tant que HTTPS n'est pas activé
     },
   },
 }))
