@@ -1,160 +1,84 @@
-const mysql = require('mysql2/promise')
+const { Pool } = require('pg')
+require('dotenv').config()
 
-// Fonction pour parser DATABASE_URL
-const parseDatabaseUrl = (url) => {
-  if (!url) return null
+// --- CONFIGURATION PostgreSQL ---
+// Priorité: DATABASE_URL > PGHOST/PGUSER/... > valeurs par défaut Docker
+let poolConfig
 
-  // Format: mysql://user:password@host:port/database
-  const match = url.match(/mysql:\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/(.+)/)
-  if (!match) return null
-
-  return {
-    host: match[3],
-    user: match[1],
-    password: match[2],
-    database: match[5],
-    port: parseInt(match[4]),
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0,
-    charset: 'utf8mb4',
-    timezone: '+00:00'
+if (process.env.DATABASE_URL) {
+  // Mode DATABASE_URL (Render, Heroku, Supabase, etc.)
+  poolConfig = {
+    connectionString: process.env.DATABASE_URL,
+    max: 20,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 5000,
   }
+  // SSL si nécessaire
+  if (process.env.DB_SSL !== 'false') {
+    poolConfig.ssl = { rejectUnauthorized: false }
+  }
+  console.log('📦 PostgreSQL: Connexion via DATABASE_URL')
+} else {
+  // Mode variables individuelles (Docker Compose / local)
+  poolConfig = {
+    host: process.env.PGHOST || process.env.DB_HOST || 'localhost',
+    port: parseInt(process.env.PGPORT || process.env.DB_PORT || '5432'),
+    database: process.env.PGDATABASE || process.env.DB_NAME || 'assime_db',
+    user: process.env.PGUSER || process.env.DB_USER || 'assime_user',
+    password: process.env.PGPASSWORD || process.env.DB_PASSWORD || 'assime_password',
+    max: 20,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 5000,
+  }
+  console.log(`📦 PostgreSQL: Connexion vers ${poolConfig.host}:${poolConfig.port}/${poolConfig.database}`)
 }
 
-// --- CONFIGURATION HYBRIDE (DOCKER / HOSTINGER) ---
-const poolConfig = {
-  // CONFIGURATION EN DUR (PRODUCTION HOSTINGER)
-  host: '127.0.0.1',
-  user: 'u980915146_admin',
-  password: 'Daniel2005k@ssi',
-  database: 'u980915146_assimedb',
-  port: 3306,
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0,
-  charset: 'utf8mb4',
-  timezone: '+00:00',
-  enableKeepAlive: true,
-  keepAliveInitialDelay: 0,
-};
-
-const pool = mysql.createPool(poolConfig)
+const pool = new Pool(poolConfig)
 
 // Test de connexion
-pool.getConnection()
-  .then(connection => {
-    console.log('✅ Connexion à la base de données MySQL établie')
-    connection.release()
+pool.connect()
+  .then(client => {
+    console.log('✅ Connexion à la base de données PostgreSQL établie')
+    client.release()
   })
   .catch(err => {
-    console.error('❌ Erreur de connexion à la base de données MySQL:', err)
+    console.error('❌ Erreur de connexion à la base de données PostgreSQL:', err.message)
   })
 
-// Fonction pour convertir les placeholders PostgreSQL ($1, $2, ...) en MySQL (?)
-const convertPlaceholders = (sql, params) => {
-  if (!params || params.length === 0) return { sql, params: [] }
-
-  // Extraire tous les placeholders $1, $2, etc.
-  const placeholderRegex = /\$(\d+)/g
-  const matches = [...sql.matchAll(placeholderRegex)]
-
-  if (matches.length === 0) {
-    // Pas de placeholders, retourner tel quel
-    return { sql, params: params || [] }
-  }
-
-  // Trouver le placeholder maximum
-  const placeholders = matches.map(m => parseInt(m[1]))
-  const maxPlaceholder = Math.max(...placeholders)
-
-  if (params.length < maxPlaceholder) {
-    throw new Error(`Pas assez de paramètres fournis. Placeholder max: ${maxPlaceholder}, paramètres: ${params.length}`)
-  }
-
-  // Remplacer tous les $N par ?
-  let convertedSql = sql.replace(/\$\d+/g, '?')
-
-  // Réorganiser les paramètres dans l'ordre d'apparition
-  const orderedParams = matches.map(m => params[parseInt(m[1]) - 1])
-
-  return { sql: convertedSql, params: orderedParams }
+/**
+ * Convertit les placeholders MySQL (?) en placeholders PostgreSQL ($1, $2, ...)
+ * Cela permet de garder le code des services/routes inchangé.
+ */
+const convertPlaceholders = (sql) => {
+  let counter = 0
+  return sql.replace(/\?/g, () => `$${++counter}`)
 }
 
-// Fonction query compatible avec PostgreSQL
-// PostgreSQL retourne { rows, rowCount }, MySQL retourne [rows, fields]
-// PostgreSQL utilise $1, $2... pour les paramètres, MySQL utilise ?
-// On normalise pour que le code existant fonctionne sans modification
+/**
+ * Fonction query compatible — retourne { rows, rowCount, rowsAffected }
+ * Gère la conversion automatique des placeholders ? → $N
+ */
 const query = async (text, params) => {
   try {
-    let finalSql = text
-    let finalParams = params || []
-    let needsReturning = false
-    let returnTable = null
-
-    // Gérer RETURNING (PostgreSQL spécifique)
-    if (text.includes(' RETURNING ')) {
-      needsReturning = true
-      const tableMatch = text.match(/INSERT INTO (\w+)/i)
-      if (tableMatch) {
-        returnTable = tableMatch[1]
-      }
-      // Retirer RETURNING de la requête
-      finalSql = text.replace(/RETURNING .+$/i, '').trim()
+    // Transactions: BEGIN, COMMIT, ROLLBACK n'ont pas de placeholders
+    if (['BEGIN', 'COMMIT', 'ROLLBACK'].includes(text.trim().toUpperCase())) {
+      await pool.query(text)
+      return { rows: [], rowCount: 0, rowsAffected: 0 }
     }
 
-    // Convertir les placeholders PostgreSQL ($1, $2...) en MySQL (?)
-    const { sql, params: convertedParams } = convertPlaceholders(finalSql, finalParams)
+    // Convertir les placeholders ? → $N
+    const pgSql = convertPlaceholders(text)
 
-    // Exécuter la requête avec RETRY automatique (1 tentative)
-    let result, fields;
-    try {
-      [result, fields] = await pool.execute(sql, convertedParams);
-    } catch (err) {
-      const retryCodes = ['PROTOCOL_CONNECTION_LOST', 'ECONNRESET', 'ETIMEDOUT', 'Can\'t add new command when connection is in closed state'];
-      if (retryCodes.some(code => err.message.includes(code) || err.code === code)) {
-        console.warn(`⚠️ DB Connection Lost (${err.code}), retrying query...`);
-        [result, fields] = await pool.execute(sql, convertedParams);
-      } else {
-        throw err;
-      }
-    }
+    const result = await pool.query(pgSql, params || [])
 
-    let rows = [];
-    let rowCount = 0;
-    let rowsAffected = 0;
-    let insertId = null;
-
-    // Détecter si c'est un ResultSetHeader (INSERT/UPDATE) ou un tableau (SELECT)
-    if (result && !Array.isArray(result)) {
-      // C'est un INSERT/UPDATE/DELETE
-      rowsAffected = result.affectedRows || 0;
-      insertId = result.insertId || null;
-      rowCount = 0;
-    } else {
-      // C'est un SELECT
-      rows = result;
-      rowCount = result.length;
-      rowsAffected = 0; // standard postgres behavior for select
-    }
-
-    // Si c'était un INSERT avec RETURNING artificiel
-    if (needsReturning && returnTable && insertId) {
-      const [returnedRows] = await pool.execute(`SELECT * FROM ${returnTable} WHERE id = ?`, [insertId])
-      return {
-        rows: returnedRows,
-        rowCount: returnedRows.length,
-        rowsAffected: rowsAffected
-      }
-    }
-
-    // Retourner au format PostgreSQL pour compatibilité
     return {
-      rows: rows,
-      rowCount: rowCount,
-      rowsAffected: rowsAffected || rowCount
+      rows: result.rows || [],
+      rowCount: result.rowCount || 0,
+      rowsAffected: result.rowCount || 0
     }
   } catch (error) {
+    console.error('[DB Error] Query:', text.substring(0, 120))
+    console.error('[DB Error] Message:', error.message)
     throw error
   }
 }

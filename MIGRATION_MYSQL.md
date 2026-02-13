@@ -190,3 +190,4 @@ FLUSH PRIVILEGES;
 **Compatibilité** : Code existant fonctionne sans modification grâce aux wrappers
 
 
+
