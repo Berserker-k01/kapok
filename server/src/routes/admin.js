@@ -29,14 +29,31 @@ router.get('/dashboard', async (req, res) => {
     // Croissance mensuelle
     const growthQuery = `
       SELECT 
-        TO_CHAR(u.created_at, 'YYYY-MM-01') as month,
-        COUNT(CASE WHEN u.role = 'user' THEN 1 END)::integer as new_users,
-        (SELECT COUNT(*)::integer FROM shops WHERE TO_CHAR(created_at, 'YYYY-MM-01') = TO_CHAR(u.created_at, 'YYYY-MM-01')) as new_shops,
-        (SELECT COALESCE(SUM(total_amount), 0) FROM orders WHERE status = 'completed' AND TO_CHAR(created_at, 'YYYY-MM-01') = TO_CHAR(u.created_at, 'YYYY-MM-01')) as total_revenue
-      FROM users u
-      WHERE u.created_at >= CURRENT_DATE - INTERVAL '6 months'
-      GROUP BY TO_CHAR(u.created_at, 'YYYY-MM-01')
-      ORDER BY month DESC
+        m.month,
+        COALESCE(u_stats.new_users, 0)::integer as new_users,
+        COALESCE(s_stats.new_shops, 0)::integer as new_shops,
+        COALESCE(o_stats.total_revenue, 0) as total_revenue
+      FROM (
+        SELECT DISTINCT TO_CHAR(created_at, 'YYYY-MM-01') as month
+        FROM users
+        WHERE created_at >= CURRENT_DATE - INTERVAL '6 months'
+      ) m
+      LEFT JOIN (
+        SELECT TO_CHAR(created_at, 'YYYY-MM-01') as month, COUNT(*)::integer as new_users
+        FROM users WHERE role = 'user' AND created_at >= CURRENT_DATE - INTERVAL '6 months'
+        GROUP BY TO_CHAR(created_at, 'YYYY-MM-01')
+      ) u_stats ON m.month = u_stats.month
+      LEFT JOIN (
+        SELECT TO_CHAR(created_at, 'YYYY-MM-01') as month, COUNT(*)::integer as new_shops
+        FROM shops WHERE created_at >= CURRENT_DATE - INTERVAL '6 months'
+        GROUP BY TO_CHAR(created_at, 'YYYY-MM-01')
+      ) s_stats ON m.month = s_stats.month
+      LEFT JOIN (
+        SELECT TO_CHAR(created_at, 'YYYY-MM-01') as month, COALESCE(SUM(total_amount), 0) as total_revenue
+        FROM orders WHERE status = 'completed' AND created_at >= CURRENT_DATE - INTERVAL '6 months'
+        GROUP BY TO_CHAR(created_at, 'YYYY-MM-01')
+      ) o_stats ON m.month = o_stats.month
+      ORDER BY m.month DESC
     `
 
     const growthResult = await db.query(growthQuery)
