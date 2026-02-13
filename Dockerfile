@@ -36,7 +36,7 @@ WORKDIR /app/server
 
 # Installer uniquement les dépendances de production du serveur
 COPY server/package*.json ./
-RUN npm ci --only=production && npm cache clean --force
+RUN npm install --omit=dev && npm cache clean --force
 
 # Copier le code serveur
 COPY server/src/ ./src/
