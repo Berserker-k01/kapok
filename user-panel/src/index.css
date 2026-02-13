@@ -1,9 +1,9 @@
+/* Import custom animations — doit être avant @tailwind */
+@import './assets/animations.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* Import custom animations */
-@import './assets/animations.css';
 
 @layer base {
   * {
