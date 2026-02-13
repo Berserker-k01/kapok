@@ -33,19 +33,18 @@ exports.getPlan = catchAsync(async (req, res) => {
 
 // Créer un nouveau plan
 exports.createPlan = catchAsync(async (req, res) => {
-  const {
-    planKey,
-    name,
-    description,
-    price,
-    currency,
-    durationMonths,
-    maxShops,
-    features,
-    discountPercent,
-    isActive,
-    displayOrder
-  } = req.body
+  const b = req.body
+  const planKey = b.planKey || b.plan_key
+  const name = b.name
+  const description = b.description
+  const price = b.price
+  const currency = b.currency
+  const durationMonths = b.durationMonths || b.duration_months
+  const maxShops = b.maxShops || b.max_shops
+  const features = b.features
+  const discountPercent = b.discountPercent || b.discount_percent
+  const isActive = b.isActive !== undefined ? b.isActive : b.is_active
+  const displayOrder = b.displayOrder || b.display_order
 
   // Vérifier que la clé du plan est unique
   const checkQuery = 'SELECT id FROM plans_config WHERE plan_key = ?'
@@ -91,22 +90,22 @@ exports.createPlan = catchAsync(async (req, res) => {
 // Mettre à jour un plan
 exports.updatePlan = catchAsync(async (req, res) => {
   const { planId } = req.params
-  const {
-    name,
-    description,
-    price,
-    currency,
-    durationMonths,
-    maxShops,
-    features,
-    discountPercent,
-    isActive,
-    displayOrder
-  } = req.body
+  const b = req.body
 
-  // Construire la requête dynamiquement
+  // Construire la requête dynamiquement (accepter camelCase ET snake_case)
   const updates = []
   const values = []
+
+  const name = b.name
+  const description = b.description
+  const price = b.price
+  const currency = b.currency
+  const durationMonths = b.durationMonths !== undefined ? b.durationMonths : b.duration_months
+  const maxShops = b.maxShops !== undefined ? b.maxShops : b.max_shops
+  const features = b.features
+  const discountPercent = b.discountPercent !== undefined ? b.discountPercent : b.discount_percent
+  const isActive = b.isActive !== undefined ? b.isActive : b.is_active
+  const displayOrder = b.displayOrder !== undefined ? b.displayOrder : b.display_order
 
   if (name !== undefined) {
     updates.push('name = ?')
