@@ -27,7 +27,7 @@ function App() {
     // Relative URL pour passer par le Proxy (Nginx ou Vite)
     // Dynamic Environment Configuration
     const isDev = import.meta.env.DEV;
-    axios.defaults.baseURL = isDev ? '/api' : 'https://e-assime.com/api';
+    axios.defaults.baseURL = import.meta.env.VITE_API_URL || (isDev ? '/api' : '/api');
 
     // Intercepteur pour injecter le token en temps réel
     const requestInterceptor = axios.interceptors.request.use(

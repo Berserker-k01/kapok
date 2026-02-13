@@ -100,7 +100,7 @@ exports.createPaymentRequest = catchAsync(async (req, res) => {
   }
 
   // Créer la demande de paiement
-  const paymentId = uuidv4(); // Generate UUID manually for MySQL INSERT
+  const paymentId = uuidv4();
   const insertQuery = `
     INSERT INTO subscription_payments 
     (id, user_id, plan_key, plan_name, amount, currency, payment_provider, payment_phone, status, created_at, updated_at)
@@ -298,19 +298,25 @@ exports.approvePayment = catchAsync(async (req, res) => {
     // Déterminer la durée de l'abonnement
     const intervalValue = durationMonths;
 
-    // Créer ou mettre à jour l'abonnement
+    // Annuler les abonnements actifs existants
+    await db.query(
+      "UPDATE subscriptions SET status = 'cancelled' WHERE user_id = ? AND status = 'active'",
+      [payment.user_id]
+    )
+
+    // Créer le nouvel abonnement
+    const subId = require('uuid').v4()
     const subscriptionQuery = `
       INSERT INTO subscriptions 
       (id, user_id, plan_name, status, price, currency, current_period_start, current_period_end)
-      VALUES (UUID(), ?, ?, 'active', ?, ?, NOW(), NOW() + INTERVAL ? MONTH)
-      ON DUPLICATE KEY UPDATE status = 'active', current_period_end = NOW() + INTERVAL ? MONTH, price = VALUES(price), plan_name = VALUES(plan_name)
+      VALUES (?, ?, ?, 'active', ?, ?, NOW(), NOW() + (?::integer * INTERVAL '1 month'))
     `
     await db.query(subscriptionQuery, [
+      subId,
       payment.user_id,
       payment.plan_name,
       payment.amount,
       payment.currency,
-      intervalValue,
       intervalValue
     ])
 

@@ -1,8 +1,9 @@
 import axios from 'axios';
 import { useAuthStore } from '../store/authStore';
 
-// URL Backend
-axios.defaults.baseURL = 'https://e-assime.com/api';
+// URL Backend — configurable via VITE_API_URL (défaut: /api pour Docker)
+const isDev = import.meta.env.DEV;
+axios.defaults.baseURL = import.meta.env.VITE_API_URL || (isDev ? '/api' : '/api');
 
 // --- REQUEST INTERCEPTOR ---
 // Attach Token automatically

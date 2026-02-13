@@ -42,7 +42,7 @@ router.post('/register', catchAsync(async (req, res, next) => {
     VALUES (?, ?, ?, ?, 'user', 'active', NOW())
   `
 
-  // 1. Insérer (MySQL ne supporte pas RETURNING dans la même requête via le driver standard)
+  // Insérer l'utilisateur
   await db.query(insertQuery, [userId, name, email, hashedPassword])
 
   // 2. Récupérer l'utilisateur créé
@@ -127,7 +127,7 @@ router.post('/login', catchAsync(async (req, res, next) => {
   const token = generateToken(user.id, user.role)
 
   // Récupérer le nombre de boutiques de l'utilisateur
-  const shopCountQuery = 'SELECT COUNT(*) as count FROM shops WHERE owner_id = ?'
+  const shopCountQuery = 'SELECT COUNT(*)::integer as count FROM shops WHERE owner_id = ?'
   const shopCountResult = await db.query(shopCountQuery, [user.id])
   const shopCount = parseInt(shopCountResult.rows[0].count) || 0
 
@@ -254,7 +254,7 @@ router.get('/verify', authenticateToken, catchAsync(async (req, res) => {
   }
 
   // Récupérer le nombre de boutiques de l'utilisateur
-  const shopCountQuery = 'SELECT COUNT(*) as count FROM shops WHERE owner_id = ?'
+  const shopCountQuery = 'SELECT COUNT(*)::integer as count FROM shops WHERE owner_id = ?'
   const shopCountResult = await db.query(shopCountQuery, [user.id])
   const shopCount = parseInt(shopCountResult.rows[0].count) || 0
 

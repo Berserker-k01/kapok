@@ -1,62 +1,115 @@
 version: '3.8'
 
 services:
-  # API Backend
-  api:
-    build:
-      context: ./server
-      dockerfile: Dockerfile
-    container_name: lesigne-api
-    restart: unless-stopped
-    ports:
-      - "5000:5000"
-    environment:
-      - NODE_ENV=development
-      - PORT=5000
-      - DB_HOST=mysql
-      - DB_PORT=3306
-      - DB_NAME=lesigne_db
-      - DB_USER=lesigne_user
-      - DB_PASSWORD=lesigne_password
-      - JWT_SECRET=local_development_secret
-      - FRONTEND_URL=http://localhost:3000
-      - USER_PANEL_URL=http://localhost:3001
-      - ADMIN_PANEL_URL=http://localhost:3002
-    volumes:
-      - ./server:/app
-      - /app/node_modules
-    depends_on:
-      - mysql
-    networks:
-      - lesigne-network
-
-  # MySQL Database
-  mysql:
-    image: mysql:8.0
-    container_name: lesigne-mysql
+  # ==========================================
+  # PostgreSQL Database
+  # ==========================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: assime-postgres
     restart: unless-stopped
     environment:
-      - MYSQL_DATABASE=lesigne_db
-      - MYSQL_USER=lesigne_user
-      - MYSQL_PASSWORD=lesigne_password
-      - MYSQL_ROOT_PASSWORD=root_password
+      POSTGRES_DB: ${PGDATABASE:-assime_db}
+      POSTGRES_USER: ${PGUSER:-assime_user}
+      POSTGRES_PASSWORD: ${PGPASSWORD:-assime_password}
+      PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
-      - mysql-data:/var/lib/mysql
-      - ./server/database/schema_mysql.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - postgres-data:/var/lib/postgresql/data
+      - ./server/database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
     ports:
-      - "3306:3306"
+      - "${DB_PORT_EXPOSE:-5432}:5432"
     networks:
-      - lesigne-network
+      - assime-network
     healthcheck:
-      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      test: ["CMD-SHELL", "pg_isready -U ${PGUSER:-assime_user} -d ${PGDATABASE:-assime_db}"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 10s
+
+  # ==========================================
+  # Application (Node.js API + Frontends)
+  # ==========================================
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: /api
+    container_name: assime-app
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=5000
+      # Variables PostgreSQL (pg driver)
+      - PGHOST=postgres
+      - PGPORT=5432
+      - PGDATABASE=${PGDATABASE:-assime_db}
+      - PGUSER=${PGUSER:-assime_user}
+      - PGPASSWORD=${PGPASSWORD:-assime_password}
+      # JWT
+      - JWT_SECRET=${JWT_SECRET:-change-me-in-production}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-7d}
+      # Uploads
+      - UPLOAD_PATH=/app/server/uploads
+    volumes:
+      - uploads-data:/app/server/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - assime-network
+
+  # ==========================================
+  # Nginx Reverse Proxy (SSL + Static)
+  # ==========================================
+  nginx:
+    image: nginx:alpine
+    container_name: assime-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - uploads-data:/app/server/uploads:ro
+      - certbot-etc:/etc/letsencrypt:ro
+      - certbot-var:/var/lib/letsencrypt:ro
+      - certbot-webroot:/var/www/certbot
+    depends_on:
+      - app
+    networks:
+      - assime-network
+
+  # ==========================================
+  # Certbot (SSL Let's Encrypt) — optionnel
+  # ==========================================
+  certbot:
+    image: certbot/certbot
+    container_name: assime-certbot
+    volumes:
+      - certbot-etc:/etc/letsencrypt
+      - certbot-var:/var/lib/letsencrypt
+      - certbot-webroot:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    depends_on:
+      - nginx
+    networks:
+      - assime-network
 
 volumes:
-  mysql-data:
+  postgres-data:
+    driver: local
+  uploads-data:
+    driver: local
+  certbot-etc:
+    driver: local
+  certbot-var:
+    driver: local
+  certbot-webroot:
     driver: local
 
 networks:
-  lesigne-network:
+  assime-network:
     driver: bridge

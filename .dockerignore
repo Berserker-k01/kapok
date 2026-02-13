@@ -1,10 +1,63 @@
-node_modules
-dist
-build
+# Node modules (reconstruits dans le conteneur)
+**/node_modules
+**/npm-debug.log
+
+# Git
 .git
+.gitignore
+
+# IDE
+.vscode
+.cursor
+.idea
+
+# Builds locaux (reconstruits dans le conteneur)
+user-panel/dist
+admin-panel/dist
+
+# Logs
+*.log
+server/logs/*
+server/error.log
+
+# Env files (passés via docker-compose)
 .env
-.DS_Store
-npm-debug.log
-yarn-error.log
-Dockerfile
-docker-compose.yml
+server/.env
+
+# Documentation
+*.md
+!README.md
+DEPLOIEMENT_HOSTINGER.md
+MIGRATION_MYSQL.md
+CLOUDINARY_SETUP.md
+CONFIGURATION_NGINX_HOSTINGER.md
+GUIDE_FIX_IMAGE_PERSISTENCE.md
+GUIDE_FIX_SHOP_LIMITS.md
+
+# Scripts non nécessaires au build
+diagnose-hostinger.sh
+deploy-hostinger.sh
+diagnose.ps1
+test-panels.ps1
+test-simple.ps1
+start-dev.bat
+start-dev.ps1
+install-all.bat
+backup-db.sh
+build-frontends.sh
+
+# Thèmes Shopify (référence)
+themes/
+
+# Lesignes ancien
+Lesignes/
+
+# Données de diagnostic
+server/diagnose-*.js
+server/debug-register.js
+scripts/
+
+# Fichiers temporaires
+tmp/
+server/uploads/*
+!server/uploads/.gitkeep

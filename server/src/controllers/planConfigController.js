@@ -39,6 +39,7 @@ exports.createPlan = catchAsync(async (req, res) => {
     description,
     price,
     currency,
+    durationMonths,
     maxShops,
     features,
     discountPercent,
@@ -54,17 +55,16 @@ exports.createPlan = catchAsync(async (req, res) => {
     throw new AppError('Une clé de plan avec ce nom existe déjà', 400)
   }
 
-  /* 
-     Move uuid import to top level. 
-  */
+  const planId = uuidv4()
+
   const insertQuery = `
     INSERT INTO plans_config 
     (id, plan_key, name, description, price, currency, duration_months, max_shops, features, discount_percent, is_active, display_order)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `
 
-  const result = await db.query(insertQuery, [
-    uuidv4(),
+  await db.query(insertQuery, [
+    planId,
     planKey,
     name,
     description || null,
@@ -78,9 +78,12 @@ exports.createPlan = catchAsync(async (req, res) => {
     displayOrder || 0
   ])
 
+  // Récupérer le plan créé
+  const fetchResult = await db.query('SELECT * FROM plans_config WHERE id = ?', [planId])
+
   res.status(201).json({
     success: true,
-    plan: result.rows[0],
+    plan: fetchResult.rows[0],
     message: 'Plan créé avec succès'
   })
 })
@@ -93,6 +96,7 @@ exports.updatePlan = catchAsync(async (req, res) => {
     description,
     price,
     currency,
+    durationMonths,
     maxShops,
     features,
     discountPercent,
@@ -120,10 +124,6 @@ exports.updatePlan = catchAsync(async (req, res) => {
     updates.push('currency = ?')
     values.push(currency)
   }
-  if (req.body.durationMonths !== undefined) {
-    updates.push('duration_months = ?')
-    values.push(req.body.durationMonths)
-  }
   if (durationMonths !== undefined) {
     updates.push('duration_months = ?')
     values.push(durationMonths)
@@ -133,7 +133,7 @@ exports.updatePlan = catchAsync(async (req, res) => {
     values.push(maxShops)
   }
   if (features !== undefined) {
-    updates.push('features = ?')
+    updates.push('features = ?::jsonb')
     values.push(JSON.stringify(features))
   }
   if (discountPercent !== undefined) {
@@ -162,13 +162,7 @@ exports.updatePlan = catchAsync(async (req, res) => {
     WHERE id = ?
   `
 
-  /* 
-     MySQL UPDATE/INSERT/DELETE returns 'rowsAffected', not 'rows'.
-     So we cannot check result.rows.length > 0 directly.
-     We must fetch the updated plan manually.
-  */
-
-  // 1. UPDATE
+  // UPDATE
   await db.query(query, values)
 
   // 2. FETCH UPDATED PLAN
@@ -192,7 +186,7 @@ exports.deletePlan = catchAsync(async (req, res) => {
 
   // Vérifier s'il y a des paiements ou abonnements actifs avec ce plan
   const checkQuery = `
-    SELECT COUNT(*) as count FROM subscription_payments 
+    SELECT COUNT(*)::integer as count FROM subscription_payments 
     WHERE plan_key = (SELECT plan_key FROM plans_config WHERE id = ?)
   `
   const checkResult = await db.query(checkQuery, [planId])
@@ -204,18 +198,8 @@ exports.deletePlan = catchAsync(async (req, res) => {
   const deleteQuery = 'DELETE FROM plans_config WHERE id = ?'
   const result = await db.query(deleteQuery, [planId])
 
-  /* 
-     Fix for MySQL2: Use affectedRows to check if something was deleted.
-     If the result structure is different (e.g. Postgres), this might need adjustment,
-     but for mysql2 it's usually result.affectedRows or result.info.
-     Assuming result structure from db.query wrapper.
-  */
-  // Check if result has affectedRows (common in mysql2)
-  if (result.affectedRows === 0 && (!result.rowCount || result.rowCount === 0)) {
-    // If both suggest no change, assume not found.
-    // However, simpler check might be just ignoring 404 on delete or strictly checking if possible.
-    // For now, let's loosen the check or debug. 
-    // Better fix: if it didn't throw, it's "deleted".
+  if (result.rowCount === 0) {
+    throw new AppError('Plan non trouvé', 404)
   }
 
   res.json({

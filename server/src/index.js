@@ -4,27 +4,25 @@ const helmet = require('helmet')
 const rateLimit = require('express-rate-limit')
 const path = require('path')
 const fs = require('fs')
+require('dotenv').config({ path: path.join(__dirname, '../.env') })
 
-// --- CONFIGURATION STATIQUE (PLUS DE .ENV) ---
-process.env.NODE_ENV = 'production';
-// IMPORTANT: Hostinger/Heroku injectent le PORT dynamiquement. 
-// Ne JAMAIS hardcoder le port en production si l'hébergeur le fournit.
-const PORT = process.env.PORT || 5000;
+// --- CONFIGURATION ---
+const PORT = process.env.PORT || 5000
 
 const app = express()
 
-// Trust Proxy pour Hostinger/Vercel
-app.set('trust proxy', 1);
+// Trust Proxy (Docker/Nginx)
+app.set('trust proxy', 1)
 
-// CORS Configuration permissive pour supporter PWA/Mobile
+// CORS
 app.use(cors({
-  origin: true, // Allow all origins
+  origin: true,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
-}));
+}))
 
-// Middleware de sécurité — Helmet avec CSP permissif pour les images/styles
+// Helmet — sécurité avec CSP permissif pour images/styles
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" },
   contentSecurityPolicy: {
@@ -41,306 +39,176 @@ app.use(helmet({
   },
 }))
 
-// Rate limiting (DÉSACTIVÉ TEMPORAIREMENT POUR DEBUG)
-// const limiter = rateLimit({
-//   windowMs: 15 * 60 * 1000,
-//   max: 100,
-//   message: 'Trop de requêtes depuis cette IP, réessayez plus tard.'
-// })
-// app.use('/api/', limiter)
+// Rate limiting
+if (process.env.NODE_ENV === 'production') {
+  const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 200,
+    message: 'Trop de requêtes depuis cette IP, réessayez plus tard.'
+  })
+  app.use('/api/', limiter)
+}
 
 // Middleware de parsing
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
 
-// SÉCURITÉ DOUBLE API PATH: Strip /api/api/ -> /api/
+// Sécurité: Strip double /api/api/ → /api/
 app.use((req, res, next) => {
   if (req.url.startsWith('/api/api/')) {
-    req.url = req.url.replace('/api/api/', '/api/');
+    req.url = req.url.replace('/api/api/', '/api/')
   }
-  next();
-});
+  next()
+})
 
-// --- DEBUG LOGGER SIMPLIFIÉ (Non-bloquant) ---
-// Patch pour gérer BigInt (MySQL COUNT retourne BigInt)
-BigInt.prototype.toJSON = function () { return this.toString() }
-
-const REQUEST_LOGS = [];
-app.use((req, res, next) => {
-  // Prevent circular reference: Do not log the debug-requests endpoint itself
-  if (req.url.startsWith('/api/debug-requests')) return next();
-
-  const start = Date.now();
-  const logEntry = {
-    id: Math.random().toString(36).substring(7),
-    timestamp: new Date().toISOString(),
-    method: req.method,
-    url: req.url,
-    body: req.body,
-    query: req.query,
-    ip: req.ip
-  };
-
-  // Capture response
-  const oldJson = res.json;
-  res.json = function (data) {
-    logEntry.response = data;
-    logEntry.duration = Date.now() - start;
-    if (REQUEST_LOGS.length > 50) REQUEST_LOGS.shift();
-    REQUEST_LOGS.push(logEntry);
-    return oldJson.apply(res, arguments);
-  };
-
-  next();
-});
-
-app.get('/api/debug-requests', (req, res) => {
-  const db = require('./config/database');
-
-  res.json({
-    status: 'active',
-    uptime: process.uptime(),
-    timestamp: new Date().toISOString(),
-    memory: process.memoryUsage(),
-    env: {
-      NODE_ENV: process.env.NODE_ENV,
-      PORT: PORT,
-      API_URL: process.env.API_URL
-    },
-    requests_count: REQUEST_LOGS.length,
-    logs: REQUEST_LOGS
-  });
-});
-
-// Servir les fichiers statiques (images uploadées)
-// Support configurable path via ENV (important for Hostinger persistence)
+// --- UPLOADS: Fichiers statiques (images uploadées) ---
 const uploadDir = process.env.UPLOAD_PATH
   ? path.resolve(process.env.UPLOAD_PATH)
-  : path.join(__dirname, '../uploads');
+  : path.join(__dirname, '../uploads')
 
-console.log('------------------------------------------------');
-console.log('[Server] 📂 Static files configuration:');
-console.log(`[Server]    Path: ${uploadDir}`);
+console.log('------------------------------------------------')
+console.log('[Server] 📂 Static files configuration:')
+console.log(`[Server]    Upload Path: ${uploadDir}`)
 try {
   if (!fs.existsSync(uploadDir)) {
-    console.log('[Server]    Status: Missing (Creating now...)');
-    fs.mkdirSync(uploadDir, { recursive: true });
+    fs.mkdirSync(uploadDir, { recursive: true })
+    console.log('[Server]    Created uploads directory')
   }
-  fs.accessSync(uploadDir, fs.constants.W_OK);
-  console.log('[Server]    Status: ✅ Writable');
+  // Créer sous-dossier payment-proofs
+  const proofDir = path.join(uploadDir, 'payment-proofs')
+  if (!fs.existsSync(proofDir)) {
+    fs.mkdirSync(proofDir, { recursive: true })
+  }
+  fs.accessSync(uploadDir, fs.constants.W_OK)
+  const files = fs.readdirSync(uploadDir).filter(f => f !== '.gitkeep')
+  console.log(`[Server]    Status: ✅ Writable (${files.length} items)`)
 } catch (e) {
-  console.error(`[Server]    Status: ❌ Error (${e.message})`);
+  console.error(`[Server]    Status: ❌ Error (${e.message})`)
 }
-console.log(`[Server]    Public URL: ${process.env.API_URL || 'Not defined (using default)'}`);
-console.log('------------------------------------------------');
+console.log('------------------------------------------------')
 
-app.use('/api/uploads', express.static(uploadDir));
-// Garder l'ancien alias au cas où
-app.use('/uploads', express.static(uploadDir));
+app.use('/api/uploads', express.static(uploadDir))
+app.use('/uploads', express.static(uploadDir))
 
-// Fallback: aussi servir depuis process.cwd()/uploads/ (ancien chemin d'upload)
-// Ceci permet de retrouver les images uploadées avant la correction du chemin
-const oldUploadDir = path.join(process.cwd(), 'uploads');
-if (oldUploadDir !== uploadDir && fs.existsSync(oldUploadDir)) {
-  console.log(`[Server] 📂 Fallback uploads: ${oldUploadDir}`);
-  app.use('/api/uploads', express.static(oldUploadDir));
-  app.use('/uploads', express.static(oldUploadDir));
-}
-
-// Routes Check
-app.get('/env-debug', (req, res) => {
-  res.json({
-    message: 'HARDCODED-CONFIG-CHECK',
-    env: process.env.NODE_ENV,
-    port: PORT,
-    cwd: process.cwd()
-  });
-});
-
+// --- HEALTH CHECK ---
 app.get('/api/health', async (req, res) => {
-  let dbStatus = 'disconnect';
-  let error = null;
+  let dbStatus = 'disconnected'
   try {
-    const db = require('./config/database');
-    await db.pool.execute('SELECT 1');
-    dbStatus = 'connected';
+    const db = require('./config/database')
+    await db.pool.query('SELECT 1')
+    dbStatus = 'connected'
   } catch (e) {
-    dbStatus = 'error';
-    error = e.message;
+    dbStatus = 'error: ' + e.message
   }
 
   res.status(dbStatus === 'connected' ? 200 : 500).json({
     status: dbStatus === 'connected' ? 'ok' : 'error',
     database: dbStatus,
+    uptime: process.uptime(),
     timestamp: new Date().toISOString()
-  });
-});
+  })
+})
 
-// --- ROUTE DIAGNOSTIC SCHEMA (POUR DEBUGGER HOSTINGER) ---
-app.get('/api/debug-schema', async (req, res) => {
+// --- DIAGNOSTIC IMAGES ---
+app.get('/api/debug-images', async (req, res) => {
   try {
-    const db = require('./config/database');
-    const [tables] = await db.pool.execute('SHOW TABLES');
+    const db = require('./config/database')
 
-    let usersInfo = { status: 'missing', error: null };
-    try {
-      const [rows] = await db.pool.execute('SELECT count(*) as count FROM users');
-      const [columns] = await db.pool.execute('DESCRIBE users');
-      usersInfo = { status: 'exists', count: rows[0].count, columns: columns.map(c => c.Field) };
-    } catch (e) { usersInfo.error = e.message; }
-
-    res.json({
-      message: 'SCHEMA-CHECK-V2',
-      tables: tables,
-      users_check: usersInfo
-    });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
-// --- ROUTE DEBUG REGISTER (SIMULATION INSCRIPTION) ---
-app.get('/api/debug-register', async (req, res) => {
-  const logs = [];
-  const log = (msg, data) => logs.push({ msg, data: data || null });
-
-  try {
-    const db = require('./config/database');
-    const bcrypt = require('bcryptjs');
-    const { v4: uuidv4 } = require('uuid');
-
-    log('1. Début du test d\'inscription');
-
-    // Génération données test
-    const email = `debug-${Date.now()}@test.com`;
-    const password = 'password123';
-    const name = 'Debug User';
-    const userId = uuidv4();
-
-    log('2. Données générées', { email, userId });
-
-    // Hachage
-    const hashedPassword = await bcrypt.hash(password, 12);
-    log('3. Mot de passe haché OK');
-
-    const insertQuery = `
-      INSERT INTO users (id, name, email, password, role, status, created_at)
-      VALUES (?, ?, ?, ?, 'user', 'active', NOW())
-    `;
-
-    log('4. Tentative INSERT...');
-    await db.query(insertQuery, [userId, name, email, hashedPassword]);
-    log('5. INSERT terminé');
-
-    log('6. Vérification SELECT...');
-    const result = await db.query('SELECT id, email, created_at FROM users WHERE id = ?', [userId]);
-
-    if (result.rows && result.rows.length > 0) {
-      log('✅ EXTRACT: Utilisateur retrouvé en base !', result.rows[0]);
-    } else {
-      log('❌ FATAL: Utilisateur introuvable après insert (problème transaction ?)');
+    const uploadInfo = {
+      path: uploadDir,
+      exists: fs.existsSync(uploadDir),
+      files: [],
+    }
+    if (uploadInfo.exists) {
+      try {
+        uploadInfo.files = fs.readdirSync(uploadDir).filter(f => f !== '.gitkeep').slice(0, 20)
+      } catch (e) { uploadInfo.files = ['ERROR: ' + e.message] }
     }
 
-    res.json({
-      status: 'success',
-      logs: logs
-    });
+    const result = await db.query('SELECT id, name, images, created_at FROM products ORDER BY created_at DESC LIMIT 5')
+    const productsDebug = result.rows.map(p => {
+      let images = p.images
+      if (typeof images === 'string') {
+        try { images = JSON.parse(images) } catch (e) { images = p.images }
+      }
+      const firstImage = Array.isArray(images) && images.length > 0 ? images[0] : null
+      let fileExists = false
+      if (firstImage) {
+        const filename = firstImage.split('/').pop()
+        fileExists = fs.existsSync(path.join(uploadDir, filename))
+      }
+      return { id: p.id, name: p.name, images, firstImage, fileExists }
+    })
 
+    const shopsResult = await db.query('SELECT id, name, logo_url, banner_url FROM shops LIMIT 5')
+
+    res.json({ uploads: uploadInfo, products: productsDebug, shops: shopsResult.rows })
   } catch (error) {
-    log('❌ ERREUR CRITIQUE', error.message);
-    res.status(500).json({
-      status: 'error',
-      logs: logs,
-      stack: error.stack
-    });
+    res.status(500).json({ error: error.message })
   }
-});
+})
 
-// --- ROUTE DEBUG DATA (VERIFIER CONTENU TABLES SYSTEME) ---
-app.get('/api/debug-data', async (req, res) => {
-  try {
-    const db = require('./config/database');
-    const logs = {};
-
-    // Vérifier les plans
-    const [plans] = await db.pool.execute('SELECT * FROM plans_config');
-    logs.plans = plans;
-
-    // Vérifier les settings
-    const [settings] = await db.pool.execute('SELECT * FROM platform_settings');
-    logs.settings = settings;
-
-    // Vérifier les moyens de paiement
-    const [payments] = await db.pool.execute('SELECT * FROM payment_config');
-    logs.payment_methods = payments;
-
-    res.json({
-      status: 'success',
-      data: logs
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message, stack: error.stack });
-  }
-});
-
-// --- ROUTE DIAGNOSTIC COMPLET (TEST DB & LOGIC) ---
-app.get('/api/diagnose', async (req, res) => {
-  const runDiagnosis = require('../diagnose-db');
-  const report = await runDiagnosis();
-  res.json({ report });
-});
-
-// Import Routes
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/users', require('./routes/users'));
-app.use('/api/shops', require('./routes/shops'));
-app.use('/api/products', require('./routes/products'));
-app.use('/api/orders', require('./routes/orders'));
-app.use('/api/admin', require('./routes/admin'));
-app.use('/api/subscriptions', require('./routes/subscriptions'));
-app.use('/api/subscription-payments', require('./routes/subscriptionPayments'));
-app.use('/api/plans', require('./routes/planConfig')); // CHANGED: Was /api/admin/plans
-app.use('/api/admin/payment-numbers', require('./routes/paymentConfig')); // Admin only
-app.use('/api/ai', require('./routes/ai'));
-app.use('/api/collections', require('./routes/collections'));
+// --- ROUTES API ---
+app.use('/api/auth', require('./routes/auth'))
+app.use('/api/users', require('./routes/users'))
+app.use('/api/shops', require('./routes/shops'))
+app.use('/api/products', require('./routes/products'))
+app.use('/api/orders', require('./routes/orders'))
+app.use('/api/admin', require('./routes/admin'))
+app.use('/api/subscriptions', require('./routes/subscriptions'))
+app.use('/api/subscription-payments', require('./routes/subscriptionPayments'))
+app.use('/api/plans', require('./routes/planConfig'))
+app.use('/api/admin/payment-numbers', require('./routes/paymentConfig'))
+app.use('/api/ai', require('./routes/ai'))
+app.use('/api/collections', require('./routes/collections'))
 
 // Error Handler
-app.use(require('./middleware/errorHandler'));
+app.use(require('./middleware/errorHandler'))
 
 // --- PRODUCTION: SERVIR LES FRONTENDS ---
-const adminDist = path.join(__dirname, '../../admin-panel/dist');
-const userDist = path.join(__dirname, '../../user-panel/dist');
+// En Docker: /app/admin-panel-dist et /app/user-panel-dist
+// En local/dev: ../../admin-panel/dist et ../../user-panel/dist
+const adminDist = process.env.ADMIN_DIST_PATH
+  || (fs.existsSync(path.join(__dirname, '../admin-panel-dist'))
+    ? path.join(__dirname, '../admin-panel-dist')
+    : path.join(__dirname, '../../admin-panel/dist'))
+
+const userDist = process.env.USER_DIST_PATH
+  || (fs.existsSync(path.join(__dirname, '../user-panel-dist'))
+    ? path.join(__dirname, '../user-panel-dist')
+    : path.join(__dirname, '../../user-panel/dist'))
 
 // 1. Admin Panel (/admin)
-app.use('/admin', express.static(adminDist));
+app.use('/admin', express.static(adminDist))
 app.get(['/admin', '/admin/*'], (req, res) => {
-  if (fs.existsSync(path.join(adminDist, 'index.html'))) {
-    res.sendFile(path.join(adminDist, 'index.html'));
+  const indexPath = path.join(adminDist, 'index.html')
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath)
   } else {
-    res.status(404).send('Admin Panel Build Not Found');
+    res.status(404).send('Admin Panel Build Not Found')
   }
-});
+})
 
 // 2. User Panel (/)
-app.use(express.static(userDist));
+app.use(express.static(userDist))
 app.get('*', (req, res) => {
   if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) {
-    return res.status(404).json({ error: 'Not Found' });
+    return res.status(404).json({ error: 'Not Found' })
   }
-  if (fs.existsSync(path.join(userDist, 'index.html'))) {
-    res.sendFile(path.join(userDist, 'index.html'));
+  const indexPath = path.join(userDist, 'index.html')
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath)
   } else {
-    res.status(404).send('User Panel Build Not Found');
+    res.status(404).send('User Panel Build Not Found')
   }
-});
+})
 
+// Export pour tests
+module.exports = app
 
-// Export pour Vercel (Serverless)
-module.exports = app;
-
-// Démarrage serveur (Local uniquement)
+// Démarrage serveur
 if (require.main === module) {
-  app.listen(PORT, () => {
-    console.log(`🚀 Serveur Assimε démarré sur le port ${PORT}`)
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Serveur Assimε démarré sur le port ${PORT} (${process.env.NODE_ENV || 'development'})`)
   })
 }

@@ -41,13 +41,17 @@ exports.createPaymentNumber = catchAsync(async (req, res) => {
     instructions
   } = req.body
 
+  const { v4: uuidv4 } = require('uuid')
+  const paymentId = uuidv4()
+
   const insertQuery = `
     INSERT INTO payment_config 
-    (provider_name, phone_number, provider_type, is_active, display_order, instructions)
-    VALUES (?, ?, ?, ?, ?, ?)
+    (id, provider_name, phone_number, provider_type, is_active, display_order, instructions)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
   `
 
-  const result = await db.query(insertQuery, [
+  await db.query(insertQuery, [
+    paymentId,
     providerName,
     phoneNumber,
     providerType || 'mobile_money',
@@ -56,8 +60,7 @@ exports.createPaymentNumber = catchAsync(async (req, res) => {
     instructions || null
   ])
 
-  // get inserted item
-  const inserted = await db.query('SELECT * FROM payment_config WHERE id = LAST_INSERT_ID()')
+  const inserted = await db.query('SELECT * FROM payment_config WHERE id = ?', [paymentId])
 
   res.status(201).json({
     success: true,
@@ -80,7 +83,6 @@ exports.updatePaymentNumber = catchAsync(async (req, res) => {
 
   const updates = []
   const values = []
-  let paramCount = 1
 
   if (providerName !== undefined) {
     updates.push(`provider_name = ?`)
@@ -142,9 +144,9 @@ exports.deletePaymentNumber = catchAsync(async (req, res) => {
   const deleteQuery = 'DELETE FROM payment_config WHERE id = ?'
   const result = await db.query(deleteQuery, [id])
 
-  // Note: MySQL DELETE doesn't verify existence with affectedRows unless checked manually, 
-  // but if ID doesn't exist it just does nothing. We can assume success or check check first.
-  // For now we just return success.
+  if (result.rowCount === 0) {
+    throw new AppError('Numéro de paiement non trouvé', 404)
+  }
 
   res.json({
     success: true,

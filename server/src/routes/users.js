@@ -176,9 +176,9 @@ router.get('/stats', authenticateToken, async (req, res) => {
   try {
     const statsQuery = `
       SELECT 
-        (SELECT COUNT(*) FROM shops WHERE owner_id = ?) as total_shops,
-        (SELECT COUNT(*) FROM products p JOIN shops s ON p.shop_id = s.id WHERE s.owner_id = ?) as total_products,
-        (SELECT COUNT(*) FROM orders o JOIN shops s ON o.shop_id = s.id WHERE s.owner_id = ?) as total_orders,
+        (SELECT COUNT(*)::integer FROM shops WHERE owner_id = ?) as total_shops,
+        (SELECT COUNT(*)::integer FROM products p JOIN shops s ON p.shop_id = s.id WHERE s.owner_id = ?) as total_products,
+        (SELECT COUNT(*)::integer FROM orders o JOIN shops s ON o.shop_id = s.id WHERE s.owner_id = ?) as total_orders,
         (SELECT COALESCE(SUM(o.total_amount), 0) FROM orders o JOIN shops s ON o.shop_id = s.id WHERE s.owner_id = ? AND o.status = 'completed') as total_revenue
     `
 

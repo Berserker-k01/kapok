@@ -36,7 +36,7 @@ class CollectionService {
 
     async getCollectionsByShop(shopId) {
         const query = `
-      SELECT c.*, CAST(COUNT(cp.product_id) AS UNSIGNED) as product_count
+      SELECT c.*, COUNT(cp.product_id)::integer as product_count
       FROM collections c
       LEFT JOIN collection_products cp ON c.id = cp.collection_id
       WHERE c.shop_id = ?

@@ -5,8 +5,6 @@ const bcrypt = require('bcryptjs')
 
 const router = express.Router()
 
-
-
 // Toutes les routes admin nécessitent une authentification admin
 router.use(authenticateToken)
 router.use(requireAdmin)
@@ -16,14 +14,14 @@ router.get('/dashboard', async (req, res) => {
   try {
     const statsQuery = `
       SELECT 
-        (SELECT COUNT(*) FROM users WHERE role = 'user') as total_users,
-        (SELECT COUNT(*) FROM users WHERE role = 'user' AND status = 'active') as active_users,
-        (SELECT COUNT(*) FROM shops) as total_shops,
-        (SELECT COUNT(*) FROM shops WHERE status = 'active') as active_shops,
-        (SELECT COUNT(*) FROM products) as total_products,
-        (SELECT COUNT(*) FROM orders) as total_orders,
+        (SELECT COUNT(*)::integer FROM users WHERE role = 'user') as total_users,
+        (SELECT COUNT(*)::integer FROM users WHERE role = 'user' AND status = 'active') as active_users,
+        (SELECT COUNT(*)::integer FROM shops) as total_shops,
+        (SELECT COUNT(*)::integer FROM shops WHERE status = 'active') as active_shops,
+        (SELECT COUNT(*)::integer FROM products) as total_products,
+        (SELECT COUNT(*)::integer FROM orders) as total_orders,
         (SELECT COALESCE(SUM(total_amount), 0) FROM orders WHERE status = 'completed') as total_revenue,
-        (SELECT COUNT(*) FROM users WHERE created_at >= CURRENT_DATE - INTERVAL 30 DAY) as new_users_30d
+        (SELECT COUNT(*)::integer FROM users WHERE created_at >= CURRENT_DATE - INTERVAL '30 days') as new_users_30d
     `
 
     const result = await db.query(statsQuery)
@@ -31,13 +29,13 @@ router.get('/dashboard', async (req, res) => {
     // Croissance mensuelle
     const growthQuery = `
       SELECT 
-        DATE_FORMAT(created_at, '%Y-%m-01') as month,
-        COUNT(CASE WHEN role = 'user' THEN 1 END) as new_users,
-        (SELECT COUNT(*) FROM shops WHERE DATE_FORMAT(created_at, '%Y-%m-01') = DATE_FORMAT(u.created_at, '%Y-%m-01')) as new_shops,
-        (SELECT COALESCE(SUM(total_amount), 0) FROM orders WHERE status = 'completed' AND DATE_FORMAT(created_at, '%Y-%m-01') = DATE_FORMAT(u.created_at, '%Y-%m-01')) as total_revenue
+        TO_CHAR(u.created_at, 'YYYY-MM-01') as month,
+        COUNT(CASE WHEN u.role = 'user' THEN 1 END)::integer as new_users,
+        (SELECT COUNT(*)::integer FROM shops WHERE TO_CHAR(created_at, 'YYYY-MM-01') = TO_CHAR(u.created_at, 'YYYY-MM-01')) as new_shops,
+        (SELECT COALESCE(SUM(total_amount), 0) FROM orders WHERE status = 'completed' AND TO_CHAR(created_at, 'YYYY-MM-01') = TO_CHAR(u.created_at, 'YYYY-MM-01')) as total_revenue
       FROM users u
-      WHERE created_at >= CURRENT_DATE - INTERVAL 6 MONTH
-      GROUP BY DATE_FORMAT(created_at, '%Y-%m-01')
+      WHERE u.created_at >= CURRENT_DATE - INTERVAL '6 months'
+      GROUP BY TO_CHAR(u.created_at, 'YYYY-MM-01')
       ORDER BY month DESC
     `
 
@@ -59,10 +57,9 @@ router.get('/dashboard', async (req, res) => {
 // Récupérer les paramètres
 router.get('/settings', async (req, res) => {
   try {
-    const query = 'SELECT `key`, value FROM platform_settings'
+    const query = 'SELECT key, value FROM platform_settings'
     const result = await db.query(query)
 
-    // Convertir en objet { key: value }
     const settings = result.rows.reduce((acc, row) => {
       acc[row.key] = row.value
       return acc
@@ -78,14 +75,14 @@ router.get('/settings', async (req, res) => {
 // Mettre à jour les paramètres
 router.put('/settings', requireSuperAdmin, async (req, res) => {
   try {
-    const settings = req.body // { platform_name: '...', ... }
+    const settings = req.body
 
-    // On met à jour chaque clé reçue
     const keys = Object.keys(settings)
 
     for (const key of keys) {
       await db.query(
-        'INSERT INTO platform_settings (`key`, `value`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `value` = VALUES(`value`), updated_at = NOW()',
+        `INSERT INTO platform_settings (key, value) VALUES (?, ?)
+         ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()`,
         [key, String(settings[key])]
       )
     }
@@ -106,7 +103,7 @@ router.get('/users', async (req, res) => {
     let query = `
       SELECT 
         u.id, u.name, u.email, u.role, u.status, u.created_at, u.last_login, u.plan,
-        COUNT(DISTINCT s.id) as shop_count,
+        COUNT(DISTINCT s.id)::integer as shop_count,
         COALESCE(SUM(o.total_amount), 0) as total_spent,
         (SELECT current_period_end FROM subscriptions sub WHERE sub.user_id = u.id AND sub.status = 'active' LIMIT 1) as subscription_end
       FROM users u
@@ -116,15 +113,13 @@ router.get('/users', async (req, res) => {
     `
     let queryParams = []
 
-    // MySQL: pas de paramCount, juste l'ordre
-
     if (status) {
       query += ` AND u.status = ?`
       queryParams.push(status)
     }
 
     if (search) {
-      query += ` AND (u.name LIKE ? OR u.email LIKE ?)`
+      query += ` AND (u.name ILIKE ? OR u.email ILIKE ?)`
       queryParams.push(`%${search}%`, `%${search}%`)
     }
 
@@ -158,8 +153,8 @@ router.get('/shops', async (req, res) => {
         s.*,
         u.name as owner_name,
         u.email as owner_email,
-        COUNT(DISTINCT p.id) as product_count,
-        COUNT(DISTINCT o.id) as order_count,
+        COUNT(DISTINCT p.id)::integer as product_count,
+        COUNT(DISTINCT o.id)::integer as order_count,
         COALESCE(SUM(o.total_amount), 0) as total_revenue
       FROM shops s
       JOIN users u ON s.owner_id = u.id
@@ -167,7 +162,6 @@ router.get('/shops', async (req, res) => {
       LEFT JOIN orders o ON s.id = o.shop_id AND o.status = 'completed'
     `
     let queryParams = []
-    let paramCount = 0
 
     if (status) {
       query += ` WHERE s.status = ?`
@@ -212,7 +206,6 @@ router.put('/users/:userId/status', requireSuperAdmin, async (req, res) => {
 
     await db.query(updateQuery, [status, userId])
 
-    // FETCH AFTER UPDATE
     const result = await db.query('SELECT id, name, email, status FROM users WHERE id = ?', [userId])
 
     if (result.rows.length === 0) {
@@ -256,10 +249,8 @@ router.post('/users/:userId/cancel-plan', async (req, res) => {
   try {
     const userId = req.params.userId
 
-    // 1. Remettre le user en plan 'free'
     await db.query("UPDATE users SET plan = 'free', updated_at = NOW() WHERE id = ?", [userId])
 
-    // 2. Marquer l'abonnement comme annulé dans la table subscriptions
     await db.query("UPDATE subscriptions SET status = 'cancelled', current_period_end = NOW() WHERE user_id = ? AND status = 'active'", [userId])
 
     res.json({ message: 'Plan annulé avec succès' })

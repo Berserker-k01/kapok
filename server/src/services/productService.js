@@ -49,8 +49,7 @@ class ProductService {
         }
 
         if (search) {
-            // MySQL est insensible à la casse par défaut avec utf8mb4_unicode_ci
-            query += ` AND (name LIKE ? OR description LIKE ?)`;
+            query += ` AND (name ILIKE ? OR description ILIKE ?)`;
             sqlParams.push(`%${search}%`, `%${search}%`);
         }
 
@@ -60,7 +59,7 @@ class ProductService {
         const result = await db.query(query, sqlParams);
 
         // Compter le total
-        let countQuery = 'SELECT COUNT(*) AS count FROM products WHERE shop_id = ?';
+        let countQuery = 'SELECT COUNT(*)::integer AS count FROM products WHERE shop_id = ?';
         let countParams = [shopId];
 
         if (category) {
@@ -145,7 +144,20 @@ class ProductService {
         // FETCH AFTER INSERT
         const result = await db.query('SELECT * FROM products WHERE id = ?', [productId]);
 
-        return result.rows[0];
+        const product = result.rows[0];
+        // Parser et normaliser pour la réponse
+        let fetchedImages = product.images;
+        if (typeof fetchedImages === 'string') {
+            try { fetchedImages = JSON.parse(fetchedImages); } catch (e) { fetchedImages = []; }
+        }
+        if (Array.isArray(fetchedImages)) {
+            fetchedImages = fetchedImages.map(img => normalizeImageUrl(img));
+        }
+        product.images = fetchedImages;
+        product.image_url = (Array.isArray(fetchedImages) && fetchedImages.length > 0) ? fetchedImages[0] : null;
+        product.stock = product.inventory ?? 0;
+
+        return product;
     }
 
     async getProductById(productId) {
@@ -158,7 +170,7 @@ class ProductService {
 
         const product = result.rows[0];
 
-        // Parser images JSON (mysql2 execute retourne string)
+        // Parser images JSON si nécessaire
         let images = product.images;
         if (typeof images === 'string') {
             try { images = JSON.parse(images); } catch (e) { images = []; }
@@ -205,16 +217,16 @@ class ProductService {
         description = COALESCE(?, description),
         price = COALESCE(?, price),
         category = COALESCE(?, category),
-        images = COALESCE(?, images),
+        images = COALESCE(?::jsonb, images),
         inventory = COALESCE(?, inventory),
         sku = COALESCE(?, sku),
         weight = COALESCE(?, weight),
-        dimensions = COALESCE(?, dimensions),
+        dimensions = COALESCE(?::jsonb, dimensions),
         updated_at = NOW()
       WHERE id = ?
     `;
 
-        // IMPORTANT: MySQL crash si param est undefined. On doit passer null.
+        // Passer null pour les champs non définis (COALESCE ignorera null)
         await db.query(updateQuery, [
             name !== undefined ? name : null,
             description !== undefined ? description : null,
@@ -231,7 +243,20 @@ class ProductService {
         // FETCH AFTER UPDATE
         const result = await db.query('SELECT * FROM products WHERE id = ?', [productId]);
 
-        return result.rows[0];
+        const product = result.rows[0];
+        // Parser et normaliser pour la réponse
+        let fetchedImages = product.images;
+        if (typeof fetchedImages === 'string') {
+            try { fetchedImages = JSON.parse(fetchedImages); } catch (e) { fetchedImages = []; }
+        }
+        if (Array.isArray(fetchedImages)) {
+            fetchedImages = fetchedImages.map(img => normalizeImageUrl(img));
+        }
+        product.images = fetchedImages;
+        product.image_url = (Array.isArray(fetchedImages) && fetchedImages.length > 0) ? fetchedImages[0] : null;
+        product.stock = product.inventory ?? 0;
+
+        return product;
     }
 
     async deleteProduct(userId, productId) {

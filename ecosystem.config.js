@@ -3,7 +3,7 @@ module.exports = {
     {
       name: 'lesigne-server',
       script: './server/src/index.js',
-      cwd: '/var/www/lesigne',
+      // cwd sera le dossier d'exécution courant (public_html/)
       instances: 1,
       exec_mode: 'fork',
       env: {
