@@ -129,15 +129,14 @@ const PlanSelection = () => {
               <div key={plan.id} className="relative">
                 {isPopular && (
                   <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
-                    <span className="bg-gradient-to-r from-purple-600 to-purple-700 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg uppercase tracking-wide">
+                    <span className="bg-gradient-to-r from-purple-600 to-purple-700 text-white text-[10px] md:text-xs font-bold px-4 py-1.5 rounded-full shadow-lg uppercase tracking-wide whitespace-nowrap">
                       Le plus populaire
                     </span>
                   </div>
                 )}
 
-                <Card className={`h-full flex flex-col transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${
-                  isPopular ? `ring-2 ${colors.ring} shadow-lg` : ''
-                } ${isCurrentPlan ? 'ring-2 ring-green-500' : ''}`}>
+                <Card className={`h-full flex flex-col transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${isPopular ? `ring-2 ${colors.ring} shadow-lg` : ''
+                  } ${isCurrentPlan ? 'ring-2 ring-green-500' : ''}`}>
 
                   {/* Header du plan */}
                   <div className={`bg-gradient-to-r ${colors.gradient} px-6 py-6 rounded-t-xl`}>

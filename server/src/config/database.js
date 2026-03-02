@@ -1,89 +1,74 @@
-const { Pool } = require('pg')
-require('dotenv').config()
+const { Pool } = require('pg');
+require('dotenv').config();
 
-// --- CONFIGURATION PostgreSQL ---
-// Priorité: DATABASE_URL > PGHOST/PGUSER/... > valeurs par défaut Docker
-let poolConfig
-
-if (process.env.DATABASE_URL) {
-  // Mode DATABASE_URL (Render, Heroku, Supabase, etc.)
-  poolConfig = {
-    connectionString: process.env.DATABASE_URL,
+// Configuration PostgreSQL pour Docker VPS
+// Le nom de l'hôte est 'postgres' (nom du service dans docker-compose.yml)
+const poolConfig = {
+    host: process.env.PGHOST || 'postgres',
+    port: parseInt(process.env.PGPORT || '5432'),
+    database: process.env.PGDATABASE || 'assime_db',
+    user: process.env.PGUSER || 'assime_user',
+    password: process.env.PGPASSWORD || 'assime_password',
     max: 20,
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 5000,
-  }
-  // SSL si nécessaire
-  if (process.env.DB_SSL !== 'false') {
-    poolConfig.ssl = { rejectUnauthorized: false }
-  }
-  console.log('📦 PostgreSQL: Connexion via DATABASE_URL')
-} else {
-  // Mode variables individuelles (Docker Compose / local)
-  poolConfig = {
-    host: process.env.PGHOST || process.env.DB_HOST || 'localhost',
-    port: parseInt(process.env.PGPORT || process.env.DB_PORT || '5432'),
-    database: process.env.PGDATABASE || process.env.DB_NAME || 'assime_db',
-    user: process.env.PGUSER || process.env.DB_USER || 'assime_user',
-    password: process.env.PGPASSWORD || process.env.DB_PASSWORD || 'assime_password',
-    max: 20,
-    idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 5000,
-  }
-  console.log(`📦 PostgreSQL: Connexion vers ${poolConfig.host}:${poolConfig.port}/${poolConfig.database}`)
+};
+
+// Hardcoding connection details specifically for the Docker environment if variables are missing
+if (process.env.NODE_ENV === 'production' && !process.env.PGHOST) {
+    console.log('📦 Docker Context: Using default "postgres" host and standard credentials...');
 }
 
-const pool = new Pool(poolConfig)
-
-// Test de connexion
-pool.connect()
-  .then(client => {
-    console.log('✅ Connexion à la base de données PostgreSQL établie')
-    client.release()
-  })
-  .catch(err => {
-    console.error('❌ Erreur de connexion à la base de données PostgreSQL:', err.message)
-  })
+const pool = new Pool(poolConfig);
 
 /**
- * Convertit les placeholders MySQL (?) en placeholders PostgreSQL ($1, $2, ...)
+ * Convertit les placeholders de style MySQL (?) en placeholders PostgreSQL ($1, $2, ...)
  * Cela permet de garder le code des services/routes inchangé.
  */
 const convertPlaceholders = (sql) => {
-  let counter = 0
-  return sql.replace(/\?/g, () => `$${++counter}`)
-}
+    let counter = 0;
+    return sql.replace(/\?/g, () => `$${++counter}`);
+};
 
 /**
- * Fonction query compatible — retourne { rows, rowCount, rowsAffected }
- * Gère la conversion automatique des placeholders ? → $N
+ * Fonction query compatible - retourne { rows, rowCount, insertId }
  */
 const query = async (text, params) => {
-  try {
-    // Transactions: BEGIN, COMMIT, ROLLBACK n'ont pas de placeholders
-    if (['BEGIN', 'COMMIT', 'ROLLBACK'].includes(text.trim().toUpperCase())) {
-      await pool.query(text)
-      return { rows: [], rowCount: 0, rowsAffected: 0 }
+    try {
+        // Nettoyer les commandes MySQL parasites
+        const sql = text.replace(/::jsonb/g, '').trim();
+        
+        // Convertir les placeholders ? -> $N
+        const pgSql = convertPlaceholders(sql);
+
+        const result = await pool.query(pgSql, params || []);
+
+        return {
+            rows: result.rows || [],
+            rowCount: result.rowCount || 0,
+            rowsAffected: result.rowCount || 0,
+            // Pour Postgres, l'insertId est souvent dans rows[0].id
+            insertId: (result.rows && result.rows[0]) ? result.rows[0].id : null
+        };
+    } catch (error) {
+        console.error('[DB Error] Query:', text.substring(0, 150));
+        console.error('[DB Error] Message:', error.message);
+        throw error;
     }
+};
 
-    // Convertir les placeholders ? → $N
-    const pgSql = convertPlaceholders(text)
-
-    const result = await pool.query(pgSql, params || [])
-
-    return {
-      rows: result.rows || [],
-      rowCount: result.rowCount || 0,
-      rowsAffected: result.rowCount || 0
-    }
-  } catch (error) {
-    console.error('[DB Error] Query:', text.substring(0, 120))
-    console.error('[DB Error] Message:', error.message)
-    throw error
-  }
-}
+// Test de connexion
+pool.connect()
+    .then(client => {
+        console.log('✅ Connexion à la base de données PostgreSQL (Docker) établie');
+        client.release();
+    })
+    .catch(err => {
+        console.error('❌ Erreur de connexion à la base de données PostgreSQL:', err.message);
+        console.warn('ℹ️ Si vous êtes en local hors Docker, assurez-vous que Postgres est lancé sur le port 5432.');
+    });
 
 module.exports = {
-  query,
-  pool
-}
+    query,
+    pool
+};

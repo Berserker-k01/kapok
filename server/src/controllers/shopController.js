@@ -44,7 +44,17 @@ exports.getAllShops = catchAsync(async (req, res, next) => {
 });
 
 exports.getShopBySlug = catchAsync(async (req, res, next) => {
-    const shop = await shopService.getShopBySlug(req.params.slug);
+    let slug = req.params.slug;
+
+    // SaaS Style: Si on demande "current" OU si un sous-domaine est détecté
+    if (slug === 'current' && req.detectedSubdomain) {
+        slug = req.detectedSubdomain;
+        console.log(`[ShopController] 🌐 Fetching shop from subdomain: ${slug}`);
+    } else if (!slug && req.detectedSubdomain) {
+        slug = req.detectedSubdomain;
+    }
+
+    const shop = await shopService.getShopBySlug(slug);
 
     if (!shop) {
         return res.status(404).json({ status: 'fail', message: 'Boutique non trouvée' });
@@ -147,8 +157,12 @@ exports.updateShop = catchAsync(async (req, res, next) => {
     }
 
     // FUSION INTELLIGENTE (Deep Merge)
-    // On part de l'existant et on applique les changements
+    console.log('[ShopController] Settings actuels:', JSON.stringify(currentSettings, null, 2));
+    console.log('[ShopController] Nouveaux settings reçus:', JSON.stringify(newSettings, null, 2));
+
     updateData.settings = deepMerge(currentSettings, newSettings);
+
+    console.log('[ShopController] Settings après fusion:', JSON.stringify(updateData.settings, null, 2));
 
     // S'assurer que la structure minimale existe pour les images
     if (!updateData.settings.themeConfig) updateData.settings.themeConfig = {};

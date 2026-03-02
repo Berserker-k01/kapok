@@ -74,12 +74,22 @@ function App() {
     };
   }, [isAuthenticated]);
 
+  // SaaS Style: Détection de sous-domaine (ex: ma-boutique.assime.com)
+  const hostname = window.location.hostname;
+  const parts = hostname.split('.');
+  const reserved = ['www', 'admin', 'api', 'app', 'dev', 'panel'];
+  const isShopSubdomain = (parts.length >= 3 && !reserved.includes(parts[0])) ||
+    (hostname.includes('localhost') && parts.length >= 2 && !parts[0].includes('localhost') && !reserved.includes(parts[0]));
+
   return (
     <ErrorBoundary>
       <Router>
         <CartProvider>
           <ReloadPrompt />
           <Routes>
+            {/* SaaS Mode: Si sous-domaine, la racine est la boutique */}
+            {isShopSubdomain && <Route path="/" element={<PublicShop />} />}
+
             {/* Routes Publiques */}
             <Route path="/login" element={!isAuthenticated ? <Login /> : <Navigate to="/" />} />
             <Route path="/register" element={!isAuthenticated ? <Register /> : <Navigate to="/" />} />
@@ -136,7 +146,7 @@ function App() {
                 isAuthenticated ? (
                   <Layout>
                     <Routes>
-                      <Route path="/" element={<Dashboard />} />
+                      <Route path="/" element={isShopSubdomain ? <PublicShop /> : <Dashboard />} />
                       <Route path="/shops" element={<Shops />} />
                       <Route path="/shops/:shopId/settings" element={<ShopSettings />} />
                       <Route path="/products" element={<Products />} />

@@ -2,15 +2,18 @@ const { google } = require('googleapis');
 const path = require('path');
 const fs = require('fs');
 
-// Chemin vers le fichier credentials.json
-const CREDENTIALS_PATH = path.join(__dirname, '../../credentials.json');
+/**
+ * Service pour synchroniser les commandes sur Google Sheets
+ * Chaque boutique peut avoir son propre ID de feuille.
+ */
 
-// ID du Google Sheet (Null = désactivé car pas de .env)
-const SPREADSHEET_ID = null; // Anciennement process.env.GOOGLE_SHEET_ID
+// Chemin vers le fichier credentials.json - Ce fichier contient le compte de service.
+// Ce fichier doit être présent à la racine du projet (hors dossier src).
+const CREDENTIALS_PATH = path.join(__dirname, '../../credentials.json');
 
 const getAuthClient = () => {
     if (!fs.existsSync(CREDENTIALS_PATH)) {
-        console.warn('⚠️ Fichier credentials.json manquant. La synchro Google Sheets est désactivée.');
+        console.warn('[Sheets] ⚠️ credentials.json manquant. La synchronisation est temporairement indisponible.');
         return null;
     }
 
@@ -21,45 +24,53 @@ const getAuthClient = () => {
         });
         return auth;
     } catch (error) {
-        console.error('Erreur authentification Google:', error);
+        console.error('[Sheets] ❌ Erreur d\'authentification Google:', error.message);
         return null;
     }
 };
 
-exports.appendOrder = async (order) => {
-    const auth = getAuthClient();
-    if (!auth || !SPREADSHEET_ID) {
-        console.log('Skipping Google Sheet sync (Auth or Sheet ID missing)');
+/**
+ * Envoie une commande vers un Google Sheet spécifique.
+ */
+exports.addOrder = async (order, spreadsheetId) => {
+    if (!spreadsheetId) {
+        // console.log(`[Sheets] ℹ️ Pas d'ID Google Sheet configuré pour cette boutique.`);
         return false;
     }
+
+    const auth = getAuthClient();
+    if (!auth) return false;
 
     try {
         const sheets = google.sheets({ version: 'v4', auth });
 
+        // Préparer les données (Formatage propre)
+        // Colonnes : ID, Date, Client, Téléphone, Adresse, Produits, Total, Statut
         const values = [
             [
-                order.order_number || order.id,
-                new Date(order.created_at).toLocaleString('fr-FR'),
-                order.customer?.name || 'Anonyme',
+                order.order_number || order.id || 'N/A',
+                new Date(order.created_at || Date.now()).toLocaleString('fr-FR'),
+                order.customer?.name || 'Client Anonyme',
                 order.customer?.phone || '',
                 order.customer?.address || '',
-                order.items?.map(i => `${i.quantity}x ${i.product_name}`).join(', ') || '',
+                order.items?.map(i => `${i.quantity}x ${i.name || 'Produit'}`).join(', ') || '',
                 order.total_amount,
-                order.status
+                order.status || 'pending'
             ]
         ];
 
         await sheets.spreadsheets.values.append({
-            spreadsheetId: SPREADSHEET_ID,
-            range: 'Commandes!A:H', // Assurez-vous que l'onglet s'appelle "Commandes"
+            spreadsheetId: spreadsheetId,
+            range: 'Commandes!A:H', // On s'attend à un onglet nommé "Commandes"
             valueInputOption: 'USER_ENTERED',
+            insertDataOption: 'INSERT_ROWS',
             resource: { values },
         });
 
-        console.log(`✅ Commande ${order.id} synchronisée avec Google Sheets`);
+        console.log(`[Sheets] ✅ Commande ${order.order_number} synchronisée.`);
         return true;
     } catch (error) {
-        console.error('❌ Erreur synchro Google Sheets:', error.message);
+        console.error(`[Sheets] ❌ Échec synchro Sheet ${spreadsheetId}:`, error.message);
         return false;
     }
 };

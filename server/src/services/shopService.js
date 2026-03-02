@@ -6,34 +6,34 @@ const AppError = require('../utils/AppError');
  * Normalise une URL d'image pour toujours retourner un chemin relatif.
  */
 function normalizeImageUrl(url) {
-    if (!url || typeof url !== 'string') return null;
-    if (url.startsWith('/api/uploads/') || url.startsWith('/uploads/')) {
-        return url.startsWith('/uploads/') ? '/api' + url : url;
-    }
-    if (url.startsWith('http://') || url.startsWith('https://')) {
-        try {
-            const urlObj = new URL(url);
-            const pathname = urlObj.pathname;
-            if (pathname.includes('/uploads/')) {
-                const uploadsIndex = pathname.indexOf('/uploads/');
-                return '/api' + pathname.substring(uploadsIndex);
-            }
-            return url;
-        } catch (e) { return url; }
-    }
-    return url;
+  if (!url || typeof url !== 'string') return null;
+  if (url.startsWith('/api/uploads/') || url.startsWith('/uploads/')) {
+    return url.startsWith('/uploads/') ? '/api' + url : url;
+  }
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    try {
+      const urlObj = new URL(url);
+      const pathname = urlObj.pathname;
+      if (pathname.includes('/uploads/')) {
+        const uploadsIndex = pathname.indexOf('/uploads/');
+        return '/api' + pathname.substring(uploadsIndex);
+      }
+      return url;
+    } catch (e) { return url; }
+  }
+  return url;
 }
 
 function normalizeShopImages(shop) {
-    if (!shop) return shop;
-    if (shop.logo_url) shop.logo_url = normalizeImageUrl(shop.logo_url);
-    if (shop.banner_url) shop.banner_url = normalizeImageUrl(shop.banner_url);
-    if (shop.settings?.themeConfig?.content) {
-        const content = shop.settings.themeConfig.content;
-        if (content.logoUrl) content.logoUrl = normalizeImageUrl(content.logoUrl);
-        if (content.bannerUrl) content.bannerUrl = normalizeImageUrl(content.bannerUrl);
-    }
-    return shop;
+  if (!shop) return shop;
+  if (shop.logo_url) shop.logo_url = normalizeImageUrl(shop.logo_url);
+  if (shop.banner_url) shop.banner_url = normalizeImageUrl(shop.banner_url);
+  if (shop.settings?.themeConfig?.content) {
+    const content = shop.settings.themeConfig.content;
+    if (content.logoUrl) content.logoUrl = normalizeImageUrl(content.logoUrl);
+    if (content.bannerUrl) content.bannerUrl = normalizeImageUrl(content.bannerUrl);
+  }
+  return shop;
 }
 
 class ShopService {
@@ -138,7 +138,7 @@ class ShopService {
   async getShopBySlug(slug) {
     const query = 'SELECT s.* FROM shops s WHERE slug = ?';
     const result = await db.query(query, [slug]);
-    
+
     if (result.rows.length === 0) return null;
 
     const shop = result.rows[0];
@@ -156,7 +156,10 @@ class ShopService {
   }
 
   async updateShop(shopId, updateData) {
-    const { name, description, category, theme, settings, status, logo_url, banner_url } = updateData;
+    const {
+      name, description, category, theme, settings, status, logo_url, banner_url,
+      google_sheet_id, whatsapp_number, notification_email, notifications_enabled
+    } = updateData;
 
     const safeName = name !== undefined ? name : null;
     const safeDescription = description !== undefined ? description : null;
@@ -166,25 +169,35 @@ class ShopService {
     const safeSettings = settings ? JSON.stringify(settings) : null;
     const safeLogoUrl = logo_url !== undefined ? logo_url : null;
     const safeBannerUrl = banner_url !== undefined ? banner_url : null;
+    const safeSheetId = google_sheet_id !== undefined ? google_sheet_id : null;
+    const safeWA = whatsapp_number !== undefined ? whatsapp_number : null;
+    const safeEmail = notification_email !== undefined ? notification_email : null;
+    const safeEnabled = notifications_enabled !== undefined ? notifications_enabled : null;
 
     const updateQuery = `
-      UPDATE shops 
-      SET 
-        name = COALESCE(?, name),
-        description = COALESCE(?, description),
-        category = COALESCE(?, category),
-        theme = COALESCE(?, theme),
-        status = COALESCE(?, status),
-        settings = COALESCE(?::jsonb, settings),
-        logo_url = COALESCE(?, logo_url),
-        banner_url = COALESCE(?, banner_url),
-        updated_at = NOW()
-      WHERE id = ?
-    `;
+    UPDATE shops 
+    SET 
+      name = COALESCE(?, name),
+      description = COALESCE(?, description),
+      category = COALESCE(?, category),
+      theme = COALESCE(?, theme),
+      status = COALESCE(?, status),
+      settings = COALESCE(?::jsonb, settings),
+      logo_url = COALESCE(?, logo_url),
+      banner_url = COALESCE(?, banner_url),
+      google_sheet_id = COALESCE(?, google_sheet_id),
+      whatsapp_number = COALESCE(?, whatsapp_number),
+      notification_email = COALESCE(?, notification_email),
+      notifications_enabled = COALESCE(?, notifications_enabled),
+      updated_at = NOW()
+    WHERE id = ?
+  `;
 
     await db.query(updateQuery, [
       safeName, safeDescription, safeCategory, safeTheme, safeStatus,
-      safeSettings, safeLogoUrl, safeBannerUrl, shopId
+      safeSettings, safeLogoUrl, safeBannerUrl,
+      safeSheetId, safeWA, safeEmail, safeEnabled,
+      shopId
     ]);
 
     const result = await db.query('SELECT * FROM shops WHERE id = ?', [shopId]);

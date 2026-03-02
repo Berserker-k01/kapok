@@ -11,7 +11,12 @@ import FacebookPixel from '../../components/FacebookPixel/FacebookPixel'
 import { useCart } from '../../context/CartContext'
 
 const PublicShop = () => {
-    const { slug } = useParams()
+    let { slug } = useParams()
+
+    // SaaS Style: Si pas de slug dans l'URL (viam subdomain), on utilise "current"
+    if (!slug) {
+        slug = 'current';
+    }
     const [shop, setShop] = useState(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)

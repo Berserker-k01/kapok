@@ -27,6 +27,10 @@ const shopSettingsSchema = z.object({
             shopName: z.string().optional(),
         }).optional(),
     }).optional(),
+    google_sheet_id: z.string().optional(),
+    whatsapp_number: z.string().optional(),
+    notification_email: z.string().email().optional().or(z.literal('')),
+    notifications_enabled: z.boolean().default(true),
     // Fichiers d'upload (FileList) — passthrough pour ne pas être supprimés par Zod
     logoFile: z.any().optional(),
     bannerFile: z.any().optional(),
@@ -57,14 +61,18 @@ const ShopSettings = () => {
             }
 
             // Parser settings si c'est une string JSON (MySQL retourne string via execute)
-            let settings = shop.settings || {}
+            let settings = shopData.settings || {}
             if (typeof settings === 'string') {
                 try { settings = JSON.parse(settings) } catch (e) { settings = {} }
             }
 
             reset({
-                theme: shop.theme || 'minimal',
-                status: shop.status || 'active',
+                theme: shopData.theme || 'minimal',
+                status: shopData.status || 'active',
+                google_sheet_id: shopData.google_sheet_id || '',
+                whatsapp_number: shopData.whatsapp_number || '',
+                notification_email: shopData.notification_email || '',
+                notifications_enabled: shopData.notifications_enabled ?? true,
                 facebookPixelId: settings.facebookPixelId || '',
                 googleAnalyticsId: settings.googleAnalyticsId || '',
                 themeConfig: settings.themeConfig || {
@@ -97,7 +105,7 @@ const ShopSettings = () => {
     const onSubmit = async (data) => {
         try {
             // Séparer le thème (colonne dédiée) des autres réglages (JSONB settings)
-            const { theme, status, logoFile, bannerFile, ...settingsData } = data
+            const { theme, status, logoFile, bannerFile, google_sheet_id, whatsapp_number, notification_email, notifications_enabled, ...settingsData } = data
 
             // Nettoyer les données : convertir undefined en null et supprimer les champs vides
             const cleanData = (obj) => {
@@ -117,14 +125,18 @@ const ShopSettings = () => {
                 return cleaned
             }
 
-            const cleanedSettings = cleanData(settingsData)
+            const settingsObj = { ...settingsData };
+            console.log('[ShopSettings] Envoi des paramètres:', settingsObj);
 
             const formData = new FormData();
             formData.append('theme', theme);
-            formData.append('status', status); // Send status explicitly
-            formData.append('settings', JSON.stringify(cleanedSettings)); // Send cleaned settings as JSON string
+            formData.append('status', status);
+            formData.append('settings', JSON.stringify(settingsObj));
+            formData.append('google_sheet_id', google_sheet_id || '');
+            formData.append('whatsapp_number', whatsapp_number || '');
+            formData.append('notification_email', notification_email || '');
+            formData.append('notifications_enabled', notifications_enabled ? '1' : '0');
 
-            // Append files if they exist (handling FileList from react-hook-form)
             if (logoFile && logoFile.length > 0) {
                 formData.append('logo', logoFile[0]);
             }
@@ -133,12 +145,10 @@ const ShopSettings = () => {
             }
 
             await axios.put(`/api/shops/${shopId}`, formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
+                headers: { 'Content-Type': 'multipart/form-data' }
             });
 
-            toast.success('Paramètres sauvegardés avec succès !')
+            toast.success('Boutique mise à jour avec succès !')
 
             // Recharger les données de la boutique pour afficher les changements
             try {
@@ -239,7 +249,7 @@ const ShopSettings = () => {
                         </div>
 
                         {/* Configuration des Couleurs - Pour TOUS les thèmes */}
-                        <div className="bg-gradient-to-br from-purple-50 to-blue-50 p-4 md:p-6 rounded-xl border-2 border-purple-200 space-y-6 overflow-hidden">
+                        <div className="bg-gradient-to-br from-purple-50 to-blue-50 p-6 md:p-8 rounded-xl border-2 border-purple-200 space-y-6 overflow-visible">
                             <div className="flex flex-col gap-2">
                                 <h3 className="font-bold text-gray-900 text-base md:text-lg flex items-center gap-2">
                                     🎨 Personnalisation des Couleurs
@@ -249,9 +259,9 @@ const ShopSettings = () => {
                                 </p>
                             </div>
 
-                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 px-2">
                                 <div className="space-y-2">
-                                    <label className="block text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
+                                    <label className="block text-[10px] md:text-sm font-bold text-gray-600 uppercase tracking-wider mb-2 pl-1">
                                         Couleur Primaire
                                     </label>
                                     <div className="relative pb-6">
@@ -267,48 +277,48 @@ const ShopSettings = () => {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="block text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
+                                    <label className="block text-[10px] md:text-sm font-bold text-gray-600 uppercase tracking-wider mb-2 pl-1">
                                         Couleur Secondaire
                                     </label>
                                     <div className="relative pb-6">
                                         <input
                                             type="color"
                                             {...register('themeConfig.colors.secondary')}
-                                            className="h-10 md:h-12 w-full cursor-pointer rounded-lg border-2 border-gray-300 hover:border-purple-400 transition-colors"
+                                            className="h-10 md:h-12 w-full cursor-pointer rounded-lg border-2 border-gray-100 hover:border-purple-400 transition-all shadow-sm"
                                         />
-                                        <span className="absolute -bottom-1 left-0 text-[10px] md:text-xs text-gray-500 font-mono truncate w-full">
+                                        <span className="absolute -bottom-1 left-0 text-[10px] md:text-xs text-gray-400 font-mono pl-1">
                                             {watch('themeConfig.colors.secondary') || '#ffffff'}
                                         </span>
                                     </div>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="block text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
+                                    <label className="block text-[10px] md:text-sm font-bold text-gray-600 uppercase tracking-wider mb-2 pl-1">
                                         Couleur de Fond
                                     </label>
                                     <div className="relative pb-6">
                                         <input
                                             type="color"
                                             {...register('themeConfig.colors.background')}
-                                            className="h-10 md:h-12 w-full cursor-pointer rounded-lg border-2 border-gray-300 hover:border-purple-400 transition-colors"
+                                            className="h-10 md:h-12 w-full cursor-pointer rounded-lg border-2 border-gray-100 hover:border-purple-400 transition-all shadow-sm"
                                         />
-                                        <span className="absolute -bottom-1 left-0 text-[10px] md:text-xs text-gray-500 font-mono truncate w-full">
+                                        <span className="absolute -bottom-1 left-0 text-[10px] md:text-xs text-gray-400 font-mono pl-1">
                                             {watch('themeConfig.colors.background') || '#ffffff'}
                                         </span>
                                     </div>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="block text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
+                                    <label className="block text-[10px] md:text-sm font-bold text-gray-600 uppercase tracking-wider mb-2 pl-1">
                                         Couleur du Texte
                                     </label>
                                     <div className="relative pb-6">
                                         <input
                                             type="color"
                                             {...register('themeConfig.colors.text')}
-                                            className="h-10 md:h-12 w-full cursor-pointer rounded-lg border-2 border-gray-300 hover:border-purple-400 transition-colors"
+                                            className="h-10 md:h-12 w-full cursor-pointer rounded-lg border-2 border-gray-100 hover:border-purple-400 transition-all shadow-sm"
                                         />
-                                        <span className="absolute -bottom-1 left-0 text-[10px] md:text-xs text-gray-500 font-mono truncate w-full">
+                                        <span className="absolute -bottom-1 left-0 text-[10px] md:text-xs text-gray-400 font-mono pl-1">
                                             {watch('themeConfig.colors.text') || '#000000'}
                                         </span>
                                     </div>
@@ -403,6 +413,67 @@ const ShopSettings = () => {
                             </div>
                         </div>
 
+                        {/* SaaS & Automatisation */}
+                        <div className="bg-white p-6 rounded-xl border border-blue-100 shadow-sm space-y-6 mt-6">
+                            <div className="flex items-center gap-2 border-b pb-3">
+                                <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                    </svg>
+                                </div>
+                                <h3 className="font-bold text-gray-900 text-lg">Automatisation & Notifications</h3>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="md:col-span-2">
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">ID Google Sheet (Synchro Commandes)</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Ex: 1a2b3c4d5e6f7g8h9i0j..."
+                                        {...register('google_sheet_id')}
+                                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
+                                    />
+                                    <p className="text-xs text-gray-500 mt-2">
+                                        Entrez l'ID de votre fichier Google Sheets (indiqué dans l'URL du fichier).
+                                        Assurez-vous de partager le fichier avec l'email de service configuré par l'administrateur.
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Numéro WhatsApp (Alertes)</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Ex: 2250700000000"
+                                        {...register('whatsapp_number')}
+                                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
+                                    />
+                                    <p className="text-xs text-gray-500 mt-1">Format international sans le +</p>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Email de Notification</label>
+                                    <input
+                                        type="email"
+                                        placeholder="boutique@votre-email.com"
+                                        {...register('notification_email')}
+                                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
+                                    />
+                                    {errors.notification_email && <p className="text-xs text-red-500 mt-1">{errors.notification_email.message}</p>}
+                                </div>
+
+                                <div className="md:col-span-2 flex items-center gap-3 bg-blue-50/50 p-4 rounded-lg">
+                                    <input
+                                        type="checkbox"
+                                        id="notifications_enabled"
+                                        {...register('notifications_enabled')}
+                                        className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
+                                    />
+                                    <label htmlFor="notifications_enabled" className="text-sm font-medium text-gray-800 cursor-pointer">
+                                        Activer toutes les notifications automatiques lors d'une nouvelle commande
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
                         <div className="flex justify-end pt-4">
                             <Button type="submit" isLoading={isSubmitting} className="flex items-center">
                                 <FiSave className="mr-2" />

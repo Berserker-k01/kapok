@@ -44,6 +44,10 @@ CREATE TABLE IF NOT EXISTS shops (
     status VARCHAR(50) DEFAULT 'active' CHECK (status IN ('active', 'suspended', 'under_review')),
     settings JSONB DEFAULT '{}',
     seo_settings JSONB DEFAULT '{}',
+    google_sheet_id VARCHAR(255),
+    whatsapp_number VARCHAR(50),
+    notification_email VARCHAR(255),
+    notifications_enabled BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );

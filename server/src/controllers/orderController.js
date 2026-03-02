@@ -1,5 +1,6 @@
 const db = require('../config/database')
-const googleSheetService = require('../services/googleSheetService')
+const sheetService = require('../services/sheetService')
+const notificationService = require('../services/notificationService')
 const { v4: uuidv4 } = require('uuid')
 
 exports.getOrdersByShop = async (req, res) => {
@@ -265,20 +266,40 @@ exports.createPublicOrder = async (req, res) => {
             `, [itemId, orderId, item.id, item.quantity, item.price, itemTotal])
         }
 
-        // 7. Synchro Sheet & Response
+        // 7. Synchro Sheet & Notifications
         const fullOrder = {
             ...order,
             customer: {
                 name: `${firstName} ${lastName}`,
-                email: 'N/A', // Public order might not have email, handled in service
+                email: 'N/A',
                 phone,
                 address: `${address}, ${city}`
             },
             items: verifiedItems.map(i => ({ quantity: i.quantity, name: i.name }))
         }
 
-        // Fire and forget sync
-        googleSheetService.addOrder(fullOrder).catch(err => console.error('Sheet sync error:', err.message));
+        // Récupérer les réglages de la boutique pour les notifications
+        const shopConfigRes = await db.query(
+            'SELECT google_sheet_id, whatsapp_number, notification_email, name as shop_name FROM shops WHERE id = ?',
+            [shopId]
+        );
+        const shopConfig = shopConfigRes.rows[0];
+
+        // Fire and forget sync/notifications
+        if (shopConfig) {
+            // Synchro Google Sheet (Boutique spécifique)
+            sheetService.addOrder(fullOrder, shopConfig.google_sheet_id).catch(err => console.error('[Sheets] Sync error:', err.message));
+
+            // Notification WhatsApp Marchand
+            if (shopConfig.whatsapp_number) {
+                notificationService.notifyWhatsAppMerchant(shopConfig.whatsapp_number, shopConfig.shop_name, fullOrder).catch(err => console.error('[WASync] Error:', err.message));
+            }
+
+            // Notification Email au marchand (si configuré)
+            if (shopConfig.notification_email) {
+                notificationService.sendOrderEmail(shopConfig.notification_email, shopConfig.shop_name, fullOrder).catch(err => console.error('[MailSync] Error:', err.message));
+            }
+        }
 
         res.status(201).json({
             message: 'Commande créée avec succès',
