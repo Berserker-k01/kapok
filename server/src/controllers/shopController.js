@@ -194,8 +194,11 @@ exports.updateShop = catchAsync(async (req, res, next) => {
         }
     });
 
-    // On passe updateData avec le settings fusionné au service
-    // Le service fera COALESCE(?, settings), mais comme on passe un objet complet fusionné, c'est bon.
+    // Récupérer et passer les champs SaaS depuis le FormData
+    if (req.body.google_sheet_id !== undefined) updateData.google_sheet_id = req.body.google_sheet_id;
+    if (req.body.whatsapp_number !== undefined) updateData.whatsapp_number = req.body.whatsapp_number;
+    if (req.body.notification_email !== undefined) updateData.notification_email = req.body.notification_email;
+    if (req.body.notifications_enabled !== undefined) updateData.notifications_enabled = req.body.notifications_enabled;
 
     const shop = await shopService.updateShop(req.params.shopId, updateData);
 

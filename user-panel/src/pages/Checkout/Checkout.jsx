@@ -18,8 +18,14 @@ import {
     Package
 } from 'lucide-react'
 import { useCart } from '../../context/CartContext'
-import { Link, useNavigate } from 'react-router-dom'
-import { trackInitiateCheckout, trackPurchase, trackAddPaymentInfo, isPixelReady } from '../../utils/facebookPixel'
+import { useNavigate } from 'react-router-dom'
+import {
+    initFacebookPixel,
+    trackInitiateCheckout,
+    trackPurchase,
+    trackAddPaymentInfo,
+    isPixelReady
+} from '../../utils/facebookPixel'
 import { formatCurrency } from '../../utils/currency'
 
 const checkoutSchema = z.object({
@@ -34,31 +40,21 @@ const Checkout = () => {
     const { cartItems, cartTotal, clearCart } = useCart()
     const navigate = useNavigate()
     const [isSuccess, setIsSuccess] = useState(false)
-    const [facebookPixelId, setFacebookPixelId] = useState(null)
-    const { initFacebookPixel, isPixelReady } = require('../../utils/facebookPixel') // Dynamic import if needed or just use imports
 
     const { register, handleSubmit, formState: { errors, isSubmitting }, watch } = useForm({
         resolver: zodResolver(checkoutSchema)
     })
 
-    // Récupérer le pixel ID depuis localStorage
+    // Initialiser le pixel Facebook depuis localStorage + tracker InitiateCheckout
     useEffect(() => {
         const pixelId = localStorage.getItem('assime_facebook_pixel_id')
         if (pixelId) {
-            setFacebookPixelId(pixelId)
-            import('../../utils/facebookPixel').then(m => m.initFacebookPixel(pixelId))
+            initFacebookPixel(pixelId)
         }
-    }, [])
-
-    // Tracker InitiateCheckout au chargement de la page
-    useEffect(() => {
-        if (cartItems.length > 0) {
-            import('../../utils/facebookPixel').then(m => {
-                if (m.isPixelReady()) {
-                    const currency = cartItems[0]?.currency || 'XOF'
-                    m.trackInitiateCheckout(cartItems, cartTotal, currency)
-                }
-            })
+        // Tracker InitiateCheckout
+        if (cartItems.length > 0 && isPixelReady()) {
+            const currency = cartItems[0]?.currency || 'XOF'
+            trackInitiateCheckout(cartItems, cartTotal, currency)
         }
     }, [])
 

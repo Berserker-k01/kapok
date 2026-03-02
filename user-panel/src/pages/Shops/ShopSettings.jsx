@@ -53,9 +53,9 @@ const ShopSettings = () => {
             console.log('Shop Response Headers:', response.headers);
 
             // Support both structures (User Panel vs Admin Panel style)
-            const shop = response.data.shop || response.data?.data?.shop
+            const shopData = response.data.shop || response.data?.data?.shop
 
-            if (!shop) {
+            if (!shopData) {
                 console.error('Shop Fetch Error: Shop object missing in response', response.data);
                 throw new Error(`Impossible de récupérer les informations de la boutique (ID: ${shopId})`)
             }

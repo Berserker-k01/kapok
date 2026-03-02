@@ -161,46 +161,49 @@ class ShopService {
       google_sheet_id, whatsapp_number, notification_email, notifications_enabled
     } = updateData;
 
-    const safeName = name !== undefined ? name : null;
-    const safeDescription = description !== undefined ? description : null;
-    const safeCategory = category !== undefined ? category : null;
-    const safeTheme = theme !== undefined ? theme : null;
-    const safeStatus = status !== undefined ? status : null;
-    const safeSettings = settings ? JSON.stringify(settings) : null;
-    const safeLogoUrl = logo_url !== undefined ? logo_url : null;
-    const safeBannerUrl = banner_url !== undefined ? banner_url : null;
-    const safeSheetId = google_sheet_id !== undefined ? google_sheet_id : null;
-    const safeWA = whatsapp_number !== undefined ? whatsapp_number : null;
-    const safeEmail = notification_email !== undefined ? notification_email : null;
-    const safeEnabled = notifications_enabled !== undefined ? notifications_enabled : null;
+    // Construction dynamique de la query — on ne met à jour que ce qui est fourni
+    const setClauses = [];
+    const values = [];
 
-    const updateQuery = `
-    UPDATE shops 
-    SET 
-      name = COALESCE(?, name),
-      description = COALESCE(?, description),
-      category = COALESCE(?, category),
-      theme = COALESCE(?, theme),
-      status = COALESCE(?, status),
-      settings = COALESCE(?::jsonb, settings),
-      logo_url = COALESCE(?, logo_url),
-      banner_url = COALESCE(?, banner_url),
-      google_sheet_id = COALESCE(?, google_sheet_id),
-      whatsapp_number = COALESCE(?, whatsapp_number),
-      notification_email = COALESCE(?, notification_email),
-      notifications_enabled = COALESCE(?, notifications_enabled),
-      updated_at = NOW()
-    WHERE id = ?
-  `;
+    if (name !== undefined && name !== null) { setClauses.push(`name = $${values.length + 1}`); values.push(name); }
+    if (description !== undefined) { setClauses.push(`description = $${values.length + 1}`); values.push(description); }
+    if (category !== undefined && category) { setClauses.push(`category = $${values.length + 1}`); values.push(category); }
+    if (theme !== undefined && theme) { setClauses.push(`theme = $${values.length + 1}`); values.push(theme); }
+    if (status !== undefined && status) { setClauses.push(`status = $${values.length + 1}`); values.push(status); }
+    if (logo_url !== undefined) { setClauses.push(`logo_url = $${values.length + 1}`); values.push(logo_url); }
+    if (banner_url !== undefined) { setClauses.push(`banner_url = $${values.length + 1}`); values.push(banner_url); }
+    if (google_sheet_id !== undefined) { setClauses.push(`google_sheet_id = $${values.length + 1}`); values.push(google_sheet_id || null); }
+    if (whatsapp_number !== undefined) { setClauses.push(`whatsapp_number = $${values.length + 1}`); values.push(whatsapp_number || null); }
+    if (notification_email !== undefined) { setClauses.push(`notification_email = $${values.length + 1}`); values.push(notification_email || null); }
+    if (notifications_enabled !== undefined) { setClauses.push(`notifications_enabled = $${values.length + 1}`); values.push(notifications_enabled === '1' || notifications_enabled === true); }
 
-    await db.query(updateQuery, [
-      safeName, safeDescription, safeCategory, safeTheme, safeStatus,
-      safeSettings, safeLogoUrl, safeBannerUrl,
-      safeSheetId, safeWA, safeEmail, safeEnabled,
-      shopId
-    ]);
+    // Settings JSONB — on passe la chaîne JSON directement avec cast explicite
+    if (settings !== undefined && settings !== null) {
+      const settingsStr = typeof settings === 'string' ? settings : JSON.stringify(settings);
+      setClauses.push(`settings = $${values.length + 1}::jsonb`);
+      values.push(settingsStr);
+    }
 
-    const result = await db.query('SELECT * FROM shops WHERE id = ?', [shopId]);
+    setClauses.push(`updated_at = NOW()`);
+
+    if (setClauses.length <= 1) {
+      // Seulement updated_at — rien à faire
+      const result = await db.pool.query('SELECT * FROM shops WHERE id = $1', [shopId]);
+      if (result.rows.length === 0) throw new AppError('Boutique non trouvée', 404);
+      const shop = result.rows[0];
+      if (shop.settings && typeof shop.settings === 'string') {
+        try { shop.settings = JSON.parse(shop.settings); } catch (e) { shop.settings = {}; }
+      }
+      return normalizeShopImages(shop);
+    }
+
+    values.push(shopId);
+    const updateQuery = `UPDATE shops SET ${setClauses.join(', ')} WHERE id = $${values.length}`;
+
+    // On utilise pool.query directement pour éviter la conversion ? -> $N (déjà fait)
+    await db.pool.query(updateQuery, values);
+
+    const result = await db.pool.query('SELECT * FROM shops WHERE id = $1', [shopId]);
 
     if (result.rows.length === 0) {
       throw new AppError('Boutique non trouvée', 404);
