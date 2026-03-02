@@ -35,26 +35,32 @@ const Checkout = () => {
     const navigate = useNavigate()
     const [isSuccess, setIsSuccess] = useState(false)
     const [facebookPixelId, setFacebookPixelId] = useState(null)
+    const { initFacebookPixel, isPixelReady } = require('../../utils/facebookPixel') // Dynamic import if needed or just use imports
 
     const { register, handleSubmit, formState: { errors, isSubmitting }, watch } = useForm({
         resolver: zodResolver(checkoutSchema)
     })
 
-    // Récupérer le pixel ID depuis localStorage (stocké lors de la visite de la boutique)
+    // Récupérer le pixel ID depuis localStorage
     useEffect(() => {
-        const pixelId = localStorage.getItem('lesigne_facebook_pixel_id')
+        const pixelId = localStorage.getItem('assime_facebook_pixel_id')
         if (pixelId) {
             setFacebookPixelId(pixelId)
+            import('../../utils/facebookPixel').then(m => m.initFacebookPixel(pixelId))
         }
     }, [])
 
     // Tracker InitiateCheckout au chargement de la page
     useEffect(() => {
-        if (cartItems.length > 0 && isPixelReady()) {
-            const currency = cartItems[0]?.currency || 'XOF'
-            trackInitiateCheckout(cartItems, cartTotal, currency)
+        if (cartItems.length > 0) {
+            import('../../utils/facebookPixel').then(m => {
+                if (m.isPixelReady()) {
+                    const currency = cartItems[0]?.currency || 'XOF'
+                    m.trackInitiateCheckout(cartItems, cartTotal, currency)
+                }
+            })
         }
-    }, []) // Une seule fois au montage
+    }, [])
 
     const onSubmit = async (data) => {
         if (cartItems.length === 0) return

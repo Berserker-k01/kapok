@@ -20,6 +20,7 @@ import {
 import { formatCurrency } from '../../../utils/currency'
 import { resolveImageUrl } from '../../../utils/imageUrl'
 import { useCart } from '../../../context/CartContext'
+import { trackViewContent, isPixelReady } from '../../../utils/facebookPixel'
 
 const ThemeMinimal = ({ shop, products }) => {
   const { addToCart, cart, setIsCartOpen } = useCart()
@@ -46,6 +47,23 @@ const ThemeMinimal = ({ shop, products }) => {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  // Tracker ViewContent au chargement
+  useEffect(() => {
+    if (isPixelReady() && products.length > 0) {
+      // On tracke les 4 premiers produits comme "vus" sur la page
+      products.slice(0, 4).forEach(product => {
+        trackViewContent(product.name, 'product', product.price, product.currency || 'XOF')
+      })
+    }
+  }, [products])
+
+  // Tracker quand on ouvre le modal
+  useEffect(() => {
+    if (selectedProduct && isPixelReady()) {
+      trackViewContent(selectedProduct.name, 'product', selectedProduct.price, selectedProduct.currency || 'XOF')
+    }
+  }, [selectedProduct])
+
   // Categories
   const categories = ['all', ...new Set(products?.map(p => p.category).filter(Boolean))]
 
@@ -69,11 +87,10 @@ const ThemeMinimal = ({ shop, products }) => {
 
       {/* ─── NAVBAR ─── */}
       <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-          scrolled
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled
             ? 'bg-white/95 backdrop-blur-xl shadow-sm border-b border-gray-100'
             : hasBanner ? 'bg-transparent' : 'bg-white border-b border-gray-100'
-        }`}
+          }`}
       >
         {/* Announcement bar */}
         {!scrolled && (
@@ -96,9 +113,8 @@ const ThemeMinimal = ({ shop, products }) => {
                   {shop?.name?.charAt(0) || 'S'}
                 </div>
               )}
-              <span className={`font-bold text-lg tracking-tight transition-colors duration-300 ${
-                scrolled || !hasBanner ? 'text-gray-900' : 'text-white'
-              }`}>
+              <span className={`font-bold text-lg tracking-tight transition-colors duration-300 ${scrolled || !hasBanner ? 'text-gray-900' : 'text-white'
+                }`}>
                 {shop?.name}
               </span>
             </div>
@@ -106,15 +122,13 @@ const ThemeMinimal = ({ shop, products }) => {
             {/* Nav links - Desktop */}
             <nav className="hidden md:flex items-center gap-8">
               <a href="#products"
-                className={`text-sm font-medium transition-colors hover:opacity-70 ${
-                  scrolled || !hasBanner ? 'text-gray-600' : 'text-white/80'
-                }`}>
+                className={`text-sm font-medium transition-colors hover:opacity-70 ${scrolled || !hasBanner ? 'text-gray-600' : 'text-white/80'
+                  }`}>
                 Boutique
               </a>
               <a href="#about"
-                className={`text-sm font-medium transition-colors hover:opacity-70 ${
-                  scrolled || !hasBanner ? 'text-gray-600' : 'text-white/80'
-                }`}>
+                className={`text-sm font-medium transition-colors hover:opacity-70 ${scrolled || !hasBanner ? 'text-gray-600' : 'text-white/80'
+                  }`}>
                 À propos
               </a>
             </nav>
@@ -122,9 +136,8 @@ const ThemeMinimal = ({ shop, products }) => {
             {/* Cart */}
             <button
               onClick={() => setIsCartOpen(true)}
-              className={`relative p-2.5 rounded-full transition-all hover:scale-105 ${
-                scrolled || !hasBanner ? 'hover:bg-gray-100 text-gray-700' : 'hover:bg-white/10 text-white'
-              }`}
+              className={`relative p-2.5 rounded-full transition-all hover:scale-105 ${scrolled || !hasBanner ? 'hover:bg-gray-100 text-gray-700' : 'hover:bg-white/10 text-white'
+                }`}
             >
               <FiShoppingCart className="w-5 h-5" />
               {cart?.length > 0 && (
@@ -258,9 +271,8 @@ const ThemeMinimal = ({ shop, products }) => {
                   <div className="absolute inset-x-0 bottom-0 p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out">
                     <button
                       onClick={(e) => handleAddToCart(product, e)}
-                      className={`w-full py-2.5 rounded-lg font-semibold text-sm shadow-lg transition-all flex items-center justify-center gap-2 ${
-                        addedProductId === product.id ? 'bg-green-600 text-white' : ''
-                      }`}
+                      className={`w-full py-2.5 rounded-lg font-semibold text-sm shadow-lg transition-all flex items-center justify-center gap-2 ${addedProductId === product.id ? 'bg-green-600 text-white' : ''
+                        }`}
                       style={addedProductId !== product.id ? { backgroundColor: primary, color: secondary } : {}}
                     >
                       {addedProductId === product.id ? (

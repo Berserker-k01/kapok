@@ -61,11 +61,34 @@ const CheckoutCOD = () => {
         if (!product) return
 
         try {
-            await axios.post('/api/orders/public', {
+            const response = await axios.post('/api/orders/public', {
                 ...data,
                 items: [{ productId: product.id, quantity: data.quantity }],
                 shopId: product.shop_id
             })
+
+            const orderId = response.data?.data?.order?.id || response.data?.order?.id
+
+            // == ACCÉLÉRATEUR PUB : Tracking Facebook Pixel ==
+            const pixelId = localStorage.getItem('assime_facebook_pixel_id')
+            if (pixelId) {
+                const { trackPurchase, initFacebookPixel, isPixelReady } = await import('../../utils/facebookPixel')
+                initFacebookPixel(pixelId)
+
+                if (isPixelReady()) {
+                    trackPurchase({
+                        orderId: orderId || `order_cod_${Date.now()}`,
+                        value: product.price * data.quantity,
+                        currency: product.currency || 'XOF',
+                        items: [{
+                            id: product.id,
+                            name: product.name,
+                            quantity: data.quantity,
+                            price: product.price
+                        }]
+                    })
+                }
+            }
 
             setIsSuccess(true)
             toast.success('Commande enregistrée avec succès !')
@@ -75,6 +98,21 @@ const CheckoutCOD = () => {
             toast.error(errorMessage)
         }
     }
+
+    // Tracker InitiateCheckout au chargement
+    useEffect(() => {
+        const trackInit = async () => {
+            const pixelId = localStorage.getItem('assime_facebook_pixel_id')
+            if (pixelId && product) {
+                const { trackInitiateCheckout, initFacebookPixel, isPixelReady } = await import('../../utils/facebookPixel')
+                initFacebookPixel(pixelId)
+                if (isPixelReady()) {
+                    trackInitiateCheckout([{ ...product, id: product.id, quantity: 1 }], product.price)
+                }
+            }
+        }
+        if (product) trackInit()
+    }, [product])
 
     if (loading) {
         return (

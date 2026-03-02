@@ -17,11 +17,19 @@ export const CartProvider = ({ children, initialPixelId }) => {
     })
 
     const [isCartOpen, setIsCartOpen] = useState(false)
-    const [facebookPixelId, setFacebookPixelId] = useState(initialPixelId)
+    const [facebookPixelId, setFacebookPixelId] = useState(() => {
+        return localStorage.getItem('assime_facebook_pixel_id') || initialPixelId
+    })
 
     useEffect(() => {
         localStorage.setItem('assime_cart', JSON.stringify(cartItems))
     }, [cartItems])
+
+    useEffect(() => {
+        if (facebookPixelId) {
+            localStorage.setItem('assime_facebook_pixel_id', facebookPixelId)
+        }
+    }, [facebookPixelId])
 
     const addToCart = (product, quantity = 1) => {
         setCartItems(prev => {

@@ -33,13 +33,21 @@ const ThemeBold = ({ shop, products }) => {
         return () => window.removeEventListener('scroll', handleScroll)
     }, [])
 
+    // Tracker ViewContent au chargement (limité aux premiers pour ne pas saturer FB)
     useEffect(() => {
         if (isPixelReady() && products.length > 0) {
-            products.forEach(product => {
+            products.slice(0, 4).forEach(product => {
                 trackViewContent(product.name, 'product', product.price, product.currency || 'XOF')
             })
         }
     }, [products])
+
+    // Tracker quand on ouvre le détail d'un produit
+    useEffect(() => {
+        if (selectedProduct && isPixelReady()) {
+            trackViewContent(selectedProduct.name, 'product', selectedProduct.price, selectedProduct.currency || 'XOF')
+        }
+    }, [selectedProduct])
 
     // Dynamic config
     const colors = shop.settings?.themeConfig?.colors || {}
@@ -75,12 +83,11 @@ const ThemeBold = ({ shop, products }) => {
         <div className="min-h-screen font-sans antialiased" style={{ backgroundColor: bgColor, color: textColor }}>
 
             {/* ─── HEADER ─── */}
-            <header className={`fixed top-0 w-full z-50 transition-all duration-500 ${
-                scrolled ? 'backdrop-blur-xl shadow-lg' : ''
-            }`} style={{
-                backgroundColor: scrolled ? `${bgColor}f0` : 'transparent',
-                borderBottom: scrolled ? `1px solid ${textColor}10` : 'none'
-            }}>
+            <header className={`fixed top-0 w-full z-50 transition-all duration-500 ${scrolled ? 'backdrop-blur-xl shadow-lg' : ''
+                }`} style={{
+                    backgroundColor: scrolled ? `${bgColor}f0` : 'transparent',
+                    borderBottom: scrolled ? `1px solid ${textColor}10` : 'none'
+                }}>
                 {/* Top bar */}
                 {!scrolled && (
                     <div className="text-center py-2 text-xs font-bold tracking-[0.2em] uppercase"
@@ -266,9 +273,8 @@ const ThemeBold = ({ shop, products }) => {
                                     <div className="absolute inset-x-0 bottom-0 p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
                                         <button
                                             onClick={(e) => handleAddToCart(product, e)}
-                                            className={`w-full py-2.5 rounded-lg font-bold text-sm shadow-2xl transition-all flex items-center justify-center gap-2 ${
-                                                addedProductId === product.id ? 'bg-green-500 text-white' : ''
-                                            }`}
+                                            className={`w-full py-2.5 rounded-lg font-bold text-sm shadow-2xl transition-all flex items-center justify-center gap-2 ${addedProductId === product.id ? 'bg-green-500 text-white' : ''
+                                                }`}
                                             style={addedProductId !== product.id ? { backgroundColor: primaryColor, color: primaryTextColor } : {}}
                                         >
                                             {addedProductId === product.id ? (
