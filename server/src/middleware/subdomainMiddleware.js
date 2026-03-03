@@ -6,6 +6,12 @@ module.exports = (req, res, next) => {
     const host = req.get('host');
     if (!host) return next();
 
+    // Ignorer les adresses IP (ex: 187.77.101.57)
+    const ipRegex = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}(?::[0-9]+)?$/;
+    if (ipRegex.test(host)) {
+        return next();
+    }
+
     // Ignorer localhost ou les IPs si on n'est pas en mode développement spécifique
     if (host.includes('localhost') || host.includes('127.0.0.1')) {
         // En local, on peut simuler via shop1.localhost:5000

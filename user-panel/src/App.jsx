@@ -74,12 +74,18 @@ function App() {
     };
   }, [isAuthenticated]);
 
-  // SaaS Style: Détection de sous-domaine (ex: ma-boutique.assime.com)
+  // SaaS Style: Détection de sous-domaine
   const hostname = window.location.hostname;
   const parts = hostname.split('.');
-  const reserved = ['www', 'admin', 'api', 'app', 'dev', 'panel'];
-  const isShopSubdomain = (parts.length >= 3 && !reserved.includes(parts[0])) ||
-    (hostname.includes('localhost') && parts.length >= 2 && !parts[0].includes('localhost') && !reserved.includes(parts[0]));
+  const reserved = ['www', 'admin', 'api', 'app', 'dev', 'panel', 'user'];
+
+  // Vérifier si c'est une adresse IP (ex: 187.77.101.57) ou localhost simple
+  const isIP = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(hostname);
+
+  const isShopSubdomain = !isIP && (
+    (parts.length >= 3 && !reserved.includes(parts[0])) ||
+    (hostname.includes('localhost') && parts.length >= 2 && !parts[0].includes('localhost') && !reserved.includes(parts[0]))
+  );
 
   return (
     <ErrorBoundary>
