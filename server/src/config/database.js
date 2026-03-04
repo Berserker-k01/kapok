@@ -35,9 +35,9 @@ const convertPlaceholders = (sql) => {
  */
 const query = async (text, params) => {
     try {
-        // Nettoyer les commandes MySQL parasites
-        const sql = text.replace(/::jsonb/g, '').trim();
-        
+        // Nettoyer les commandes MySQL parasites (si besoin, mais ne pas toucher aux casts PG)
+        const sql = text.trim();
+
         // Convertir les placeholders ? -> $N
         const pgSql = convertPlaceholders(sql);
 
