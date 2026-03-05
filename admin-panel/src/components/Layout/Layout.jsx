@@ -12,14 +12,18 @@ import {
   Bell,
   Clock,
   Package,
-  Phone
+  Phone,
+  Shield
 } from 'lucide-react';
 import Button from '../ui/Button';
+import { useAuthStore } from '../../store/authStore';
 // Logo texte (remplace les images cassées logo-full.png / logo-icon.png)
 
 const Layout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const location = useLocation();
+
+  const { user, logout } = useAuthStore();
 
   const menuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
@@ -29,6 +33,8 @@ const Layout = ({ children }) => {
     { icon: Clock, label: 'Paiements en attente', path: '/payment-requests' },
     { icon: Package, label: 'Gestion des plans', path: '/plans' },
     { icon: Phone, label: 'Numéros de paiement', path: '/payment-numbers' },
+    // Visible par tous les admins
+    { icon: Shield, label: 'Administrateurs', path: '/admins' },
     { icon: Settings, label: 'Paramètres', path: '/settings' },
   ];
 
@@ -93,13 +99,13 @@ const Layout = ({ children }) => {
           {/* Admin Profile */}
           <div className="p-4 border-t border-secondary-800">
             <div className={`flex items-center ${sidebarOpen ? 'justify-start' : 'justify-center'}`}>
-              <div className="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center text-white font-bold">
-                A
+              <div className="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center text-white font-bold flex-shrink-0">
+                {user?.name?.charAt(0)?.toUpperCase() || 'A'}
               </div>
               {sidebarOpen && (
-                <div className="ml-3 overflow-hidden">
-                  <p className="text-sm font-medium text-white truncate">Super Admin</p>
-                  <p className="text-xs text-secondary-400 truncate">admin@assime.com</p>
+                <div className="ml-3 overflow-hidden flex-1 min-w-0">
+                  <p className="text-sm font-medium text-white truncate">{user?.name || 'Administrateur'}</p>
+                  <p className="text-xs text-secondary-400 truncate">{user?.email || ''}</p>
                 </div>
               )}
             </div>
@@ -125,7 +131,7 @@ const Layout = ({ children }) => {
               <Bell size={20} />
               <span className="absolute top-1 right-2 w-2 h-2 bg-red-500 rounded-full"></span>
             </Button>
-            <Button variant="outline" size="sm" className="hidden sm:flex border-red-200 text-red-600 hover:bg-red-50">
+            <Button variant="outline" size="sm" onClick={logout} className="hidden sm:flex border-red-200 text-red-600 hover:bg-red-50">
               <LogOut size={16} className="mr-2" />
               Déconnexion
             </Button>

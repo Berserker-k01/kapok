@@ -277,4 +277,137 @@ router.post('/users/:userId/cancel-plan', async (req, res) => {
   }
 })
 
+// ============================================
+// --- Gestion des Administrateurs ---
+// ============================================
+
+// Lister tous les admins
+router.get('/admins', async (req, res) => {
+  try {
+    const result = await db.query(
+      `SELECT id, name, email, role, status, created_at, last_login
+       FROM users WHERE role IN ('admin', 'super_admin')
+       ORDER BY role DESC, created_at ASC`
+    )
+    res.json({ admins: result.rows })
+  } catch (error) {
+    console.error('Erreur liste admins:', error)
+    res.status(500).json({ error: 'Erreur lors de la récupération des administrateurs' })
+  }
+})
+
+// Créer un nouvel admin (Super Admin seulement)
+router.post('/admins', requireSuperAdmin, async (req, res) => {
+  try {
+    const { name, email, password, role } = req.body
+
+    if (!name || !email || !password) {
+      return res.status(400).json({ error: 'Nom, email et mot de passe sont requis' })
+    }
+    if (password.length < 6) {
+      return res.status(400).json({ error: 'Le mot de passe doit faire au moins 6 caractères' })
+    }
+    const validRoles = ['admin', 'super_admin']
+    if (!validRoles.includes(role)) {
+      return res.status(400).json({ error: 'Rôle invalide' })
+    }
+
+    // Vérifier si l'email existe déjà
+    const existing = await db.query('SELECT id FROM users WHERE email = ?', [email])
+    if (existing.rows.length > 0) {
+      return res.status(409).json({ error: 'Un compte avec cet email existe déjà' })
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10)
+    const { v4: uuidv4 } = require('uuid')
+    const userId = uuidv4()
+
+    await db.query(
+      `INSERT INTO users (id, name, email, password, role, status, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, 'active', NOW(), NOW())`,
+      [userId, name, email, hashedPassword, role]
+    )
+
+    const result = await db.query('SELECT id, name, email, role, status FROM users WHERE id = ?', [userId])
+    res.status(201).json({ message: 'Administrateur créé avec succès', admin: result.rows[0] })
+  } catch (error) {
+    console.error('Erreur création admin:', error)
+    res.status(500).json({ error: 'Erreur lors de la création de l\'administrateur' })
+  }
+})
+
+// Modifier un admin (Super Admin seulement)
+router.put('/admins/:adminId', requireSuperAdmin, async (req, res) => {
+  try {
+    const { adminId } = req.params
+    const { name, email, password, role } = req.body
+
+    const adminCheck = await db.query(
+      "SELECT id FROM users WHERE id = ? AND role IN ('admin', 'super_admin')", [adminId]
+    )
+    if (adminCheck.rows.length === 0) {
+      return res.status(404).json({ error: 'Administrateur non trouvé' })
+    }
+
+    // Vérifier que l'email n'est pas pris par un autre utilisateur
+    if (email) {
+      const emailCheck = await db.query('SELECT id FROM users WHERE email = ? AND id != ?', [email, adminId])
+      if (emailCheck.rows.length > 0) {
+        return res.status(409).json({ error: 'Cet email est déjà utilisé' })
+      }
+    }
+
+    const fields = []
+    const params = []
+
+    if (name) { fields.push('name = ?'); params.push(name) }
+    if (email) { fields.push('email = ?'); params.push(email) }
+    if (role && ['admin', 'super_admin'].includes(role)) { fields.push('role = ?'); params.push(role) }
+    if (password && password.length >= 6) {
+      const hashed = await bcrypt.hash(password, 10)
+      fields.push('password = ?')
+      params.push(hashed)
+    }
+
+    if (fields.length === 0) {
+      return res.status(400).json({ error: 'Aucune donnée à mettre à jour' })
+    }
+
+    fields.push('updated_at = NOW()')
+    params.push(adminId)
+
+    await db.query(`UPDATE users SET ${fields.join(', ')} WHERE id = ?`, params)
+
+    const result = await db.query('SELECT id, name, email, role, status FROM users WHERE id = ?', [adminId])
+    res.json({ message: 'Administrateur mis à jour', admin: result.rows[0] })
+  } catch (error) {
+    console.error('Erreur mise à jour admin:', error)
+    res.status(500).json({ error: 'Erreur lors de la mise à jour' })
+  }
+})
+
+// Supprimer un admin (Super Admin seulement, ne peut pas se supprimer lui-même)
+router.delete('/admins/:adminId', requireSuperAdmin, async (req, res) => {
+  try {
+    const { adminId } = req.params
+
+    if (adminId === req.user.id) {
+      return res.status(400).json({ error: 'Vous ne pouvez pas supprimer votre propre compte' })
+    }
+
+    const adminCheck = await db.query(
+      "SELECT id FROM users WHERE id = ? AND role IN ('admin', 'super_admin')", [adminId]
+    )
+    if (adminCheck.rows.length === 0) {
+      return res.status(404).json({ error: 'Administrateur non trouvé' })
+    }
+
+    await db.query('DELETE FROM users WHERE id = ?', [adminId])
+    res.json({ message: 'Administrateur supprimé avec succès' })
+  } catch (error) {
+    console.error('Erreur suppression admin:', error)
+    res.status(500).json({ error: 'Erreur lors de la suppression' })
+  }
+})
+
 module.exports = router

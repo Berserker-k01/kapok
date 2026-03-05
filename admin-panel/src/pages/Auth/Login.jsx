@@ -26,12 +26,6 @@ const Login = () => {
     }
   }
 
-  const handleDemoLogin = () => {
-    setCredentials({ email: 'admin@assime.com', password: 'admin123' })
-    useAuthStore.getState().login({ email: 'admin@assime.com', password: 'admin123' })
-    toast.success('Connexion admin démo réussie!')
-  }
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
@@ -94,14 +88,6 @@ const Login = () => {
               className="w-full btn-primary disabled:opacity-50"
             >
               {isLoading ? 'Connexion...' : 'Se connecter'}
-            </button>
-
-            <button
-              type="button"
-              onClick={handleDemoLogin}
-              className="w-full btn-secondary"
-            >
-              Connexion Admin Démo
             </button>
           </div>
         </form>
