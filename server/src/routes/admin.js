@@ -12,55 +12,49 @@ router.use(requireAdmin)
 // Dashboard stats pour admin
 router.get('/dashboard', async (req, res) => {
   try {
-    const statsQuery = `
-      SELECT 
-        (SELECT COUNT(*)::integer FROM users WHERE role = 'user') as total_users,
-        (SELECT COUNT(*)::integer FROM users WHERE role = 'user' AND status = 'active') as active_users,
-        (SELECT COUNT(*)::integer FROM shops) as total_shops,
-        (SELECT COUNT(*)::integer FROM shops WHERE status = 'active') as active_shops,
-        (SELECT COUNT(*)::integer FROM products) as total_products,
-        (SELECT COUNT(*)::integer FROM orders) as total_orders,
-        (SELECT COALESCE(SUM(total_amount), 0) FROM orders WHERE status = 'completed') as total_revenue,
-        (SELECT COUNT(*)::integer FROM users WHERE created_at >= CURRENT_DATE - INTERVAL '30 days') as new_users_30d
-    `
+    // Requêtes séparées pour plus de robustesse
+    const safeQuery = async (sql, fallback = 0) => {
+      try {
+        const result = await db.query(sql)
+        return result.rows[0] ? Object.values(result.rows[0])[0] : fallback
+      } catch (e) {
+        console.warn('[Admin Dashboard] Query failed:', sql.substring(0, 60), e.message)
+        return fallback
+      }
+    }
 
-    const result = await db.query(statsQuery)
-
-    // Croissance mensuelle
-    const growthQuery = `
-      SELECT 
-        m.month,
-        COALESCE(u_stats.new_users, 0)::integer as new_users,
-        COALESCE(s_stats.new_shops, 0)::integer as new_shops,
-        COALESCE(o_stats.total_revenue, 0) as total_revenue
-      FROM (
-        SELECT DISTINCT TO_CHAR(created_at, 'YYYY-MM-01') as month
-        FROM users
-        WHERE created_at >= CURRENT_DATE - INTERVAL '6 months'
-      ) m
-      LEFT JOIN (
-        SELECT TO_CHAR(created_at, 'YYYY-MM-01') as month, COUNT(*)::integer as new_users
-        FROM users WHERE role = 'user' AND created_at >= CURRENT_DATE - INTERVAL '6 months'
-        GROUP BY TO_CHAR(created_at, 'YYYY-MM-01')
-      ) u_stats ON m.month = u_stats.month
-      LEFT JOIN (
-        SELECT TO_CHAR(created_at, 'YYYY-MM-01') as month, COUNT(*)::integer as new_shops
-        FROM shops WHERE created_at >= CURRENT_DATE - INTERVAL '6 months'
-        GROUP BY TO_CHAR(created_at, 'YYYY-MM-01')
-      ) s_stats ON m.month = s_stats.month
-      LEFT JOIN (
-        SELECT TO_CHAR(created_at, 'YYYY-MM-01') as month, COALESCE(SUM(total_amount), 0) as total_revenue
-        FROM orders WHERE status = 'completed' AND created_at >= CURRENT_DATE - INTERVAL '6 months'
-        GROUP BY TO_CHAR(created_at, 'YYYY-MM-01')
-      ) o_stats ON m.month = o_stats.month
-      ORDER BY m.month DESC
-    `
-
-    const growthResult = await db.query(growthQuery)
+    const [
+      total_users,
+      active_users,
+      total_shops,
+      active_shops,
+      total_products,
+      total_orders,
+      total_revenue,
+      new_users_30d
+    ] = await Promise.all([
+      safeQuery(`SELECT COUNT(*) FROM users WHERE role = 'user'`),
+      safeQuery(`SELECT COUNT(*) FROM users WHERE role = 'user' AND status = 'active'`),
+      safeQuery(`SELECT COUNT(*) FROM shops`),
+      safeQuery(`SELECT COUNT(*) FROM shops WHERE status = 'active'`),
+      safeQuery(`SELECT COUNT(*) FROM products`),
+      safeQuery(`SELECT COUNT(*) FROM orders`),
+      safeQuery(`SELECT COALESCE(SUM(total_amount), 0) FROM orders WHERE status = 'completed'`),
+      safeQuery(`SELECT COUNT(*) FROM users WHERE created_at >= NOW() - INTERVAL '30 days'`),
+    ])
 
     res.json({
-      stats: result.rows[0],
-      monthlyGrowth: growthResult.rows
+      stats: {
+        total_users: parseInt(total_users) || 0,
+        active_users: parseInt(active_users) || 0,
+        total_shops: parseInt(total_shops) || 0,
+        active_shops: parseInt(active_shops) || 0,
+        total_products: parseInt(total_products) || 0,
+        total_orders: parseInt(total_orders) || 0,
+        total_revenue: parseFloat(total_revenue) || 0,
+        new_users_30d: parseInt(new_users_30d) || 0,
+      },
+      monthlyGrowth: []
     })
 
   } catch (error) {

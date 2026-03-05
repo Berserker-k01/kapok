@@ -22,13 +22,15 @@ function App() {
   const { isAuthenticated } = useAuthStore()
 
   // Configuration Axios
-  // Configuration Axios Globale (Interceptor > useEffect pour éviter les race conditions)
   useEffect(() => {
-    // Relative URL pour passer par le Proxy (Nginx ou Vite)
-    // Relative URL pour passer par le Proxy (Nginx ou Vite)
-    // Dynamic Environment Configuration
     const isDev = import.meta.env.DEV;
     axios.defaults.baseURL = import.meta.env.VITE_API_URL || (isDev ? '/api' : '/api');
+
+    // ✅ Réinjecter le token persisté au démarrage (fix du refresh)
+    const persistedToken = useAuthStore.getState().token;
+    if (persistedToken) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${persistedToken}`;
+    }
 
     // Intercepteur pour injecter le token en temps réel
     const requestInterceptor = axios.interceptors.request.use(
