@@ -82,10 +82,19 @@ function App() {
   // Vérifier si c'est une adresse IP (ex: 187.77.101.57) ou localhost simple
   const isIP = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(hostname);
 
-  const isShopSubdomain = !isIP && (
-    (parts.length >= 3 && !reserved.includes(parts[0])) ||
-    (hostname.includes('localhost') && parts.length >= 2 && !parts[0].includes('localhost') && !reserved.includes(parts[0]))
-  );
+  // Extraire le slug depuis le sous-domaine (ex: "test" depuis "test.assime.net")
+  const subdomainSlug = !isIP && parts.length >= 3 && !reserved.includes(parts[0])
+    ? parts[0]
+    : null;
+
+  const isShopSubdomain = !!subdomainSlug;
+
+  // Composant wrapper qui injecte le slug extrait du sous-domaine
+  const SubdomainShop = () => {
+    // On utilise useParams en override : on passe le slug via window
+    // PublicShop lira params.slug — on le met dans l'URL via le routeur
+    return <PublicShop overrideSlug={subdomainSlug} />;
+  };
 
   return (
     <ErrorBoundary>
@@ -94,7 +103,8 @@ function App() {
           <ReloadPrompt />
           <Routes>
             {/* SaaS Mode: Si sous-domaine, la racine est la boutique */}
-            {isShopSubdomain && <Route path="/" element={<PublicShop />} />}
+            {isShopSubdomain && <Route path="/" element={<SubdomainShop />} />}
+            {isShopSubdomain && <Route path="/*" element={<SubdomainShop />} />}
 
             {/* Routes Publiques */}
             <Route path="/login" element={!isAuthenticated ? <Login /> : <Navigate to="/" />} />
@@ -152,7 +162,7 @@ function App() {
                 isAuthenticated ? (
                   <Layout>
                     <Routes>
-                      <Route path="/" element={isShopSubdomain ? <PublicShop /> : <Dashboard />} />
+                      <Route path="/" element={isShopSubdomain ? <SubdomainShop /> : <Dashboard />} />
                       <Route path="/shops" element={<Shops />} />
                       <Route path="/shops/:shopId/settings" element={<ShopSettings />} />
                       <Route path="/products" element={<Products />} />

@@ -4,15 +4,14 @@ const nodemailer = require('nodemailer');
  * Service global de notifications (Email, WhatsApp)
  */
 
-// Configuration Nodemailer (Email de l'application)
-// À modifier avec vos accès Hostinger Email
+// Configuration Nodemailer via variables d'environnement
 const mailConfig = {
-    host: 'smtp.hostinger.com',
-    port: 465,
+    host: process.env.SMTP_HOST || 'smtp.hostinger.com',
+    port: parseInt(process.env.SMTP_PORT || '465'),
     secure: true,
     auth: {
-        user: 'noreply@e-assime.com', // Utilisez un vrai mail d'envoi
-        pass: 'Daniel2005k@ssi'       // Même mot de passe pour la DB/SaaS ? On suppose.
+        user: process.env.SMTP_USER || 'noreply@assime.net',
+        pass: process.env.SMTP_PASS || 'TvXNAxl8),MXAQiB'
     }
 };
 
@@ -26,21 +25,36 @@ exports.sendOrderEmail = async (to, shopName, orderData) => {
 
     try {
         const mailOptions = {
-            from: `"${shopName}" <noreply@e-assime.com>`,
+            from: `"${shopName} via Assimε" <noreply@assime.net>`,
             to: to,
-            subject: `Nouvelle Commande - ${orderData.order_number}`,
+            subject: `✅ Commande confirmée - ${orderData.order_number}`,
             html: `
-                <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #eee;">
-                    <h1 style="color: #4CAF50;">Merci pour votre commande !</h1>
-                    <p>Bonjour,</p>
-                    <p>Votre commande <b>${orderData.order_number}</b> sur <b>${shopName}</b> a été reçue avec succès.</p>
-                    <hr/>
-                    <h3>Détails du paiement :</h3>
-                    <p><b>Total :</b> ${orderData.total_amount} ${orderData.currency || 'XOF'}</p>
-                    <p><b>Statut :</b> En attente de traitement</p>
-                    <hr/>
-                    <p>Consultez votre facture et le suivi en cliquant ici : <a href="https://e-assime.com/validate-order/${orderData.id}">Suivre ma commande</a></p>
-                    <p>&copy; 2025 ${shopName} - Kapok Marketplace</p>
+                <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f9fafb; padding: 20px;">
+                    <div style="background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                        <div style="background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); padding: 32px 40px; text-align: center;">
+                            <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">✅ Commande confirmée !</h1>
+                            <p style="color: rgba(255,255,255,0.85); margin: 8px 0 0; font-size: 15px;">Boutique : <strong>${shopName}</strong></p>
+                        </div>
+                        <div style="padding: 32px 40px;">
+                            <p style="color: #374151; font-size: 15px; line-height: 1.6;">Bonjour,</p>
+                            <p style="color: #374151; font-size: 15px; line-height: 1.6;">Votre commande <strong>#${orderData.order_number}</strong> a bien été enregistrée.</p>
+                            <div style="background: #f3f4f6; border-radius: 12px; padding: 20px; margin: 24px 0;">
+                                <p style="margin: 0 0 8px; color: #6b7280; font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;">Détails de la commande</p>
+                                <p style="margin: 0; color: #111827; font-size: 22px; font-weight: 700;">${orderData.total_amount} ${orderData.currency || 'XOF'}</p>
+                                <p style="margin: 8px 0 0; color: #6b7280; font-size: 14px;">Paiement à la livraison</p>
+                            </div>
+                            <p style="color: #374151; font-size: 15px;">Notre équipe vous contactera pour confirmer la livraison.</p>
+                            <div style="text-align: center; margin: 32px 0;">
+                                <a href="https://assime.net/validate-order/${orderData.id}" 
+                                   style="background: #16a34a; color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 15px; display: inline-block;">
+                                    Suivre ma commande →
+                                </a>
+                            </div>
+                        </div>
+                        <div style="border-top: 1px solid #e5e7eb; padding: 20px 40px; text-align: center;">
+                            <p style="color: #9ca3af; font-size: 13px; margin: 0;">© ${new Date().getFullYear()} ${shopName} · Propulsé par <a href="https://assime.net" style="color: #6b7280; text-decoration: none;">Assimε</a></p>
+                        </div>
+                    </div>
                 </div>
             `
         };

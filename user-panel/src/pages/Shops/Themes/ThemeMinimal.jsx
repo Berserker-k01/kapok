@@ -20,7 +20,7 @@ import {
 import { formatCurrency } from '../../../utils/currency'
 import { resolveImageUrl } from '../../../utils/imageUrl'
 import { useCart } from '../../../context/CartContext'
-import { trackViewContent, isPixelReady } from '../../../utils/facebookPixel'
+import { trackViewContent, trackAddToCart, isPixelReady } from '../../../utils/facebookPixel'
 
 const ThemeMinimal = ({ shop, products }) => {
   const { addToCart, cart, setIsCartOpen } = useCart()
@@ -47,20 +47,15 @@ const ThemeMinimal = ({ shop, products }) => {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  // Tracker ViewContent au chargement
-  useEffect(() => {
-    if (isPixelReady() && products.length > 0) {
-      // On tracke les 4 premiers produits comme "vus" sur la page
-      products.slice(0, 4).forEach(product => {
-        trackViewContent(product.name, 'product', product.price, product.currency || 'XOF')
-      })
-    }
-  }, [products])
-
-  // Tracker quand on ouvre le modal
+  // Tracker ViewContent UNIQUEMENT quand un produit est ouvert (standard Meta)
   useEffect(() => {
     if (selectedProduct && isPixelReady()) {
-      trackViewContent(selectedProduct.name, 'product', selectedProduct.price, selectedProduct.currency || 'XOF')
+      trackViewContent(
+        selectedProduct.name,
+        selectedProduct.category || 'product',
+        selectedProduct.price,
+        selectedProduct.currency || 'XOF'
+      )
     }
   }, [selectedProduct])
 
@@ -74,11 +69,12 @@ const ThemeMinimal = ({ shop, products }) => {
     return matchesSearch && matchesCategory
   })
 
-  // Add to cart with visual feedback
   const handleAddToCart = (product, e) => {
     if (e) e.stopPropagation()
     addToCart(product)
     setAddedProductId(product.id)
+    // Pixel: AddToCart
+    if (isPixelReady()) trackAddToCart(product, 1)
     setTimeout(() => setAddedProductId(null), 1500)
   }
 
@@ -88,8 +84,8 @@ const ThemeMinimal = ({ shop, products }) => {
       {/* ─── NAVBAR ─── */}
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled
-            ? 'bg-white/95 backdrop-blur-xl shadow-sm border-b border-gray-100'
-            : hasBanner ? 'bg-transparent' : 'bg-white border-b border-gray-100'
+          ? 'bg-white/95 backdrop-blur-xl shadow-sm border-b border-gray-100'
+          : hasBanner ? 'bg-transparent' : 'bg-white border-b border-gray-100'
           }`}
       >
         {/* Announcement bar */}

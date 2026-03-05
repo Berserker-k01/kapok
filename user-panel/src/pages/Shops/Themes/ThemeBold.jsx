@@ -15,7 +15,7 @@ import {
     FiRefreshCw
 } from 'react-icons/fi'
 import { useCart } from '../../../context/CartContext'
-import { trackViewContent, isPixelReady } from '../../../utils/facebookPixel'
+import { trackViewContent, trackAddToCart, isPixelReady } from '../../../utils/facebookPixel'
 import { formatCurrency } from '../../../utils/currency'
 import { resolveImageUrl } from '../../../utils/imageUrl'
 
@@ -33,19 +33,15 @@ const ThemeBold = ({ shop, products }) => {
         return () => window.removeEventListener('scroll', handleScroll)
     }, [])
 
-    // Tracker ViewContent au chargement (limité aux premiers pour ne pas saturer FB)
-    useEffect(() => {
-        if (isPixelReady() && products.length > 0) {
-            products.slice(0, 4).forEach(product => {
-                trackViewContent(product.name, 'product', product.price, product.currency || 'XOF')
-            })
-        }
-    }, [products])
-
-    // Tracker quand on ouvre le détail d'un produit
+    // Tracker ViewContent UNIQUEMENT quand un produit est ouvert (standard Meta)
     useEffect(() => {
         if (selectedProduct && isPixelReady()) {
-            trackViewContent(selectedProduct.name, 'product', selectedProduct.price, selectedProduct.currency || 'XOF')
+            trackViewContent(
+                selectedProduct.name,
+                selectedProduct.category || 'product',
+                selectedProduct.price,
+                selectedProduct.currency || 'XOF'
+            )
         }
     }, [selectedProduct])
 
@@ -73,6 +69,8 @@ const ThemeBold = ({ shop, products }) => {
         if (e) e.stopPropagation()
         addToCart(product)
         setAddedProductId(product.id)
+        // Pixel: AddToCart
+        if (isPixelReady()) trackAddToCart(product, 1)
         setTimeout(() => setAddedProductId(null), 1500)
     }
 
