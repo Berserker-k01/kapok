@@ -277,4 +277,71 @@ router.post('/users/:userId/cancel-plan', async (req, res) => {
   }
 })
 
+// --- Gestion des Administrateurs (Super Admin seulement) ---
+
+// Lister les admins
+router.get('/admins', requireSuperAdmin, async (req, res) => {
+  try {
+    const query = `
+      SELECT id, name, email, role, status, created_at, last_login 
+      FROM users 
+      WHERE role IN ('admin', 'super_admin')
+      ORDER BY created_at DESC
+    `
+    const result = await db.query(query)
+    res.json({ admins: result.rows })
+  } catch (error) {
+    console.error('Erreur récupération admins:', error)
+    res.status(500).json({ error: 'Erreur lors de la récupération des administrateurs' })
+  }
+})
+
+// Créer un admin
+router.post('/admins', requireSuperAdmin, async (req, res) => {
+  try {
+    const { name, email, password, role = 'admin' } = req.body
+
+    if (!name || !email || !password) {
+      return res.status(400).json({ error: 'Tous les champs sont requis' })
+    }
+
+    // Vérifier si l'email existe déjà
+    const existing = await db.query('SELECT id FROM users WHERE email = ?', [email])
+    if (existing.rows.length > 0) {
+      return res.status(400).json({ error: 'Cet email est déjà utilisé' })
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10)
+    const adminId = require('uuid').v4()
+
+    await db.query(`
+      INSERT INTO users (id, name, email, password, role, status, created_at)
+      VALUES (?, ?, ?, ?, ?, 'active', NOW())
+    `, [adminId, name, email, hashedPassword, role])
+
+    res.status(201).json({ message: 'Administrateur créé avec succès' })
+  } catch (error) {
+    console.error('Erreur création admin:', error)
+    res.status(500).json({ error: 'Erreur lors de la création de l\'administrateur' })
+  }
+})
+
+// Supprimer un admin
+router.delete('/admins/:adminId', requireSuperAdmin, async (req, res) => {
+  try {
+    const adminId = req.params.adminId
+
+    // Ne pas se supprimer soi-même
+    if (adminId === req.user.id || adminId === 'admin-default') {
+      return res.status(400).json({ error: 'Vous ne pouvez pas supprimer ce compte' })
+    }
+
+    await db.query('DELETE FROM users WHERE id = ? AND role IN (\'admin\', \'super_admin\')', [adminId])
+    res.json({ message: 'Administrateur supprimé' })
+  } catch (error) {
+    console.error('Erreur suppression admin:', error)
+    res.status(500).json({ error: 'Erreur lors de la suppression' })
+  }
+})
+
 module.exports = router

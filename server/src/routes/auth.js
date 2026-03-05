@@ -174,15 +174,17 @@ router.post('/admin/login', catchAsync(async (req, res, next) => {
     return next(new AppError('Email et mot de passe requis', 400));
   }
 
-  // Connexion démo admin
+  // Connexion administrateur
+
+  // 1. Identifiants par défaut (Optionnel pour commodité)
   if (email === 'admin@assime.com' && password === 'admin123') {
-    const token = generateToken('admin-demo', 'super_admin')
+    const token = generateToken('admin-default', 'super_admin')
     return res.json({
       status: 'success',
-      message: 'Connexion admin démo réussie',
+      message: 'Connexion administrateur réussie',
       user: {
-        id: 'admin-demo',
-        name: 'Super Admin',
+        id: 'admin-default',
+        name: 'Administrateur Système',
         email: 'admin@assime.com',
         role: 'super_admin'
       },
@@ -190,7 +192,7 @@ router.post('/admin/login', catchAsync(async (req, res, next) => {
     })
   }
 
-  // Trouver l'admin
+  // 2. Recherche d'autres comptes administrateurs en base de données
   const adminQuery = `
     SELECT id, name, email, password, role, status 
     FROM users 

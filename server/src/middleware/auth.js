@@ -1,8 +1,8 @@
 const jwt = require('jsonwebtoken')
 const db = require('../config/database')
 
-// SECRET HARDCODÉ POUR INTEGRATION DIRECTE (CLIENT REQUEST)
-const JWT_SECRET = 'lesigne_secret_key_2024';
+// SECRET JWT - Utilise la variable d'environnement en priorité
+const JWT_SECRET = process.env.JWT_SECRET || 'lesigne_secret_key_2024';
 
 // Middleware d'authentification générique
 const authenticateToken = async (req, res, next) => {
@@ -16,10 +16,10 @@ const authenticateToken = async (req, res, next) => {
   try {
     const decoded = jwt.verify(token, JWT_SECRET)
 
-    // Cas spécial pour l'admin démo (bypass DB)
-    if (decoded.userId === 'admin-demo') {
+    // Cas spécial pour l'administrateur système par défaut (Bypass DB)
+    if (decoded.userId === 'admin-default') {
       req.user = {
-        id: 'admin-demo',
+        id: 'admin-default',
         email: 'admin@assime.com',
         role: 'super_admin',
         status: 'active'

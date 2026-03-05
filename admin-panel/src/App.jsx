@@ -12,6 +12,7 @@ import PaymentRequests from './pages/PaymentRequests/PaymentRequests'
 import Plans from './pages/Plans/Plans'
 import PaymentNumbers from './pages/PaymentNumbers/PaymentNumbers'
 import Settings from './pages/Settings/Settings'
+import Admins from './pages/Users/Admins'
 import { useAuthStore } from './store/authStore'
 import { useState } from 'react'
 
@@ -113,6 +114,7 @@ function App() {
           <Route path="/plans" element={<Plans />} />
           <Route path="/payment-numbers" element={<PaymentNumbers />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/admins" element={<Admins />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Layout>
