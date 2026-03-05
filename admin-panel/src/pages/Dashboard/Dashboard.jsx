@@ -32,16 +32,21 @@ const StatCard = ({ title, value, trend, trendValue, icon: Icon, color }) => (
 const Dashboard = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { token } = useAuthStore();
+
+  useEffect(() => {
+    if (token) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    }
+  }, [token]);
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
         const response = await axios.get('/admin/dashboard');
         setStats(response.data.stats);
-      } catch (err) {
-        console.error("Erreur chargement dashboard admin:", err);
-        setError("Impossible de charger les statistiques.");
+      } catch (error) {
+        console.error("Erreur chargement dashboard admin:", error);
       } finally {
         setLoading(false);
       }
@@ -51,13 +56,7 @@ const Dashboard = () => {
   }, []);
 
   if (loading) return <div className="flex justify-center items-center h-96"><Loader className="animate-spin" /></div>;
-  if (error || !stats) return (
-    <div className="text-center p-10 space-y-3">
-      <AlertCircle className="w-12 h-12 text-red-400 mx-auto" />
-      <p className="text-gray-600">{error || "Erreur de chargement des données."}</p>
-      <button onClick={() => window.location.reload()} className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700">Réessayer</button>
-    </div>
-  );
+  if (!stats) return <div className="text-center p-10">Erreur de chargement des données.</div>;
 
   return (
     <div className="space-y-6">

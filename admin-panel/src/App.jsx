@@ -12,7 +12,6 @@ import PaymentRequests from './pages/PaymentRequests/PaymentRequests'
 import Plans from './pages/Plans/Plans'
 import PaymentNumbers from './pages/PaymentNumbers/PaymentNumbers'
 import Settings from './pages/Settings/Settings'
-import Admins from './pages/Users/Admins'
 import { useAuthStore } from './store/authStore'
 import { useState } from 'react'
 
@@ -22,15 +21,13 @@ function App() {
   const { isAuthenticated } = useAuthStore()
 
   // Configuration Axios
+  // Configuration Axios Globale (Interceptor > useEffect pour éviter les race conditions)
   useEffect(() => {
+    // Relative URL pour passer par le Proxy (Nginx ou Vite)
+    // Relative URL pour passer par le Proxy (Nginx ou Vite)
+    // Dynamic Environment Configuration
     const isDev = import.meta.env.DEV;
     axios.defaults.baseURL = import.meta.env.VITE_API_URL || (isDev ? '/api' : '/api');
-
-    // ✅ Réinjecter le token persisté au démarrage (fix du refresh)
-    const persistedToken = useAuthStore.getState().token;
-    if (persistedToken) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${persistedToken}`;
-    }
 
     // Intercepteur pour injecter le token en temps réel
     const requestInterceptor = axios.interceptors.request.use(
@@ -116,7 +113,6 @@ function App() {
           <Route path="/plans" element={<Plans />} />
           <Route path="/payment-numbers" element={<PaymentNumbers />} />
           <Route path="/settings" element={<Settings />} />
-          <Route path="/admins" element={<Admins />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Layout>
