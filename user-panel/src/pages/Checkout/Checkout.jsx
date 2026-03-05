@@ -169,7 +169,7 @@ const Checkout = () => {
                         Retour à la boutique
                     </button>
                     <h1 className="text-3xl md:text-4xl font-bold text-gray-900">Finaliser votre commande</h1>
-                    <p className="text-gray-600 mt-2">Remplissez vos informations pour recevoir votre commande</p>
+                    <p className="text-gray-800 font-medium mt-2">Remplissez vos informations pour recevoir votre commande</p>
                 </div>
 
                 {/* Progress Steps */}
@@ -210,7 +210,7 @@ const Checkout = () => {
                                     </div>
                                     <div>
                                         <h2 className="text-xl font-bold text-gray-900">Informations de livraison</h2>
-                                        <p className="text-sm text-gray-600">Où souhaitez-vous recevoir votre commande ?</p>
+                                        <p className="text-sm text-gray-800 font-medium">Où souhaitez-vous recevoir votre commande ?</p>
                                     </div>
                                 </div>
                             </CardHeader>
@@ -325,7 +325,7 @@ const Checkout = () => {
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <h4 className="font-medium text-gray-900 text-sm truncate">{item.name}</h4>
-                                                    <p className="text-gray-500 text-xs mt-0.5">Qté: {item.quantity}</p>
+                                                    <p className="text-gray-700 text-xs font-bold mt-0.5">Qté: {item.quantity}</p>
                                                     <p className="font-semibold text-primary-600 text-sm mt-1">
                                                         {formatCurrency(item.price * item.quantity, currency)}
                                                     </p>
@@ -338,7 +338,7 @@ const Checkout = () => {
                                     <div className="space-y-3 pt-4 border-t-2 border-gray-200">
                                         <div className="flex justify-between text-sm text-gray-600">
                                             <span>Sous-total</span>
-                                            <span className="font-medium">{formatCurrency(cartTotal, currency)}</span>
+                                            <span className="font-bold">{formatCurrency(cartTotal, currency)}</span>
                                         </div>
                                         <div className="flex justify-between text-sm text-gray-600">
                                             <span>Livraison</span>

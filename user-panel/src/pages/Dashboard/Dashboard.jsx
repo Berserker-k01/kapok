@@ -23,7 +23,7 @@ const StatCard = ({ title, value, trend, trendValue, icon: Icon, color, gradient
         )}
       </div>
       <div>
-        <p className="text-secondary-500 text-sm font-medium mb-1">{title}</p>
+        <p className="text-gray-700 text-sm font-semibold mb-1 uppercase tracking-tight opacity-90">{title}</p>
         <h3 className="text-2xl font-black text-secondary-900 tracking-tight">{value}</h3>
       </div>
     </CardBody>
@@ -154,7 +154,7 @@ const Dashboard = () => {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-secondary-900 tracking-tight">Tableau de bord</h1>
-          <p className="text-secondary-500 mt-1 font-medium">Vue d'ensemble de vos activités</p>
+          <p className="text-gray-700 mt-1 font-semibold">Vue d'ensemble de vos activités</p>
         </div>
 
         {/* Custom Shop Selector */}
@@ -165,23 +165,9 @@ const Dashboard = () => {
                 if (!selectedShop?.slug) return;
                 const url = `${window.location.origin}/s/${selectedShop.slug}`;
                 navigator.clipboard.writeText(url);
-                // Simple toast feedback (assuming toast is available in scope or needs import)
-                // Since toast is not imported in original snippet, we might need to add it or use window alert for now, 
-                // BUT toast is often globally available or easy to import if established.
-                // Checking imports: toast is NOT imported in Dashboard.jsx. adding it now would require changing imports.
-                // Let's use a temporary visual feedback or assume I can add toast import in a previous block?
-                // No, replace_file_content modifies a block. I should do a bigger replace or just use a simple alert/console for now?
-                // Wait, Dashboard.jsx normally imports toast? No, it imports axios, icons, Card, etc.
-                // Let's rely on a simple visual change or native alert for this step, 
-                // OR better: I will add `import toast from 'react-hot-toast'` in a separate edit if needed.
-                // Actually, let's just use `alert` for safety in this step or trust `toast` if I add it. 
-                // I will add the import in a separate call or assume user has it.
-                // Let's stick to adding the button UI first.
-                // I'll add the button and use a simple logic.
-                // Re-reading context: Dashboard.jsx does NOT have toast. I will add it.
-                /* I will add the import in a subsequent edit or relying on a larger block replace */
+                toast.success("Lien de la boutique copié !");
               }}
-              className="p-2.5 bg-white border border-secondary-200 rounded-xl shadow-sm text-secondary-500 hover:text-primary-600 hover:border-primary-500 transition-all flex items-center justify-center relative group"
+              className="p-2.5 bg-white border border-secondary-200 rounded-xl shadow-sm text-secondary-900 hover:text-primary-600 hover:border-primary-500 transition-all flex items-center justify-center relative group"
               title="Copier le lien de la boutique"
             >
               <Link2 size={18} />
@@ -192,7 +178,7 @@ const Dashboard = () => {
             </button>
 
             <div className="relative z-20" ref={selectorRef}>
-              <label className="block text-xs font-bold text-secondary-500 uppercase tracking-wider mb-1">
+              <label className="block text-xs font-black text-secondary-900 uppercase tracking-widest mb-1 shadow-sm">
                 Boutique active
               </label>
               <button
@@ -210,7 +196,7 @@ const Dashboard = () => {
 
               {isShopSelectorOpen && (
                 <div className="absolute right-0 mt-2 w-full md:w-72 bg-white rounded-xl shadow-xl border border-secondary-100 py-2 animate-in fade-in zoom-in-95 duration-200">
-                  <div className="px-4 py-2 text-xs font-bold text-secondary-400 uppercase tracking-wider border-b border-secondary-50 mb-1">
+                  <div className="px-4 py-2 text-xs font-black text-secondary-900 uppercase tracking-widest border-b border-secondary-50 mb-1">
                     Changer de boutique
                   </div>
                   {shops.map(shop => (
@@ -290,7 +276,7 @@ const Dashboard = () => {
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
-              <thead className="text-xs text-secondary-500 uppercase bg-secondary-50/50">
+              <thead className="text-xs text-gray-800 uppercase bg-secondary-100/50">
                 <tr>
                   <th className="px-6 py-4 font-semibold">ID Commande</th>
                   <th className="px-6 py-4 font-semibold">Client</th>

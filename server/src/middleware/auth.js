@@ -65,6 +65,30 @@ const requireSuperAdmin = (req, res, next) => {
   next()
 }
 
+// Plans autorisés à utiliser l'IA
+const AI_ALLOWED_PLANS = ['premium', 'gold']
+
+/**
+ * Middleware : vérifie que le plan de l'utilisateur autorise l'accès à l'IA
+ * Plans autorisés : premium, gold
+ * Plans bloqués  : free, basic (et tout plan non reconnu)
+ */
+const requireAIAccess = (req, res, next) => {
+  const userPlan = req.user?.plan || 'free'
+
+  if (!AI_ALLOWED_PLANS.includes(userPlan)) {
+    return res.status(403).json({
+      error: 'Accès IA non disponible',
+      code: 'AI_PLAN_REQUIRED',
+      message: `L'assistant IA est disponible à partir du plan Premium. Votre plan actuel : ${userPlan}.`,
+      currentPlan: userPlan,
+      requiredPlans: AI_ALLOWED_PLANS,
+      upgradeUrl: '/subscriptions'
+    })
+  }
+  next()
+}
+
 // Middleware pour vérifier la propriété d'une boutique
 const requireShopOwnership = async (req, res, next) => {
   try {
@@ -103,6 +127,7 @@ module.exports = {
   authenticateToken,
   requireAdmin,
   requireSuperAdmin,
+  requireAIAccess,
   requireShopOwnership,
   generateToken,
   JWT_SECRET

@@ -280,14 +280,18 @@ exports.createPublicOrder = async (req, res) => {
 
         // Récupérer les réglages de la boutique pour les notifications
         const shopConfigRes = await db.query(
-            'SELECT google_sheet_id, whatsapp_number, notification_email, name as shop_name FROM shops WHERE id = ?',
+            `SELECT s.google_sheet_id, s.whatsapp_number, s.notification_email, s.name as shop_name,
+                    u.email as owner_email
+             FROM shops s
+             JOIN users u ON s.owner_id = u.id
+             WHERE s.id = ?`,
             [shopId]
         );
         const shopConfig = shopConfigRes.rows[0];
 
         // Fire and forget sync/notifications
         if (shopConfig) {
-            // Synchro Google Sheet (Boutique spécifique)
+            // Synchro Google Sheet
             sheetService.addOrder(fullOrder, shopConfig.google_sheet_id).catch(err => console.error('[Sheets] Sync error:', err.message));
 
             // Notification WhatsApp Marchand
@@ -295,11 +299,17 @@ exports.createPublicOrder = async (req, res) => {
                 notificationService.notifyWhatsAppMerchant(shopConfig.whatsapp_number, shopConfig.shop_name, fullOrder).catch(err => console.error('[WASync] Error:', err.message));
             }
 
-            // Notification Email au marchand (si configuré)
-            if (shopConfig.notification_email) {
-                notificationService.sendOrderEmail(shopConfig.notification_email, shopConfig.shop_name, fullOrder).catch(err => console.error('[MailSync] Error:', err.message));
+            // Email au marchand : priorité notification_email, sinon email du propriétaire
+            const merchantEmail = shopConfig.notification_email || shopConfig.owner_email;
+            if (merchantEmail) {
+                notificationService.sendOrderEmail(merchantEmail, shopConfig.shop_name, {
+                    ...fullOrder,
+                    // Ajouter infos client pour le marchand
+                    customer_detail: `${firstName} ${lastName} | Tél: ${phone} | ${address}, ${city}`
+                }).catch(err => console.error('[MailSync Merchant] Error:', err.message));
             }
         }
+
 
         res.status(201).json({
             message: 'Commande créée avec succès',

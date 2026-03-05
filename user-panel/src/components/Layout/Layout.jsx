@@ -79,11 +79,11 @@ const Layout = ({ children }) => {
           {/* Logo */}
           <div className="h-16 flex items-center justify-between px-4 border-b border-secondary-200">
             {sidebarOpen || isMobile ? (
-              <h1 className="text-xl font-bold bg-gradient-to-r from-primary-600 to-primary-800 bg-clip-text text-transparent">
+              <h1 className="text-xl font-black text-primary-600 tracking-tighter">
                 Assimε
               </h1>
             ) : (
-              <span className="text-2xl font-bold text-primary-600 mx-auto">A</span>
+              <span className="text-2xl font-black text-primary-600 mx-auto">A</span>
             )}
 
             {isMobile && (
@@ -108,11 +108,11 @@ const Layout = ({ children }) => {
                     flex items-center px-3 py-2.5 rounded-lg transition-colors group relative
                     ${isActive
                       ? 'bg-primary-50 text-primary-700'
-                      : 'text-secondary-600 hover:bg-secondary-50 hover:text-secondary-900'
+                      : 'text-secondary-700 hover:bg-secondary-50 hover:text-secondary-900'
                     }
                   `}
                 >
-                  <item.icon className={`w-5 h-5 flex-shrink-0 ${isActive ? 'text-primary-600' : 'text-secondary-400 group-hover:text-secondary-600'}`} />
+                  <item.icon className={`w-5 h-5 flex-shrink-0 ${isActive ? 'text-primary-600' : 'text-secondary-600 group-hover:text-secondary-900 font-bold'}`} />
 
                   {(sidebarOpen || isMobile) && (
                     <span className="ml-3 font-medium text-sm truncate overflow-hidden">{item.label}</span>
@@ -137,7 +137,7 @@ const Layout = ({ children }) => {
               {(sidebarOpen || isMobile) && (
                 <div className="ml-3 overflow-hidden flex-1 min-w-0">
                   <p className="text-sm font-medium text-secondary-900 truncate">{user?.name || 'Utilisateur'}</p>
-                  <p className="text-xs text-secondary-500 truncate">{user?.email || ''}</p>
+                  <p className="text-xs text-secondary-800 font-medium truncate">{user?.email || ''}</p>
                 </div>
               )}
             </div>

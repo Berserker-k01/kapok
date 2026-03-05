@@ -1,88 +1,133 @@
 const { HfInference } = require('@huggingface/inference');
 
 // Configuration
-// 1. Google Gemini (Recommandé - Gratuit & Rapide)
-// Clé intégrée directement
-const GEMINI_API_KEY = "AIzaSyDLJ5CITPjaL9q9-_6u9mCFDdmtQ9sK3-M";
+// Clé Gemini — priorité variable d'env, fallback hardcoded
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "AIzaSyDLJ5CITPjaL9q9-_6u9mCFDdmtQ9sK3-M";
 
-// 2. Hugging Face (Fallback)
-const HF_API_KEY = process.env.HF_API_KEY || "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"; // Clé par défaut (peut être expirée)
+// Hugging Face (Fallback si Gemini est indisponible)
+const HF_API_KEY = process.env.HF_API_KEY || "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";
 const hf = new HfInference(HF_API_KEY);
-
 const MODEL_NAME_HF = "mistralai/Mistral-7B-Instruct-v0.3";
 
 /**
- * Appel à l'API Google Gemini (REST)
+ * Appel à l'API Google Gemini (REST) — gemini-2.0-flash
  */
-async function callGemini(prompt) {
+async function callGemini(prompt, systemInstruction = null) {
     if (!GEMINI_API_KEY) throw new Error("Gemini API Key missing");
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+    // Utiliser gemini-2.0-flash (plus rapide et disponible gratuitement)
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+    const body = {
+        contents: [{ parts: [{ text: prompt }], role: 'user' }],
+        generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 800
+        }
+    };
+
+    if (systemInstruction) {
+        body.systemInstruction = { parts: [{ text: systemInstruction }] };
+    }
 
     const response = await fetch(url, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            contents: [{
-                parts: [{ text: prompt }]
-            }]
-        })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
     });
 
     if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response.json().catch(() => ({}));
         throw new Error(`Gemini Error: ${errorData.error?.message || response.statusText}`);
     }
 
     const data = await response.json();
+    if (!data.candidates || data.candidates.length === 0) {
+        throw new Error("Gemini returned no candidates");
+    }
     return data.candidates[0].content.parts[0].text;
 }
 
 /**
- * Appel à Hugging Face
+ * Appel Gemini en mode chat multi-tour (avec historique)
+ */
+async function callGeminiChat(messages) {
+    if (!GEMINI_API_KEY) throw new Error("Gemini API Key missing");
+
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+    // Convertir les messages au format Gemini
+    const contents = messages.map(m => ({
+        role: m.role === 'assistant' ? 'model' : 'user',
+        parts: [{ text: m.content }]
+    }));
+
+    const body = {
+        contents,
+        systemInstruction: {
+            parts: [{ text: "Tu es l'assistant IA de la plateforme e-commerce 'Assimε'. Tu aides les commerçants africains à gérer leurs boutiques en ligne. Réponds toujours en français, de manière concise, pratique et bienveillante. Pas plus de 3 paragraphes par réponse." }]
+        },
+        generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 600
+        }
+    };
+
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(`Gemini Chat Error: ${errorData.error?.message || response.statusText}`);
+    }
+
+    const data = await response.json();
+    if (!data.candidates || data.candidates.length === 0) {
+        throw new Error("Gemini returned no candidates");
+    }
+    return data.candidates[0].content.parts[0].text;
+}
+
+/**
+ * Appel à Hugging Face (fallback)
  */
 async function callHuggingFace(prompt) {
     const response = await hf.textGeneration({
         model: MODEL_NAME_HF,
         inputs: prompt,
-        parameters: {
-            max_new_tokens: 500,
-            temperature: 0.7,
-            return_full_text: false
-        }
+        parameters: { max_new_tokens: 500, temperature: 0.7, return_full_text: false }
     });
     return response.generated_text.trim();
 }
 
 /**
- * Stratégie : Tenter Gemini d'abord, sinon Hugging Face
+ * Génère du texte — Gemini d'abord, Hugging Face en fallback
  */
-async function generateText(prompt) {
-    // 1. Essayer Gemini
+async function generateText(prompt, systemInstruction = null) {
     if (GEMINI_API_KEY) {
         try {
-            return await callGemini(prompt);
+            return await callGemini(prompt, systemInstruction);
         } catch (e) {
-            console.warn("Gemini Failed, switching to Hugging Face:", e.message);
+            console.warn("[AI] Gemini failed, switching to Hugging Face:", e.message);
         }
     }
-
-    // 2. Fallback Hugging Face
     return await callHuggingFace(prompt);
 }
 
 exports.generateDescription = async (productName, keywords) => {
     try {
-        const prompt = `Tu es un expert en marketing e-commerce. Rédige une description produit persuasive et SEO pour : "${productName}".
-            Mots-clés à inclure : ${keywords}.
-            Ton : Professionnel, engageant, vendeur.
-            Longueur : Environ 100-150 mots.
-            Format : Une accroche, des points clés, et une conclusion.
-            Réponds uniquement avec la description.`;
+        const prompt = `Rédige une description produit persuasive et SEO pour : "${productName}".
+Mots-clés à inclure : ${keywords}.
+Ton : Professionnel, engageant, vendeur.
+Longueur : 100-150 mots.
+Format : Une accroche percutante, des points clés, une conclusion avec appel à l'action.
+Réponds UNIQUEMENT avec la description, sans titre ni explication.`;
 
-        const text = await generateText(prompt);
+        const systemInstruction = "Tu es un expert en marketing e-commerce africain. Tu rédiges des descriptions de produits percutantes en français.";
+        const text = await generateText(prompt, systemInstruction);
         return text;
     } catch (error) {
         console.error('AI Service Error:', error);
@@ -92,18 +137,23 @@ exports.generateDescription = async (productName, keywords) => {
 
 exports.chat = async (messages) => {
     try {
-        // Convert messages to simple prompt for now (or sophisticated chat structure)
-        // Pour Gemini/HF simple, on concatène souvent ou on adapte.
+        // Essayer d'abord le mode chat multi-tour Gemini
+        if (GEMINI_API_KEY) {
+            try {
+                return await callGeminiChat(messages);
+            } catch (e) {
+                console.warn("[AI Chat] Gemini chat failed, fallback to HF:", e.message);
+            }
+        }
 
-        let prompt = "Tu es l'assistant IA de la plateforme e-commerce 'Assimε'. Aide le commerçant de manière concise.\n\n";
-        messages.forEach(m => {
+        // Fallback Hugging Face avec prompt condensé
+        let prompt = "Tu es l'assistant IA de la plateforme e-commerce 'Assimε'. Aide le commerçant.\n\n";
+        messages.slice(-6).forEach(m => {
             prompt += `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}\n`;
         });
         prompt += "Assistant:";
 
-        const text = await generateText(prompt);
-        return text;
-
+        return await callHuggingFace(prompt);
     } catch (error) {
         console.error('AI Chat Error:', error);
         throw new Error("Assistant IA indisponible");

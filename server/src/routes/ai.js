@@ -1,11 +1,12 @@
 const express = require('express');
 const aiController = require('../controllers/aiController');
-const { authenticateToken } = require('../middleware/auth');
+const { authenticateToken, requireAIAccess } = require('../middleware/auth');
 
 const router = express.Router();
 
-// Protéger toutes les routes IA
+// Toutes les routes IA nécessitent : être authentifié + avoir un plan Premium/Gold
 router.use(authenticateToken);
+router.use(requireAIAccess);
 
 router.post('/generate-description', aiController.generateDescription);
 router.post('/chat', aiController.chat);
