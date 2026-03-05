@@ -73,17 +73,32 @@ class ShopService {
       throw new AppError(`Limite de boutiques atteinte pour le plan ${userPlan} (Max ${planLimit})`, 400);
     }
 
-    let slug = shopData.slug || name;
-    slug = slug.toLowerCase()
+    let originalSlug = shopData.slug || name;
+    originalSlug = originalSlug.toLowerCase()
       .replace(/[^a-z0-9]/g, '-')
       .replace(/-+/g, '-')
       .replace(/^-|-$/g, '');
 
-    const slugQuery = 'SELECT id FROM shops WHERE slug = ?';
-    const slugResult = await db.query(slugQuery, [slug]);
+    let slug = originalSlug;
+    let counter = 1;
 
-    if (slugResult.rows.length > 0) {
-      throw new AppError('Ce nom de boutique est déjà utilisé', 400);
+    // Boucle pour garantir l'unicité du slug sans rejeter la création
+    while (true) {
+      const slugQuery = 'SELECT id FROM shops WHERE slug = ?';
+      const slugResult = await db.query(slugQuery, [slug]);
+
+      if (slugResult.rows.length === 0) {
+        break; // Le slug est disponible
+      }
+
+      // Si déjà pris, on ajoute un suffixe
+      slug = `${originalSlug}-${counter}`;
+      counter++;
+
+      // Sécurité pour éviter une boucle infinie (très improbable)
+      if (counter > 100) {
+        throw new AppError('Ce nom de boutique génère trop de collisions, veuillez en choisir un autre', 400);
+      }
     }
 
     const shopId = uuidv4();

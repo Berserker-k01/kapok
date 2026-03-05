@@ -2,7 +2,7 @@ const { HfInference } = require('@huggingface/inference');
 
 // Configuration
 // Clé Gemini — priorité variable d'env, fallback hardcoded
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "AIzaSyDLJ5CITPjaL9q9-_6u9mCFDdmtQ9sK3-M";
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "AIzaSyBsYDp-CUD-uPXQRSXXvyHAts78e7UWrac";
 
 // Hugging Face (Fallback si Gemini est indisponible)
 const HF_API_KEY = process.env.HF_API_KEY || "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";
