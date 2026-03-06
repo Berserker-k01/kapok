@@ -280,7 +280,7 @@ const ThemeBold = ({ shop, products }) => {
                                             {addedProductId === product.id ? (
                                                 <><FiCheck className="w-4 h-4" /> Ajouté !</>
                                             ) : (
-                                                <><FiShoppingBag className="w-4 h-4" /> Ajouter</>
+                                                <><FiShoppingBag className="w-4 h-4" /> Commander</>
                                             )}
                                         </button>
                                     </div>
@@ -461,7 +461,7 @@ const ThemeBold = ({ shop, products }) => {
                                     style={{ backgroundColor: primaryColor, color: primaryTextColor }}
                                 >
                                     <FiShoppingBag className="w-5 h-5" />
-                                    {selectedProduct.stock > 0 ? 'Ajouter au panier' : 'Rupture de stock'}
+                                    {selectedProduct.stock > 0 ? 'Commander' : 'Rupture de stock'}
                                 </button>
 
                                 {/* Trust micro */}

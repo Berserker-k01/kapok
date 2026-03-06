@@ -199,7 +199,7 @@ const PublicProductDetail = ({ overrideSlug }) => {
                                 {addedId ? (
                                     <><FiCheck className="w-5 h-5" /> Ajouté avec succès !</>
                                 ) : (
-                                    <><FiShoppingBag className="w-5 h-5" /> {product.stock > 0 ? 'Ajouter au panier' : 'Indisponible'}</>
+                                    <><FiShoppingBag className="w-5 h-5" /> {product.stock > 0 ? 'Commander' : 'Indisponible'}</>
                                 )}
                             </button>
 

@@ -276,7 +276,7 @@ const ThemeMinimal = ({ shop, products }) => {
                       {addedProductId === product.id ? (
                         <><FiCheck className="w-4 h-4" /> Ajouté !</>
                       ) : (
-                        <><FiShoppingCart className="w-4 h-4" /> Ajouter au panier</>
+                        <><FiShoppingCart className="w-4 h-4" /> Commander</>
                       )}
                     </button>
                   </div>
@@ -455,7 +455,7 @@ const ThemeMinimal = ({ shop, products }) => {
                   style={{ backgroundColor: primary, color: secondary }}
                 >
                   <FiShoppingCart className="w-5 h-5" />
-                  {selectedProduct.stock > 0 ? 'Ajouter au panier' : 'Rupture de stock'}
+                  {selectedProduct.stock > 0 ? 'Commander' : 'Rupture de stock'}
                 </button>
 
                 {/* Trust micro */}
