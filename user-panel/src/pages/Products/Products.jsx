@@ -423,37 +423,42 @@ const Products = () => {
 
                       {/* Image Upload Card */}
                       <div className="bg-gray-50 rounded-2xl p-6 border border-gray-200">
-                        <div className="flex flex-col items-center space-y-4">
-                          <div className="relative group w-full">
-                            <div className="min-h-48 w-full bg-white rounded-2xl p-4 overflow-hidden flex flex-wrap items-center justify-center gap-4 border-2 border-dashed border-gray-300 group-hover:border-primary-500 transition-all duration-300 shadow-sm">
-                              {imagePreviews.length > 0 ? (
-                                imagePreviews.map((preview, idx) => (
-                                  <div key={idx} className="h-32 w-32 relative rounded-lg overflow-hidden border">
+                        <div className="flex flex-col space-y-2">
+                          <label className="block text-sm font-bold text-gray-700">Images du produit</label>
+                          <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-xl relative cursor-pointer hover:border-primary-500 transition-colors bg-white hover:bg-gray-50 shadow-sm">
+                            {imagePreviews.length > 0 ? (
+                              <div className="flex flex-wrap gap-4 w-full justify-center pointer-events-none">
+                                {imagePreviews.map((preview, idx) => (
+                                  <div key={idx} className="h-28 w-28 relative rounded-lg overflow-hidden border-2 border-gray-200 shadow-sm">
                                     <img src={preview} alt={`Preview ${idx + 1}`} className="h-full w-full object-cover" />
                                   </div>
-                                ))
-                              ) : (
-                                <div className="text-center p-6 w-full">
-                                  <FiImage className="h-16 w-16 text-gray-300 mx-auto mb-3" />
-                                  <p className="text-sm font-medium text-gray-500">Photos du produit (jusqu'à 5)</p>
-                                  <p className="text-xs text-gray-400 mt-1">Cliquez sur le bouton bleu pour les ajouter</p>
+                                ))}
+                                <div className="w-full text-center mt-2">
+                                  <span className="text-xs text-gray-500 font-medium bg-gray-100 px-3 py-1.5 rounded-full inline-flex items-center gap-2">
+                                    <FiEdit className="w-3 h-3" /> Cliquez n'importe où ici pour changer les images
+                                  </span>
                                 </div>
-                              )}
-                            </div>
-                            <label className="absolute -bottom-3 -right-3 z-10 bg-primary-600 text-white rounded-full p-4 shadow-xl cursor-pointer hover:bg-primary-700 transition-all hover:scale-110 active:scale-95">
-                              <FiEdit className="h-5 w-5" />
-                              <input
-                                type="file"
-                                className="hidden"
-                                accept="image/*"
-                                multiple
-                                onChange={handleImageChange}
-                              />
-                            </label>
+                              </div>
+                            ) : (
+                              <div className="space-y-1 text-center pointer-events-none py-4">
+                                <FiImage className="mx-auto h-16 w-16 text-gray-300 mb-4" />
+                                <div className="flex text-sm text-gray-600 justify-center">
+                                  <span className="relative rounded-md font-bold text-primary-600 hover:text-primary-500 flex items-center gap-2">
+                                    <FiEdit /> Ajouter des photos (jusqu'à 5)
+                                  </span>
+                                </div>
+                                <p className="text-xs text-gray-400 mt-2">Glissez-déposez ou cliquez ici (PNG, JPG)</p>
+                              </div>
+                            )}
+                            <input
+                              type="file"
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                              accept="image/*"
+                              multiple
+                              onChange={handleImageChange}
+                            />
                           </div>
-                          <div className="text-center">
-                            <p className="text-xs font-medium text-gray-600">JPG ou PNG • Maximum 2MB</p>
-                          </div>
+                          <p className="text-xs font-medium text-gray-600 pt-2 text-center">JPG ou PNG • Maximum 2MB</p>
                         </div>
                       </div>
 
