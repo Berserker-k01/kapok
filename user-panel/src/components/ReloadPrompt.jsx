@@ -21,7 +21,17 @@ function ReloadPrompt() {
     const [deferredPrompt, setDeferredPrompt] = useState(null)
     const [showInstallBtn, setShowInstallBtn] = useState(false)
 
+    // Détecter si on est sur une boutique (sous-domaine ou /s/)
+    const hostname = window.location.hostname;
+    const isShopSubdomain = !/^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(hostname) &&
+        hostname.split('.').length >= 3 &&
+        !['www', 'admin', 'api', 'app', 'dev', 'panel', 'user'].includes(hostname.split('.')[0]);
+    const isShopPath = window.location.pathname.startsWith('/s/');
+    const isShop = isShopSubdomain || isShopPath;
+
     useEffect(() => {
+        if (isShop) return; // Ne pas afficher de prompt sur la boutique
+
         const handleBeforeInstallPrompt = (e) => {
             e.preventDefault()
             setDeferredPrompt(e)
@@ -48,6 +58,8 @@ function ReloadPrompt() {
         setOfflineReady(false)
         setNeedRefresh(false)
     }
+
+    if (isShop) return null; // Ne pas rendre le prompt sur les boutiques
 
     return (
         <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2">
