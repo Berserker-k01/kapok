@@ -33,8 +33,17 @@ router.put('/:id/plan', authenticateToken, requireAdmin, async (req, res) => {
     const { plan } = req.body
     const userId = req.params.id
 
-    if (!['free', 'basic', 'pro'].includes(plan)) {
-      return res.status(400).json({ error: 'Plan invalide' })
+    if (!plan) {
+      return res.status(400).json({ error: 'Plan requis' })
+    }
+
+    // Validation dynamique : vérifier que le plan existe dans la base de données
+    // On accepte aussi 'free' par défaut même s'il n'est pas dans plan_configs
+    if (plan !== 'free') {
+      const planCheck = await db.query('SELECT plan_key FROM plan_configs WHERE plan_key = ?', [plan])
+      if (planCheck.rows.length === 0) {
+        return res.status(400).json({ error: `Plan "${plan}" non reconnu. Vérifiez la gestion des plans.` })
+      }
     }
 
     const updateQuery = `
