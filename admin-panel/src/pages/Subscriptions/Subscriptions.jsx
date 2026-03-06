@@ -37,9 +37,12 @@ const Subscriptions = () => {
   const fetchPlans = async () => {
     try {
       const response = await axios.get('/plans')
-      setPlans(response.data.plans || [])
+      const loadedPlans = response.data.plans || []
+      console.log('[Abonnements] Plans chargés:', loadedPlans.map(p => p.plan_key))
+      setPlans(loadedPlans)
     } catch (error) {
       console.error("Erreur chargement plans:", error)
+      toast.error("Impossible de charger les plans depuis la gestion des plans")
     }
   }
 
@@ -145,9 +148,9 @@ const Subscriptions = () => {
                         onBlur={() => setEditingUser(null)}
                       >
                         <option value="free">Gratuit (Plan par défaut)</option>
-                        {plans.filter(p => p.plan_key !== 'free').map(p => (
-                          <option key={p.plan_key} value={p.plan_key}>
-                            {p.name}
+                        {plans.filter(p => p.plan_key !== 'free' && p.is_active !== false).map(p => (
+                          <option key={p.id || p.plan_key} value={p.plan_key}>
+                            {p.name} — {p.price ? `${p.price} ${p.currency || 'XOF'}` : 'Gratuit'}
                           </option>
                         ))}
                       </select>
