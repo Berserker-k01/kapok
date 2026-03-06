@@ -7,6 +7,7 @@ import ThemeBold from './Themes/ThemeBold'
 // import { CartProvider } from '../../context/CartContext' // Global now
 import CartDrawer from '../../components/Cart/CartDrawer'
 import FacebookPixel from '../../components/FacebookPixel/FacebookPixel'
+import { resolveImageUrl } from '../../utils/imageUrl'
 
 import { useCart } from '../../context/CartContext'
 
@@ -55,6 +56,36 @@ const PublicShop = ({ overrideSlug }) => {
         }
         fetchShopAndProducts()
     }, [slug])
+
+    // Mettre à jour le titre de la page et le favicon
+    useEffect(() => {
+        if (shop) {
+            // Mettre à jour le titre
+            document.title = `${shop.name} | Propulsé par Assimε`
+
+            // Mettre à jour le favicon
+            const logoUrl = resolveImageUrl(shop?.settings?.themeConfig?.content?.logoUrl || shop?.logo_url)
+            if (logoUrl) {
+                let link = document.querySelector("link[rel~='icon']")
+                if (!link) {
+                    link = document.createElement('link')
+                    link.rel = 'icon'
+                    document.head.appendChild(link)
+                }
+                link.href = logoUrl
+            }
+        }
+
+        // Nettoyage lors du démontage (retour au défaut de la plateforme)
+        return () => {
+            document.title = "Assimε"
+            let link = document.querySelector("link[rel~='icon']")
+            if (link) {
+                // Remplacer par votre favicon par défaut si besoin
+                link.href = "/favicon.png"
+            }
+        }
+    }, [shop])
 
     // Sélection du thème (par défaut 'bold')
     const currentTheme = shop?.settings?.theme || shop?.theme || 'bold'
