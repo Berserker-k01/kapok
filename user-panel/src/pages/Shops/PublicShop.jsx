@@ -57,35 +57,7 @@ const PublicShop = ({ overrideSlug }) => {
         fetchShopAndProducts()
     }, [slug])
 
-    // Mettre à jour le titre de la page et le favicon
-    useEffect(() => {
-        if (shop) {
-            // Mettre à jour le titre
-            document.title = `${shop.name} | Propulsé par Assimε`
-
-            // Mettre à jour le favicon
-            const logoUrl = resolveImageUrl(shop?.settings?.themeConfig?.content?.logoUrl || shop?.logo_url)
-            if (logoUrl) {
-                let link = document.querySelector("link[rel~='icon']")
-                if (!link) {
-                    link = document.createElement('link')
-                    link.rel = 'icon'
-                    document.head.appendChild(link)
-                }
-                link.href = logoUrl
-            }
-        }
-
-        // Nettoyage lors du démontage (retour au défaut de la plateforme)
-        return () => {
-            document.title = "Assimε"
-            let link = document.querySelector("link[rel~='icon']")
-            if (link) {
-                // Remplacer par votre favicon par défaut si besoin
-                link.href = "/favicon.png"
-            }
-        }
-    }, [shop])
+    // Le branding (favicon/titre) est géré par ShopBranding dans App.jsx
 
     // Sélection du thème (par défaut 'bold')
     const currentTheme = shop?.settings?.theme || shop?.theme || 'bold'

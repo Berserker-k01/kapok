@@ -23,6 +23,7 @@ import { useAuthStore } from './store/authStore'
 import axios from 'axios'
 import { useEffect } from 'react'
 import ErrorBoundary from './components/ErrorBoundary'
+import ShopBranding from './components/ShopBranding'
 import ReloadPrompt from './components/ReloadPrompt'
 import { CartProvider } from './context/CartContext'
 import NotFound from './pages/NotFound'
@@ -102,15 +103,17 @@ function App() {
         <CartProvider>
           <ReloadPrompt />
           {isShopSubdomain ? (
-            <Routes>
-              {/* === MODE BOUTIQUE: Séparation totale de l'app client === */}
-              <Route path="/" element={<SubdomainShop />} />
-              <Route path="/checkout" element={<Checkout />} />
-              <Route path="/checkout/cod/:productId" element={<CheckoutCOD />} />
-              <Route path="/validate-order/:orderId" element={<OrderValidation />} />
-              {/* Fallback qui capture tout le reste sur le sous-domaine vers la boutique */}
-              <Route path="*" element={<SubdomainShop />} />
-            </Routes>
+            <ShopBranding slug={subdomainSlug}>
+              <Routes>
+                {/* === MODE BOUTIQUE: Séparation totale de l'app client === */}
+                <Route path="/" element={<SubdomainShop />} />
+                <Route path="/checkout" element={<Checkout />} />
+                <Route path="/checkout/cod/:productId" element={<CheckoutCOD />} />
+                <Route path="/validate-order/:orderId" element={<OrderValidation />} />
+                {/* Fallback qui capture tout le reste sur le sous-domaine vers la boutique */}
+                <Route path="*" element={<SubdomainShop />} />
+              </Routes>
+            </ShopBranding>
           ) : (
             <Routes>
               {/* === MODE SAAS: Interface Marchand === */}
