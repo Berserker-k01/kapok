@@ -162,6 +162,7 @@ const Dashboard = () => {
           <div className="flex items-center gap-3">
             <button
               onClick={() => {
+                if (!selectedShop?.slug) return;
                 const url = `https://${selectedShop.slug}.assime.net`;
                 navigator.clipboard.writeText(url);
                 toast.success("Lien de la boutique copié !");
