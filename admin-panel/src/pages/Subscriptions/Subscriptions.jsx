@@ -73,7 +73,7 @@ const Subscriptions = () => {
 
   const handleUpdatePlan = async (userId, newPlan) => {
     try {
-      await axios.put(`/api/users/${userId}/plan`, { plan: newPlan })
+      await axios.put(`/users/${userId}/plan`, { plan: newPlan })
       toast.success("Plan mis à jour avec succès")
       setEditingUser(null)
       fetchUsers() // Rafraîchir la liste

@@ -139,9 +139,9 @@ const Shops = () => {
                   </div>
                   <div className="ml-4">
                     <h3 className="text-lg font-bold text-gray-900">{shop.name}</h3>
-                    <a href={`/s/${shop.slug}`} target="_blank" rel="noopener noreferrer" className="text-sm text-gray-500 hover:text-primary-600 flex items-center transition-colors">
+                    <a href={`https://${shop.slug}.assime.net`} target="_blank" rel="noopener noreferrer" className="text-sm text-gray-500 hover:text-primary-600 flex items-center transition-colors">
                       <FiGlobe className="mr-1.5 h-3.5 w-3.5" />
-                      {shop.slug}.lesigne.com
+                      {shop.slug}.assime.net
                     </a>
                   </div>
                 </div>
@@ -194,7 +194,7 @@ const Shops = () => {
                   <FiGlobe className="h-4 w-4" />
                 </button>
                 <a
-                  href={`/s/${shop.slug}`}
+                  href={`https://${shop.slug}.assime.net`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="p-2 text-gray-400 hover:text-primary-600 hover:bg-white rounded-lg transition-all border border-transparent hover:border-gray-200 shadow-sm hover:shadow-md"
@@ -346,7 +346,7 @@ const Shops = () => {
                       required
                     />
                     <span className="inline-flex items-center px-4 rounded-r-lg border border-gray-300 bg-gray-50 text-gray-500 text-sm font-medium">
-                      .lesigne.com
+                      .assime.net
                     </span>
                   </div>
                 </div>
