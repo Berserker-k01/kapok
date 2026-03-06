@@ -321,6 +321,50 @@ router.post('/users/:userId/cancel-plan', async (req, res) => {
 })
 
 // ============================================
+// --- Profil administrateur (mise à jour de son propre compte) ---
+// ============================================
+router.put('/profile', async (req, res) => {
+  try {
+    const adminId = req.user.id
+    const { name, email, password } = req.body
+
+    // Vérifier que l'email n'est pas pris par un autre utilisateur
+    if (email) {
+      const emailCheck = await db.query('SELECT id FROM users WHERE email = ? AND id != ?', [email, adminId])
+      if (emailCheck.rows.length > 0) {
+        return res.status(409).json({ error: 'Cet email est déjà utilisé' })
+      }
+    }
+
+    const fields = []
+    const params = []
+
+    if (name) { fields.push('name = ?'); params.push(name) }
+    if (email) { fields.push('email = ?'); params.push(email) }
+    if (password && password.length >= 6) {
+      const hashed = await bcrypt.hash(password, 10)
+      fields.push('password = ?')
+      params.push(hashed)
+    }
+
+    if (fields.length === 0) {
+      return res.status(400).json({ error: 'Aucune donnée à mettre à jour' })
+    }
+
+    fields.push('updated_at = NOW()')
+    params.push(adminId)
+
+    await db.query(`UPDATE users SET ${fields.join(', ')} WHERE id = ?`, params)
+
+    const result = await db.query('SELECT id, name, email, role, status FROM users WHERE id = ?', [adminId])
+    res.json({ message: 'Profil mis à jour', admin: result.rows[0] })
+  } catch (error) {
+    console.error('Erreur mise à jour profil:', error)
+    res.status(500).json({ error: 'Erreur lors de la mise à jour du profil' })
+  }
+})
+
+// ============================================
 // --- Gestion des Administrateurs ---
 // ============================================
 
