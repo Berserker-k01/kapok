@@ -155,7 +155,7 @@ exports.validateOrder = async (req, res) => {
 }
 exports.createPublicOrder = async (req, res) => {
     try {
-        const { firstName, lastName, phone, address, city, quantity, productId, shopId, items } = req.body
+        const { firstName, lastName, email, phone, address, city, quantity, productId, shopId, items } = req.body
 
         // 1. Validation de shopId
         if (!shopId) {
@@ -271,7 +271,7 @@ exports.createPublicOrder = async (req, res) => {
             ...order,
             customer: {
                 name: `${firstName} ${lastName}`,
-                email: 'N/A',
+                email: email || 'N/A',
                 phone,
                 address: `${address}, ${city}`
             },
@@ -304,9 +304,14 @@ exports.createPublicOrder = async (req, res) => {
             if (merchantEmail) {
                 notificationService.sendOrderEmail(merchantEmail, shopConfig.shop_name, {
                     ...fullOrder,
-                    // Ajouter infos client pour le marchand
                     customer_detail: `${firstName} ${lastName} | Tél: ${phone} | ${address}, ${city}`
                 }).catch(err => console.error('[MailSync Merchant] Error:', err.message));
+            }
+
+            // Email de confirmation au client (acheteur)
+            if (email && email.includes('@')) {
+                notificationService.sendOrderConfirmationToCustomer(email, shopConfig.shop_name, fullOrder)
+                    .catch(err => console.error('[MailSync Customer] Error:', err.message));
             }
         }
 
