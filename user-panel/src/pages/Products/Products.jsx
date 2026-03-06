@@ -25,8 +25,8 @@ const Products = () => {
     collectionId: '' // [NEW] Optional Collection
   })
   const [collections, setCollections] = useState([]) // [NEW] Collections state
-  const [imageFile, setImageFile] = useState(null)
-  const [imagePreview, setImagePreview] = useState(null)
+  const [imageFiles, setImageFiles] = useState([])
+  const [imagePreviews, setImagePreviews] = useState([])
   const [isEditing, setIsEditing] = useState(false)
   const [editingId, setEditingId] = useState(null)
   const { token } = useAuthStore()
@@ -100,10 +100,12 @@ const Products = () => {
   }, [selectedShop])
 
   const handleImageChange = (e) => {
-    const file = e.target.files[0]
-    if (file) {
-      setImageFile(file)
-      setImagePreview(URL.createObjectURL(file))
+    const files = Array.from(e.target.files)
+    if (files.length > 0) {
+      // Limit to 5 files
+      const newFiles = files.slice(0, 5)
+      setImageFiles(newFiles)
+      setImagePreviews(newFiles.map(file => URL.createObjectURL(file)))
     }
   }
 
@@ -114,9 +116,19 @@ const Products = () => {
       description: product.description || '',
       category: product.category || 'Vêtements',
       stock: product.inventory || product.stock || 0, // Fallback naming
-      shopId: product.shop_id
+      shopId: product.shop_id,
+      collectionId: product.collection_id || ''
     })
-    setImagePreview(resolveImageUrl(product.image_url))
+
+    // Resolve multiple images
+    const previews = []
+    if (product.images && Array.isArray(product.images)) {
+      previews.push(...product.images.map(img => resolveImageUrl(img)))
+    } else if (product.image_url) {
+      previews.push(resolveImageUrl(product.image_url))
+    }
+    setImagePreviews(previews)
+    setImageFiles([])
     setEditingId(product.id)
     setIsEditing(true)
     setShowAddModal(true)
@@ -134,8 +146,10 @@ const Products = () => {
     formData.append('shopId', selectedShop)
     if (newProduct.collectionId) formData.append('collectionId', newProduct.collectionId) // [NEW]
 
-    if (imageFile) {
-      formData.append('image', imageFile)
+    if (imageFiles && imageFiles.length > 0) {
+      imageFiles.forEach(file => {
+        formData.append('images', file)
+      })
     }
 
     try {
@@ -165,8 +179,8 @@ const Products = () => {
 
   const resetForm = () => {
     setNewProduct({ name: '', price: '', description: '', category: 'Vêtements', stock: '', shopId: '', collectionId: '' })
-    setImageFile(null)
-    setImagePreview(null)
+    setImageFiles([])
+    setImagePreviews([])
     setIsEditing(false)
     setEditingId(null)
   }
@@ -410,24 +424,29 @@ const Products = () => {
                       {/* Image Upload Card */}
                       <div className="bg-gray-50 rounded-2xl p-6 border border-gray-200">
                         <div className="flex flex-col items-center space-y-4">
-                          <div className="relative group">
-                            <div className="h-48 w-48 bg-white rounded-2xl overflow-hidden flex items-center justify-center border-2 border-dashed border-gray-300 group-hover:border-primary-500 transition-all duration-300 shadow-sm">
-                              {imagePreview ? (
-                                <img src={imagePreview} alt="Preview" className="h-full w-full object-cover" />
+                          <div className="relative group w-full">
+                            <div className="min-h-48 w-full bg-white rounded-2xl p-4 overflow-hidden flex flex-wrap items-center justify-center gap-4 border-2 border-dashed border-gray-300 group-hover:border-primary-500 transition-all duration-300 shadow-sm">
+                              {imagePreviews.length > 0 ? (
+                                imagePreviews.map((preview, idx) => (
+                                  <div key={idx} className="h-32 w-32 relative rounded-lg overflow-hidden border">
+                                    <img src={preview} alt={`Preview ${idx + 1}`} className="h-full w-full object-cover" />
+                                  </div>
+                                ))
                               ) : (
-                                <div className="text-center p-6">
+                                <div className="text-center p-6 w-full">
                                   <FiImage className="h-16 w-16 text-gray-300 mx-auto mb-3" />
-                                  <p className="text-sm font-medium text-gray-500">Photo du produit</p>
-                                  <p className="text-xs text-gray-400 mt-1">Cliquez pour ajouter</p>
+                                  <p className="text-sm font-medium text-gray-500">Photos du produit (jusqu'à 5)</p>
+                                  <p className="text-xs text-gray-400 mt-1">Cliquez sur le bouton bleu pour les ajouter</p>
                                 </div>
                               )}
                             </div>
-                            <label className="absolute -bottom-3 -right-3 bg-primary-600 text-white rounded-full p-4 shadow-xl cursor-pointer hover:bg-primary-700 transition-all hover:scale-110 active:scale-95">
+                            <label className="absolute -bottom-3 -right-3 z-10 bg-primary-600 text-white rounded-full p-4 shadow-xl cursor-pointer hover:bg-primary-700 transition-all hover:scale-110 active:scale-95">
                               <FiEdit className="h-5 w-5" />
                               <input
                                 type="file"
                                 className="hidden"
                                 accept="image/*"
+                                multiple
                                 onChange={handleImageChange}
                               />
                             </label>

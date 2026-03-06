@@ -25,16 +25,13 @@ exports.createProduct = catchAsync(async (req, res, next) => {
     console.log('[Product] User ID:', req.user.id);
     console.log('[Product] Has file:', !!req.file);
 
-    // Gestion de l'image uploadée (STOCKAGE LOCAL)
-    if (req.file) {
-        // URL RELATIVE pour compatibilité reverse proxy (Nginx/Hostinger)
-        req.body.image_url = `/api/uploads/${req.file.filename}`;
-
-        console.log('[Product] ✅ Image generated (Local):');
-        console.log('[Product]    URL:', req.body.image_url);
-        console.log('[Product]    Filename:', req.file.filename);
+    // Gestion des images uploadées (STOCKAGE LOCAL)
+    if (req.files && req.files.length > 0) {
+        req.body.images = req.files.map(f => `/api/uploads/${f.filename}`);
+        req.body.image_url = req.body.images[0]; // fallback pour compatibilité
+        console.log('[Product] ✅ Images generated (Local):', req.body.images);
     } else {
-        console.log('[Product] ⚠️  No image uploaded');
+        console.log('[Product] ⚠️  No images uploaded');
     }
 
     const product = await productService.createProduct(req.user.id, req.body);
@@ -69,14 +66,27 @@ exports.getProduct = catchAsync(async (req, res, next) => {
 
 exports.updateProduct = catchAsync(async (req, res, next) => {
     // Gestion de l'image uploadée (STOCKAGE LOCAL)
-    if (req.file) {
-        // URL RELATIVE pour compatibilité reverse proxy (Nginx/Hostinger)
-        req.body.image_url = `/api/uploads/${req.file.filename}`;
-
-        console.log('[Product] ✅ Image updated (Local):', req.body.image_url);
+    if (req.files && req.files.length > 0) {
+        req.body.images = req.files.map(f => `/api/uploads/${f.filename}`);
+        req.body.image_url = req.body.images[0];
+        console.log('[Product] ✅ Images updated (Local):', req.body.images);
     }
 
     const product = await productService.updateProduct(req.user.id, req.params.productId, req.body);
+
+    if (req.body.collectionId !== undefined) {
+        try {
+            // First remove from all existing collections for this product (simple 1-to-many behavior simulation for UI sake)
+            const db = require('../config/database');
+            await db.query('DELETE FROM collection_products WHERE product_id = ?', [req.params.productId]);
+
+            if (req.body.collectionId) {
+                await collectionService.addProductToCollection(req.body.collectionId, product.id);
+            }
+        } catch (error) {
+            console.error('[Product] ❌ Error updating collection:', error);
+        }
+    }
 
     res.status(200).json({
         status: 'success',

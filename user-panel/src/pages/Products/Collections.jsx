@@ -21,8 +21,9 @@ const Collections = () => {
     const [formData, setFormData] = useState({
         name: '',
         description: '',
-        image_url: ''
     })
+    const [imageFile, setImageFile] = useState(null)
+    const [imagePreview, setImagePreview] = useState(null)
 
     // Mock Shops (Replace with actual fetch if context not available)
     useEffect(() => {
@@ -95,23 +96,32 @@ const Collections = () => {
     const handleSubmit = async (e) => {
         e.preventDefault()
 
-        // Auto-generate basics
-        const payload = {
-            ...formData,
-            shopId: selectedShop
+        const data = new FormData()
+        data.append('name', formData.name)
+        data.append('description', formData.description)
+        data.append('shopId', selectedShop)
+
+        if (imageFile) {
+            data.append('image', imageFile)
         }
 
         try {
             if (isEditing) {
-                await axios.put(`/collections/${editingId}`, payload)
+                await axios.put(`/collections/${editingId}`, data, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                })
                 toast.success('Collection modifiée')
             } else {
-                await axios.post('/collections', payload)
+                await axios.post('/collections', data, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                })
                 toast.success('Collection créée')
             }
 
             setShowModal(false)
-            setFormData({ name: '', description: '', image_url: '' })
+            setFormData({ name: '', description: '' })
+            setImageFile(null)
+            setImagePreview(null)
             setIsEditing(false)
 
             // Refresh
@@ -138,9 +148,10 @@ const Collections = () => {
     const handleEdit = (col) => {
         setFormData({
             name: col.name,
-            description: col.description || '',
-            image_url: col.image_url || ''
+            description: col.description || ''
         })
+        setImagePreview(col.image_url ? resolveImageUrl(col.image_url) : null)
+        setImageFile(null)
         setEditingId(col.id)
         setIsEditing(true)
         setShowModal(true)
@@ -174,7 +185,7 @@ const Collections = () => {
                         </select>
                     )}
 
-                    <Button onClick={() => { setIsEditing(false); setFormData({ name: '', description: '', image_url: '' }); setShowModal(true) }}>
+                    <Button onClick={() => { setIsEditing(false); setFormData({ name: '', description: '' }); setImagePreview(null); setImageFile(null); setShowModal(true) }}>
                         <FiPlus className="mr-2" /> Créer une collection
                     </Button>
                 </div>
@@ -282,13 +293,38 @@ const Collections = () => {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">URL de l'image (Optionnel)</label>
-                                    <input
-                                        className="input-field"
-                                        placeholder="https://..."
-                                        value={formData.image_url}
-                                        onChange={e => setFormData({ ...formData, image_url: e.target.value })}
-                                    />
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Image de la collection (Optionnel)</label>
+                                    <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md relative cursor-pointer hover:border-primary-500 transition-colors">
+                                        {imagePreview ? (
+                                            <div className="flex flex-col items-center">
+                                                <img src={imagePreview} alt="Aperçu" className="h-32 w-auto object-cover rounded-md mb-2" />
+                                                <span className="text-xs text-gray-500 font-medium">Cliquez pour changer l'image</span>
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-1 text-center">
+                                                <FiImage className="mx-auto h-12 w-12 text-gray-400" />
+                                                <div className="flex text-sm text-gray-600 justify-center">
+                                                    <span className="relative rounded-md font-medium text-primary-600 hover:text-primary-500">
+                                                        Téléverser un fichier
+                                                    </span>
+                                                    <p className="pl-1">ou glissez-déposez</p>
+                                                </div>
+                                                <p className="text-xs text-gray-500">PNG, JPG up to 2MB</p>
+                                            </div>
+                                        )}
+                                        <input
+                                            type="file"
+                                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                            accept="image/*"
+                                            onChange={(e) => {
+                                                const file = e.target.files[0]
+                                                if (file) {
+                                                    setImageFile(file)
+                                                    setImagePreview(URL.createObjectURL(file))
+                                                }
+                                            }}
+                                        />
+                                    </div>
                                 </div>
 
                                 <div className="flex justify-end pt-2">

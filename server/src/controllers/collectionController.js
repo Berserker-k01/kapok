@@ -22,6 +22,10 @@ exports.createCollection = catchAsync(async (req, res, next) => {
     const shopId = req.body.shopId || req.params.shopId;
     if (!shopId) return next(new AppError('Shop ID is required', 400));
 
+    if (req.file) {
+        req.body.image_url = `/api/uploads/${req.file.filename}`;
+    }
+
     const collection = await collectionService.createCollection(shopId, req.body);
 
     res.status(201).json({
@@ -43,6 +47,10 @@ exports.getCollection = catchAsync(async (req, res, next) => {
 });
 
 exports.updateCollection = catchAsync(async (req, res, next) => {
+    if (req.file) {
+        req.body.image_url = `/api/uploads/${req.file.filename}`;
+    }
+
     const collection = await collectionService.updateCollection(req.params.id, req.body);
 
     res.status(200).json({

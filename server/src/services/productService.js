@@ -40,20 +40,25 @@ class ProductService {
         const { page = 1, limit = 20, category, search } = queryParams;
         const offset = (page - 1) * limit;
 
-        let query = 'SELECT * FROM products WHERE shop_id = ?';
+        let query = `
+            SELECT p.*, cp.collection_id 
+            FROM products p
+            LEFT JOIN collection_products cp ON p.id = cp.product_id
+            WHERE p.shop_id = ?
+        `;
         let sqlParams = [shopId];
 
         if (category) {
-            query += ` AND category = ?`;
+            query += ` AND p.category = ?`;
             sqlParams.push(category);
         }
 
         if (search) {
-            query += ` AND (name ILIKE ? OR description ILIKE ?)`;
+            query += ` AND (p.name ILIKE ? OR p.description ILIKE ?)`;
             sqlParams.push(`%${search}%`, `%${search}%`);
         }
 
-        query += ` ORDER BY created_at DESC LIMIT ? OFFSET ?`;
+        query += ` ORDER BY p.created_at DESC LIMIT ? OFFSET ?`;
         sqlParams.push(parseInt(limit), parseInt(offset));
 
         const result = await db.query(query, sqlParams);

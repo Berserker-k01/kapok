@@ -1,6 +1,7 @@
 const express = require('express');
 const collectionController = require('../controllers/collectionController');
 const auth = require('../middleware/auth');
+const upload = require('../middleware/upload');
 const router = express.Router({ mergeParams: true });
 
 // Routes that might be nested under /shops/:shopId/collections
@@ -14,12 +15,12 @@ router.use(auth.authenticateToken);
 router
     .route('/')
     .get(collectionController.getShopCollections)
-    .post(collectionController.createCollection);
+    .post(upload.single('image'), collectionController.createCollection);
 
 router
     .route('/:id')
     .get(collectionController.getCollection)
-    .put(collectionController.updateCollection)
+    .put(upload.single('image'), collectionController.updateCollection)
     .delete(collectionController.deleteCollection);
 
 router

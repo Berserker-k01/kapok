@@ -16,12 +16,12 @@ router.use(authenticateToken);
 
 router.get('/shop/:shopId', requireShopOwnership, productController.getProductsByShop);
 
-// Utilisation de upload.single('image') au lieu de Cloudinary
-router.post('/', upload.single('image'), productController.createProduct);
+// Support up to 5 multiple images
+router.post('/', upload.array('images', 5), productController.createProduct);
 
 router
   .route('/:productId')
-  .put(upload.single('image'), productController.updateProduct)
+  .put(upload.array('images', 5), productController.updateProduct)
   .delete(productController.deleteProduct);
 
 module.exports = router;
