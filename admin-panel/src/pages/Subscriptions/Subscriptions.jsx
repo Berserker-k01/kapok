@@ -78,7 +78,9 @@ const Subscriptions = () => {
       setEditingUser(null)
       fetchUsers() // Rafraîchir la liste
     } catch (error) {
-      toast.error("Erreur lors de la mise à jour du plan")
+      const msg = error.response?.data?.error || "Erreur lors de la mise à jour du plan"
+      toast.error(msg)
+      console.error("Erreur update plan:", error.response?.data || error.message)
     }
   }
 
