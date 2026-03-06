@@ -23,7 +23,6 @@ import { resolveImageUrl } from '../../../utils/imageUrl'
 const ThemeBold = ({ shop, products }) => {
     const { addToCart, setIsCartOpen, cartCount } = useCart()
     const navigate = useNavigate()
-    const [selectedProduct, setSelectedProduct] = useState(null)
     const [searchTerm, setSearchTerm] = useState('')
     const [selectedCategory, setSelectedCategory] = useState('all')
     const [scrolled, setScrolled] = useState(false)
@@ -35,17 +34,7 @@ const ThemeBold = ({ shop, products }) => {
         return () => window.removeEventListener('scroll', handleScroll)
     }, [])
 
-    // Tracker ViewContent UNIQUEMENT quand un produit est ouvert (standard Meta)
-    useEffect(() => {
-        if (selectedProduct && isPixelReady()) {
-            trackViewContent(
-                selectedProduct.name,
-                selectedProduct.category || 'product',
-                selectedProduct.price,
-                selectedProduct.currency || 'XOF'
-            )
-        }
-    }, [selectedProduct])
+
 
     // Dynamic config
     const colors = shop.settings?.themeConfig?.colors || {}
@@ -381,103 +370,7 @@ const ThemeBold = ({ shop, products }) => {
                 </div>
             </footer>
 
-            {/* ─── PRODUCT DETAIL MODAL ─── */}
-            {selectedProduct && (
-                <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm" onClick={() => setSelectedProduct(null)}>
-                    <div
-                        className="w-full sm:max-w-4xl sm:rounded-2xl max-h-[95vh] overflow-y-auto shadow-2xl animate-fade-in-up"
-                        style={{ backgroundColor: bgColor, border: `1px solid ${textColor}10` }}
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        {/* Close */}
-                        <div className="sticky top-0 z-10 flex justify-end p-4 sm:p-5" style={{ backgroundColor: `${bgColor}f0` }}>
-                            <button onClick={() => setSelectedProduct(null)}
-                                className="p-2 rounded-full transition-colors hover:opacity-70"
-                                style={{ backgroundColor: `${textColor}10` }}>
-                                <FiX className="w-5 h-5" style={{ color: textColor }} />
-                            </button>
-                        </div>
 
-                        <div className="grid sm:grid-cols-2 gap-0 sm:gap-8 px-5 sm:px-8 pb-8">
-                            {/* Image */}
-                            <div className="aspect-square rounded-xl overflow-hidden mb-6 sm:mb-0"
-                                style={{ backgroundColor: `${textColor}05` }}>
-                                {selectedProduct.image_url ? (
-                                    <img src={resolveImageUrl(selectedProduct.image_url)} alt={selectedProduct.name} className="w-full h-full object-cover" />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center">
-                                        <FiImage className="w-16 h-16" style={{ color: `${textColor}20` }} />
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Details */}
-                            <div className="flex flex-col">
-                                <div className="flex-1">
-                                    {selectedProduct.category && (
-                                        <p className="text-[10px] font-bold uppercase tracking-[0.2em] mb-3" style={{ color: primaryColor }}>
-                                            {selectedProduct.category}
-                                        </p>
-                                    )}
-                                    <h2 className="text-2xl sm:text-3xl font-black tracking-tight mb-3">
-                                        {selectedProduct.name}
-                                    </h2>
-                                    <p className="text-2xl sm:text-3xl font-black mb-6" style={{ color: primaryColor }}>
-                                        {formatCurrency(selectedProduct.price, selectedProduct.currency || 'XOF')}
-                                    </p>
-
-                                    {/* Stock */}
-                                    <div className="flex items-center gap-2 mb-6">
-                                        {selectedProduct.stock > 0 ? (
-                                            <>
-                                                <span className="w-2 h-2 rounded-full bg-green-400"></span>
-                                                <span className="text-sm font-semibold text-green-400">
-                                                    {selectedProduct.stock > 10 ? 'En stock' : `${selectedProduct.stock} en stock`}
-                                                </span>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <span className="w-2 h-2 rounded-full bg-red-400"></span>
-                                                <span className="text-sm font-semibold text-red-400">Épuisé</span>
-                                            </>
-                                        )}
-                                    </div>
-
-                                    {selectedProduct.description && (
-                                        <p className="text-sm opacity-60 leading-relaxed mb-8">
-                                            {selectedProduct.description}
-                                        </p>
-                                    )}
-                                </div>
-
-                                {/* CTA */}
-                                <button
-                                    onClick={(e) => {
-                                        handleAddToCart(selectedProduct, e)
-                                        setTimeout(() => setSelectedProduct(null), 800)
-                                    }}
-                                    disabled={selectedProduct.stock <= 0}
-                                    className="w-full py-4 rounded-xl font-black text-sm uppercase tracking-wider transition-all hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2.5 shadow-2xl"
-                                    style={{ backgroundColor: primaryColor, color: primaryTextColor }}
-                                >
-                                    <FiShoppingBag className="w-5 h-5" />
-                                    {selectedProduct.stock > 0 ? 'Commander' : 'Rupture de stock'}
-                                </button>
-
-                                {/* Trust micro */}
-                                <div className="flex items-center justify-center gap-6 mt-5 opacity-40">
-                                    <div className="flex items-center gap-1.5 text-xs font-medium">
-                                        <FiZap className="w-3.5 h-3.5" /> Livraison Express
-                                    </div>
-                                    <div className="flex items-center gap-1.5 text-xs font-medium">
-                                        <FiShield className="w-3.5 h-3.5" /> Paiement Sécurisé
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     )
 }

@@ -27,7 +27,6 @@ const ThemeMinimal = ({ shop, products }) => {
   const { addToCart, cart, setIsCartOpen } = useCart()
   const navigate = useNavigate()
   const [scrolled, setScrolled] = useState(false)
-  const [selectedProduct, setSelectedProduct] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [addedProductId, setAddedProductId] = useState(null)
@@ -49,17 +48,7 @@ const ThemeMinimal = ({ shop, products }) => {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  // Tracker ViewContent UNIQUEMENT quand un produit est ouvert (standard Meta)
-  useEffect(() => {
-    if (selectedProduct && isPixelReady()) {
-      trackViewContent(
-        selectedProduct.name,
-        selectedProduct.category || 'product',
-        selectedProduct.price,
-        selectedProduct.currency || 'XOF'
-      )
-    }
-  }, [selectedProduct])
+
 
   // Categories
   const categories = ['all', ...new Set(products?.map(p => p.category).filter(Boolean))]
@@ -377,101 +366,7 @@ const ThemeMinimal = ({ shop, products }) => {
       </footer>
 
       {/* ─── PRODUCT DETAIL MODAL ─── */}
-      {selectedProduct && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => setSelectedProduct(null)}>
-          <div
-            className="bg-white w-full sm:max-w-4xl sm:rounded-2xl max-h-[95vh] overflow-y-auto shadow-2xl animate-fade-in-up"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Close */}
-            <div className="sticky top-0 z-10 bg-white/90 backdrop-blur-lg flex justify-end p-4 sm:p-5">
-              <button onClick={() => setSelectedProduct(null)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-                <FiX className="w-5 h-5 text-gray-500" />
-              </button>
-            </div>
 
-            <div className="grid sm:grid-cols-2 gap-0 sm:gap-8 px-5 sm:px-8 pb-8">
-              {/* Image */}
-              <div className="aspect-square bg-gray-50 rounded-xl overflow-hidden mb-6 sm:mb-0">
-                {selectedProduct.image_url ? (
-                  <img src={resolveImageUrl(selectedProduct.image_url)} alt={selectedProduct.name} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
-                    <FiImage className="w-16 h-16 text-gray-300" />
-                  </div>
-                )}
-              </div>
-
-              {/* Details */}
-              <div className="flex flex-col">
-                <div className="flex-1">
-                  {selectedProduct.category && (
-                    <p className="text-xs font-medium text-gray-400 uppercase tracking-widest mb-2">
-                      {selectedProduct.category}
-                    </p>
-                  )}
-                  <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 tracking-tight">
-                    {selectedProduct.name}
-                  </h2>
-                  <p className="text-2xl sm:text-3xl font-bold mb-6" style={{ color: primary }}>
-                    {formatCurrency(selectedProduct.price, selectedProduct.currency || 'XOF')}
-                  </p>
-
-                  {/* Stock indicator */}
-                  <div className="flex items-center gap-2 mb-6">
-                    {selectedProduct.stock > 0 ? (
-                      <>
-                        <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                        <span className="text-sm text-green-700 font-medium">
-                          {selectedProduct.stock > 10 ? 'En stock' : `Plus que ${selectedProduct.stock} en stock`}
-                        </span>
-                      </>
-                    ) : (
-                      <>
-                        <span className="w-2 h-2 rounded-full bg-red-500"></span>
-                        <span className="text-sm text-red-600 font-medium">Rupture de stock</span>
-                      </>
-                    )}
-                  </div>
-
-                  {/* Description */}
-                  {selectedProduct.description && (
-                    <div className="mb-8">
-                      <p className="text-sm text-gray-600 leading-relaxed">
-                        {selectedProduct.description}
-                      </p>
-                    </div>
-                  )}
-                </div>
-
-                {/* Add to cart */}
-                <button
-                  onClick={(e) => {
-                    handleAddToCart(selectedProduct, e)
-                    setTimeout(() => setSelectedProduct(null), 800)
-                  }}
-                  disabled={selectedProduct.stock <= 0}
-                  className="w-full py-4 rounded-xl font-bold text-base transition-all hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2.5"
-                  style={{ backgroundColor: primary, color: secondary }}
-                >
-                  <FiShoppingCart className="w-5 h-5" />
-                  {selectedProduct.stock > 0 ? 'Commander' : 'Rupture de stock'}
-                </button>
-
-                {/* Trust micro */}
-                <div className="flex items-center justify-center gap-6 mt-5 text-gray-400">
-                  <div className="flex items-center gap-1.5 text-xs">
-                    <FiTruck className="w-3.5 h-3.5" /> Livraison rapide
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs">
-                    <FiShield className="w-3.5 h-3.5" /> Paiement sécurisé
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
