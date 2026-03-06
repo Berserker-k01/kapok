@@ -1,20 +1,25 @@
 import { Link, useLocation } from 'react-router-dom'
-import { 
-  FiHome, 
-  FiUsers, 
-  FiShoppingBag, 
-  FiCreditCard, 
-  FiBarChart3, 
+import {
+  FiHome,
+  FiUsers,
+  FiShoppingBag,
+  FiCreditCard,
+  FiBarChart3,
   FiSettings,
   FiX,
-  FiShield
+  FiShield,
+  FiPackage,
+  FiLock
 } from 'react-icons/fi'
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: FiHome },
   { name: 'Utilisateurs', href: '/users', icon: FiUsers },
   { name: 'Boutiques', href: '/shops', icon: FiShoppingBag },
+  { name: 'Produits', href: '/products', icon: FiPackage },
   { name: 'Abonnements', href: '/subscriptions', icon: FiCreditCard },
+  { name: 'Gestion des Plans', href: '/plans', icon: FiLock },
+  { name: 'Admins', href: '/admins', icon: FiShield },
   { name: 'Analytics', href: '/analytics', icon: FiBarChart3 },
   { name: 'Paramètres', href: '/settings', icon: FiSettings },
 ]
@@ -26,7 +31,7 @@ const Sidebar = ({ isOpen, onClose }) => {
     <>
       {/* Mobile overlay */}
       {isOpen && (
-        <div 
+        <div
           className="fixed inset-0 z-40 bg-gray-600 bg-opacity-75 lg:hidden"
           onClick={onClose}
         />

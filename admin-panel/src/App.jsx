@@ -13,6 +13,7 @@ import Plans from './pages/Plans/Plans'
 import PaymentNumbers from './pages/PaymentNumbers/PaymentNumbers'
 import Settings from './pages/Settings/Settings'
 import Admins from './pages/Admins/Admins'
+import Products from './pages/Products/Products'
 import { useAuthStore } from './store/authStore'
 import { useState } from 'react'
 
@@ -110,6 +111,7 @@ function App() {
           <Route path="/users" element={<Users />} />
           <Route path="/shops" element={<Shops />} />
           <Route path="/subscriptions" element={<Subscriptions />} />
+          <Route path="/products" element={<Products />} />
           <Route path="/payment-requests" element={<PaymentRequests />} />
           <Route path="/plans" element={<Plans />} />
           <Route path="/payment-numbers" element={<PaymentNumbers />} />

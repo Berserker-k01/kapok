@@ -204,6 +204,49 @@ router.get('/shops', async (req, res) => {
   }
 })
 
+// Obtenir tous les produits de toutes les boutiques
+router.get('/products', async (req, res) => {
+  try {
+    const { page = 1, limit = 50, search } = req.query
+    const offset = (page - 1) * limit
+
+    let query = `
+      SELECT 
+        p.*,
+        s.name as shop_name,
+        s.slug as shop_slug,
+        u.name as owner_name,
+        u.email as owner_email
+      FROM products p
+      JOIN shops s ON p.shop_id = s.id
+      JOIN users u ON s.owner_id = u.id
+    `
+    let queryParams = []
+
+    if (search) {
+      query += ` WHERE p.name ILIKE ? OR s.name ILIKE ? OR u.name ILIKE ?`
+      queryParams.push(`%${search}%`, `%${search}%`, `%${search}%`)
+    }
+
+    query += ` ORDER BY p.created_at DESC LIMIT ? OFFSET ?`
+    queryParams.push(parseInt(limit), parseInt(offset))
+
+    const result = await db.query(query, queryParams)
+
+    res.json({
+      products: result.rows,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit)
+      }
+    })
+
+  } catch (error) {
+    console.error('Erreur récupération produits admin:', error)
+    res.status(500).json({ error: 'Erreur lors de la récupération des produits' })
+  }
+})
+
 // Suspendre/Activer un utilisateur (Super Admin seulement)
 router.put('/users/:userId/status', requireSuperAdmin, async (req, res) => {
   try {

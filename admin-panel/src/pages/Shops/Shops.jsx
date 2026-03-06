@@ -10,6 +10,8 @@ const Shops = () => {
   const [shops, setShops] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(false)
   const { token } = useAuthStore()
 
   useEffect(() => {
@@ -23,8 +25,11 @@ const Shops = () => {
     try {
       // Note: Le backend ne supporte pas encore le filtrage par nom de boutique dans /api/admin/shops
       // On récupère tout et on filtrera côté client pour l'instant, ou on mettra à jour l'API plus tard
-      const response = await axios.get('/admin/shops')
+      const response = await axios.get('/admin/shops', {
+        params: { page, limit: 50 }
+      })
       setShops(response.data.shops)
+      setHasMore(response.data.shops.length === 50)
     } catch (error) {
       console.error('Erreur chargement boutiques:', error)
       toast.error('Impossible de charger les boutiques')
@@ -35,7 +40,7 @@ const Shops = () => {
 
   useEffect(() => {
     fetchShops()
-  }, [])
+  }, [page])
 
   const filteredShops = shops.filter(shop =>
     shop.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -121,21 +126,55 @@ const Shops = () => {
                       </Badge>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <a
-                        href={`http://localhost:3000/s/${shop.slug}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:text-blue-900 flex items-center ml-auto"
-                        title="Voir la boutique"
-                      >
-                        <FiExternalLink className="w-5 h-5" />
-                      </a>
+                      <div className="flex items-center justify-end space-x-2">
+                        <button
+                          onClick={() => {
+                            const url = `https://${shop.slug}.assime.net`;
+                            navigator.clipboard.writeText(url);
+                            toast.success('Lien copié !');
+                          }}
+                          className="text-gray-400 hover:text-primary-600 transition-colors"
+                          title="Copier le lien"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                          </svg>
+                        </button>
+                        <a
+                          href={`https://${shop.slug}.assime.net`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:text-blue-900"
+                          title="Voir la boutique"
+                        >
+                          <FiExternalLink className="w-5 h-5" />
+                        </a>
+                      </div>
                     </td>
                   </tr>
                 ))
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Pagination Controls */}
+        <div className="px-6 py-4 flex items-center justify-between border-t border-gray-200 dark:border-secondary-700">
+          <button
+            onClick={() => setPage(p => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className={`px-4 py-2 text-sm font-medium rounded-md ${page === 1 ? 'text-gray-400 bg-gray-100 cursor-not-allowed' : 'text-primary-600 bg-white border border-primary-200 hover:bg-primary-50'}`}
+          >
+            Précédent
+          </button>
+          <span className="text-secondary-600 text-sm font-medium">Page {page}</span>
+          <button
+            onClick={() => setPage(p => p + 1)}
+            disabled={!hasMore}
+            className={`px-4 py-2 text-sm font-medium rounded-md ${!hasMore ? 'text-gray-400 bg-gray-100 cursor-not-allowed' : 'text-primary-600 bg-white border border-primary-200 hover:bg-primary-50'}`}
+          >
+            Suivant
+          </button>
         </div>
       </Card>
     </div>

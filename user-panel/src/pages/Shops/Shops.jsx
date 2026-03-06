@@ -184,7 +184,7 @@ const Shops = () => {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => {
-                    const url = `${window.location.origin}/s/${shop.slug}`;
+                    const url = `https://${shop.slug}.assime.net`;
                     navigator.clipboard.writeText(url);
                     toast.success('Lien copié !');
                   }}

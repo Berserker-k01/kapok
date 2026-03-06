@@ -7,14 +7,11 @@ import Badge from '../../components/ui/Badge'
 import Button from '../../components/ui/Button'
 import { useAuthStore } from '../../store/authStore'
 
-const PLANS = {
-  free: { name: 'Gratuit', color: 'bg-gray-100 text-gray-800', limit: 2 },
-  basic: { name: 'Basic', color: 'bg-blue-100 text-blue-800', limit: 5 },
-  pro: { name: 'Pro', color: 'bg-purple-100 text-purple-800', limit: '∞' }
-}
+
 
 const Subscriptions = () => {
   const [users, setUsers] = useState([])
+  const [plans, setPlans] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [editingUser, setEditingUser] = useState(null)
@@ -34,14 +31,45 @@ const Subscriptions = () => {
     } catch (error) {
       toast.error("Erreur lors du chargement des utilisateurs")
       console.error(error)
-    } finally {
-      setLoading(false)
+    }
+  }
+
+  const fetchPlans = async () => {
+    try {
+      const response = await axios.get('/plans')
+      setPlans(response.data.plans || [])
+    } catch (error) {
+      console.error("Erreur chargement plans:", error)
     }
   }
 
   useEffect(() => {
-    fetchUsers()
+    const loadData = async () => {
+      setLoading(true)
+      await Promise.all([fetchUsers(), fetchPlans()])
+      setLoading(false)
+    }
+    loadData()
   }, [])
+
+  const getPlanColor = (planKey) => {
+    const pk = planKey?.toLowerCase() || 'free'
+    if (pk === 'free' || pk === 'gratuit') return 'bg-gray-100 text-gray-800'
+    if (pk === 'basic' || pk === 'starter') return 'bg-blue-100 text-blue-800'
+    if (pk === 'pro' || pk === 'premium') return 'bg-purple-100 text-purple-800'
+    if (pk === 'gold' || pk === 'unlimited') return 'bg-amber-100 text-amber-800'
+    return 'bg-secondary-100 text-secondary-800'
+  }
+
+  const getPlanName = (planKey) => {
+    const plan = plans.find(p => p.plan_key?.toLowerCase() === planKey?.toLowerCase())
+    return plan ? plan.name : (planKey || 'Gratuit')
+  }
+
+  const getPlanLimit = (planKey) => {
+    const plan = plans.find(p => p.plan_key?.toLowerCase() === planKey?.toLowerCase())
+    return plan ? (plan.max_shops === null ? '∞' : plan.max_shops) : 2
+  }
 
   const handleUpdatePlan = async (userId, newPlan) => {
     try {
@@ -110,24 +138,26 @@ const Subscriptions = () => {
                     {editingUser === user.id ? (
                       <select
                         className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-secondary-700 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm rounded-md bg-white dark:bg-secondary-800 text-secondary-900 dark:text-white"
-                        defaultValue={user.plan || 'free'}
+                        value={user.plan || 'free'}
                         onChange={(e) => handleUpdatePlan(user.id, e.target.value)}
-                        autoFocus
                         onBlur={() => setEditingUser(null)}
                       >
-                        <option value="free">Gratuit</option>
-                        <option value="basic">Basic</option>
-                        <option value="pro">Pro</option>
+                        <option value="free">Gratuit (Plan par défaut)</option>
+                        {plans.filter(p => p.plan_key !== 'free').map(p => (
+                          <option key={p.plan_key} value={p.plan_key}>
+                            {p.name}
+                          </option>
+                        ))}
                       </select>
                     ) : (
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${(PLANS[user.plan] || PLANS['free']).color}`}>
-                        {(PLANS[user.plan] || PLANS['free']).name}
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getPlanColor(user.plan)}`}>
+                        {getPlanName(user.plan)}
                       </span>
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-secondary-400">
                     <span className="font-medium text-gray-900 dark:text-white">{user.shop_count}</span>
-                    <span className="text-gray-400"> / {(PLANS[user.plan] || PLANS['free']).limit}</span>
+                    <span className="text-gray-400"> / {getPlanLimit(user.plan)}</span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <Badge variant={user.status === 'active' ? 'success' : 'warning'}>

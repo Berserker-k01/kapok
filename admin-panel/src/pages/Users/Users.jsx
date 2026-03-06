@@ -35,6 +35,8 @@ const Users = () => {
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(false)
   const { token } = useAuthStore()
 
   useEffect(() => {
@@ -47,9 +49,10 @@ const Users = () => {
     setLoading(true)
     try {
       const response = await axios.get('/admin/users', {
-        params: { search: searchTerm }
+        params: { search: searchTerm, page, limit: 50 }
       })
       setUsers(response.data.users)
+      setHasMore(response.data.users.length === 50)
     } catch (error) {
       console.error('Erreur chargement utilisateurs:', error)
       toast.error('Impossible de charger les utilisateurs')
@@ -64,6 +67,10 @@ const Users = () => {
       fetchUsers()
     }, 500)
     return () => clearTimeout(timer)
+  }, [searchTerm, page])
+
+  useEffect(() => {
+    setPage(1)
   }, [searchTerm])
 
   const handleUpdateStatus = async (userId, newStatus) => {
@@ -241,6 +248,25 @@ const Users = () => {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Pagination Controls */}
+        <div className="px-6 py-4 flex items-center justify-between border-t border-gray-200 dark:border-secondary-700">
+          <button
+            onClick={() => setPage(p => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className={`px-4 py-2 text-sm font-medium rounded-md ${page === 1 ? 'text-gray-400 bg-gray-100 cursor-not-allowed' : 'text-primary-600 bg-white border border-primary-200 hover:bg-primary-50'}`}
+          >
+            Précédent
+          </button>
+          <span className="text-secondary-600 text-sm font-medium">Page {page}</span>
+          <button
+            onClick={() => setPage(p => p + 1)}
+            disabled={!hasMore}
+            className={`px-4 py-2 text-sm font-medium rounded-md ${!hasMore ? 'text-gray-400 bg-gray-100 cursor-not-allowed' : 'text-primary-600 bg-white border border-primary-200 hover:bg-primary-50'}`}
+          >
+            Suivant
+          </button>
         </div>
       </Card>
     </div>
