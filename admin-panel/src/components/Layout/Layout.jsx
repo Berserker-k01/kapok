@@ -32,7 +32,7 @@ const Layout = ({ children }) => {
     { icon: CreditCard, label: 'Abonnements', path: '/subscriptions' },
     { icon: Clock, label: 'Paiements en attente', path: '/payment-requests' },
     { icon: Package, label: 'Gestion des plans', path: '/plans' },
-    { icon: Phone, label: 'Numéros de paiement', path: '/payment-numbers' },
+    { icon: Phone, label: 'Liens de paiement', path: '/payment-numbers' },
     // Visible par tous les admins
     { icon: Shield, label: 'Administrateurs', path: '/admins' },
     { icon: Settings, label: 'Paramètres', path: '/settings' },
