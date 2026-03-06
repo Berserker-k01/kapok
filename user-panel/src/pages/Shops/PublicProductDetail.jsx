@@ -159,7 +159,7 @@ const PublicProductDetail = ({ overrideSlug }) => {
                         </div>
 
                         {/* ─── INFOS PRODUIT ─── */}
-                        <div className="flex flex-col justify-center">
+                        <div className="flex flex-col lg:sticky lg:top-28 h-fit">
                             {product.category && (
                                 <p className="text-xs sm:text-sm font-bold uppercase tracking-widest mb-3 opacity-80" style={{ color: primaryColor }}>
                                     {product.category}
@@ -193,39 +193,55 @@ const PublicProductDetail = ({ overrideSlug }) => {
                             <button
                                 onClick={handleAddToCart}
                                 disabled={product.stock <= 0}
-                                className={`w-full py-4 rounded-xl font-black text-sm sm:text-base uppercase tracking-wider transition-all flex items-center justify-center gap-3 shadow-xl ${addedId ? 'opacity-90' : 'hover:scale-[1.02] hover:shadow-2xl'} disabled:opacity-40 disabled:cursor-not-allowed`}
-                                style={addedId ? { backgroundColor: '#10b981', color: '#fff' } : { backgroundColor: primaryColor, color: shop?.settings?.primaryTextColor || '#ffffff' }}
+                                className={`w-full py-5 rounded-2xl font-black text-lg sm:text-xl uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-3 shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-transparent ${addedId ? 'opacity-90' : 'hover:-translate-y-1 hover:shadow-[0_15px_40px_rgb(0,0,0,0.16)] active:translate-y-0 active:scale-95'} disabled:opacity-40 disabled:cursor-not-allowed`}
+                                style={addedId ? { backgroundColor: '#10b981', color: '#fff' } : { backgroundColor: primaryColor, color: shop?.settings?.primaryTextColor || '#ffffff', borderColor: `${primaryColor}20` }}
                             >
                                 {addedId ? (
-                                    <><FiCheck className="w-5 h-5" /> Ajouté avec succès !</>
+                                    <><FiCheck className="w-6 h-6" /> Ajouté avec succès !</>
                                 ) : (
-                                    <><FiShoppingBag className="w-5 h-5" /> {product.stock > 0 ? 'Commander' : 'Indisponible'}</>
+                                    <><FiShoppingBag className="w-6 h-6" /> {product.stock > 0 ? 'Commander' : 'Indisponible'}</>
                                 )}
                             </button>
+
+                            {/* Trust badges */}
+                            <div className="grid grid-cols-2 gap-4 mt-8">
+                                <div className="flex items-center gap-3 p-4 rounded-xl shadow-sm border" style={{ backgroundColor: `${textColor}03`, borderColor: `${textColor}08` }}>
+                                    <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: `${primaryColor}15`, color: primaryColor }}>
+                                        <FiZap className="w-5 h-5" />
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-xs font-bold uppercase tracking-wider">Livraison Rapide</span>
+                                        <span className="text-[10px] opacity-60">Expédition 24/48h</span>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3 p-4 rounded-xl shadow-sm border" style={{ backgroundColor: `${textColor}03`, borderColor: `${textColor}08` }}>
+                                    <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: `${primaryColor}15`, color: primaryColor }}>
+                                        <FiShield className="w-5 h-5" />
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-xs font-bold uppercase tracking-wider">Paiement Sécurisé</span>
+                                        <span className="text-[10px] opacity-60">À la livraison / Mobile</span>
+                                    </div>
+                                </div>
+                            </div>
 
                             {/* Description */}
                             {product.description && (
                                 <div className="mt-12 pt-8 border-t" style={{ borderColor: `${textColor}15` }}>
-                                    <h3 className="text-lg font-bold mb-4">Description</h3>
-                                    <div className="prose prose-sm sm:prose-base opacity-80" style={{ color: textColor }}>
-                                        {product.description.split('\n').map((line, i) => (
-                                            <p key={i} className="mb-2 leading-relaxed">{line}</p>
-                                        ))}
+                                    <h3 className="text-xl font-black mb-6 flex items-center gap-3">
+                                        <span className="w-2 h-6 rounded-full" style={{ backgroundColor: primaryColor }}></span>
+                                        Description du produit
+                                    </h3>
+                                    <div className="prose prose-sm sm:prose-base max-w-none opacity-90 leading-relaxed space-y-4" style={{ color: textColor }}>
+                                        {product.description.split('\n').map((line, i) => {
+                                            if (line.trim().startsWith('- ')) {
+                                                return <li key={i} className="ml-5 list-disc pl-2">{line.replace('- ', '')}</li>
+                                            }
+                                            return <p key={i}>{line}</p>
+                                        })}
                                     </div>
                                 </div>
                             )}
-
-                            {/* Trust badges */}
-                            <div className="flex items-center gap-8 mt-12 pt-8 border-t opacity-50" style={{ borderColor: `${textColor}15` }}>
-                                <div className="flex flex-col gap-2">
-                                    <FiZap className="w-6 h-6" />
-                                    <span className="text-xs font-bold uppercase tracking-wider">Livraison Rapide</span>
-                                </div>
-                                <div className="flex flex-col gap-2">
-                                    <FiShield className="w-6 h-6" />
-                                    <span className="text-xs font-bold uppercase tracking-wider">Paiement Sécurisé</span>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </main>
