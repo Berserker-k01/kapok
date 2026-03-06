@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
     FiShoppingBag,
     FiArrowRight,
@@ -21,6 +22,7 @@ import { resolveImageUrl } from '../../../utils/imageUrl'
 
 const ThemeBold = ({ shop, products }) => {
     const { addToCart, setIsCartOpen, cartCount } = useCart()
+    const navigate = useNavigate()
     const [selectedProduct, setSelectedProduct] = useState(null)
     const [searchTerm, setSearchTerm] = useState('')
     const [selectedCategory, setSelectedCategory] = useState('all')
@@ -249,7 +251,7 @@ const ThemeBold = ({ shop, products }) => {
                             <div
                                 key={product.id}
                                 className="group cursor-pointer"
-                                onClick={() => setSelectedProduct(product)}
+                                onClick={() => navigate('/product/' + product.id)}
                             >
                                 {/* Image */}
                                 <div className="relative aspect-[3/4] rounded-xl overflow-hidden mb-3"

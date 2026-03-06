@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   FiShoppingCart,
   FiImage,
@@ -24,6 +25,7 @@ import { trackViewContent, trackAddToCart, isPixelReady } from '../../../utils/f
 
 const ThemeMinimal = ({ shop, products }) => {
   const { addToCart, cart, setIsCartOpen } = useCart()
+  const navigate = useNavigate()
   const [scrolled, setScrolled] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
@@ -246,7 +248,7 @@ const ThemeMinimal = ({ shop, products }) => {
               <div
                 key={product.id}
                 className="group cursor-pointer"
-                onClick={() => setSelectedProduct(product)}
+                onClick={() => navigate('/product/' + product.id)}
               >
                 {/* Image */}
                 <div className="relative aspect-[3/4] bg-gray-100 rounded-xl overflow-hidden mb-3">

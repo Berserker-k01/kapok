@@ -10,6 +10,7 @@ import CheckoutCOD from './pages/Checkout/CheckoutCOD'
 import Checkout from './pages/Checkout/Checkout'
 import ShopSettings from './pages/Shops/ShopSettings'
 import PublicShop from './pages/Shops/PublicShop'
+import PublicProductDetail from './pages/Shops/PublicProductDetail'
 import Products from './pages/Products/Products'
 import Collections from './pages/Products/Collections'
 import Orders from './pages/Orders/Orders'
@@ -107,6 +108,7 @@ function App() {
               <Routes>
                 {/* === MODE BOUTIQUE: Séparation totale de l'app client === */}
                 <Route path="/" element={<SubdomainShop />} />
+                <Route path="/product/:productId" element={<PublicProductDetail overrideSlug={subdomainSlug} />} />
                 <Route path="/checkout" element={<Checkout />} />
                 <Route path="/checkout/cod/:productId" element={<CheckoutCOD />} />
                 <Route path="/validate-order/:orderId" element={<OrderValidation />} />
