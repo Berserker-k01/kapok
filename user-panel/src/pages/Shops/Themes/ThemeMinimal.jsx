@@ -16,7 +16,8 @@ import {
   FiMinus,
   FiPlus,
   FiPackage,
-  FiRefreshCw
+  FiRefreshCw,
+  FiEye
 } from 'react-icons/fi'
 import { formatCurrency } from '../../../utils/currency'
 import { resolveImageUrl } from '../../../utils/imageUrl'
@@ -30,6 +31,7 @@ const ThemeMinimal = ({ shop, products }) => {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [addedProductId, setAddedProductId] = useState(null)
+  const [selectedProduct, setSelectedProduct] = useState(null)
 
   const {
     primary = '#000000',
@@ -287,19 +289,19 @@ const ThemeMinimal = ({ shop, products }) => {
                   </div>
 
                   {/* Hover Description Tooltip Pop-up */}
-                  {product.description && (
-                    <div
-                      className="absolute z-30 left-1/2 -translate-x-1/2 bottom-[105%] w-[110%] p-4 rounded-xl shadow-[0_15px_40px_rgba(0,0,0,0.15)] pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 bg-white"
-                      style={{ border: `1px solid ${text}10` }}
+                  <div className="absolute top-2 right-2 flex flex-col gap-2 z-20">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedProduct(product);
+                      }}
+                      className="p-2 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110 bg-white"
+                      style={{ color: primary }}
+                      title="Aperçu rapide"
                     >
-                      <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 rotate-45 bg-white" style={{ borderBottom: `1px solid ${text}10`, borderRight: `1px solid ${text}10` }}></div>
-                      <h4 className="font-bold text-xs mb-2 truncate" style={{ color: primary }}>Description</h4>
-                      <div
-                        className="text-xs font-medium line-clamp-5 prose prose-sm text-gray-700"
-                        dangerouslySetInnerHTML={{ __html: product.description.replace(/<img[^>]*>/g, '') }}
-                      />
-                    </div>
-                  )}
+                      <FiEye className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
 
                 {/* Info */}
