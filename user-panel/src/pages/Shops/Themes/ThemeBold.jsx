@@ -245,6 +245,12 @@ const ThemeBold = ({ shop, products }) => {
                                 key={product.id}
                                 className="group cursor-pointer"
                                 onClick={() => navigate('/product/' + product.id)}
+                                onMouseEnter={(e) => {
+                                    // Make sure we only show one modal at a time
+                                    if (!selectedProduct) {
+                                        setSelectedProduct(product)
+                                    }
+                                }}
                             >
                                 <div className="relative">
                                     {/* Image */}
@@ -296,20 +302,6 @@ const ThemeBold = ({ shop, products }) => {
                                         )}
                                     </div>
 
-                                    {/* Hover Description Tooltip Pop-up */}
-                                    <div className="absolute top-2 right-2 flex flex-col gap-2 z-20">
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                setSelectedProduct(product);
-                                            }}
-                                            className="p-2 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110"
-                                            style={{ backgroundColor: bgColor, color: textColor }}
-                                            title="Aperçu rapide"
-                                        >
-                                            <FiEye className="w-5 h-5" />
-                                        </button>
-                                    </div>
                                 </div>
 
                                 {/* Info */}

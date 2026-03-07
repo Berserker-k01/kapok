@@ -242,6 +242,11 @@ const ThemeMinimal = ({ shop, products }) => {
                 key={product.id}
                 className="group cursor-pointer"
                 onClick={() => navigate('/product/' + product.id)}
+                onMouseEnter={(e) => {
+                  if (!selectedProduct) {
+                    setSelectedProduct(product)
+                  }
+                }}
               >
                 <div className="relative">
                   {/* Image */}
@@ -288,20 +293,6 @@ const ThemeMinimal = ({ shop, products }) => {
                     )}
                   </div>
 
-                  {/* Hover Description Tooltip Pop-up */}
-                  <div className="absolute top-2 right-2 flex flex-col gap-2 z-20">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedProduct(product);
-                      }}
-                      className="p-2 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110 bg-white"
-                      style={{ color: primary }}
-                      title="Aperçu rapide"
-                    >
-                      <FiEye className="w-4 h-4" />
-                    </button>
-                  </div>
                 </div>
 
                 {/* Info */}
