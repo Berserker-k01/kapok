@@ -83,9 +83,12 @@ const PublicProductDetail = ({ overrideSlug }) => {
         <Link to="/" className="text-blue-500 underline">Retour à la boutique</Link>
     </div>
 
-    const primaryColor = shop?.settings?.primaryColor || '#000000'
-    const bgColor = shop?.settings?.bgColor || '#ffffff'
-    const textColor = shop?.settings?.textColor || '#000000'
+    const inThemeConfig = shop?.settings?.themeConfig?.colors || {}
+    const primaryColor = inThemeConfig.primary || shop?.settings?.primaryColor || '#000000'
+    const bgColor = inThemeConfig.background || shop?.settings?.bgColor || '#ffffff'
+    const textColor = inThemeConfig.text || shop?.settings?.textColor || '#000000'
+    const primaryTextColor = inThemeConfig.secondary || '#ffffff'
+    const logoUrl = shop?.settings?.themeConfig?.content?.logoUrl || shop?.logo_url ? resolveImageUrl(shop?.settings?.themeConfig?.content?.logoUrl || shop?.logo_url) : null
 
     // Combine images into an array for gallery
     let images = []
@@ -108,8 +111,9 @@ const PublicProductDetail = ({ overrideSlug }) => {
                         <button onClick={() => navigate('/')} className="flex items-center gap-2 hover:opacity-70 transition font-medium">
                             <FiChevronLeft className="w-5 h-5" /> Retour
                         </button>
-                        <div className="font-bold text-lg hidden sm:block">
-                            {shop.name}
+                        <div className="font-bold text-lg hidden sm:flex items-center gap-2">
+                            {logoUrl && <img src={logoUrl} alt={shop.name} className="h-8 max-w-[120px] object-contain" />}
+                            {!logoUrl && shop.name}
                         </div>
                         <button
                             className="relative"
@@ -194,7 +198,7 @@ const PublicProductDetail = ({ overrideSlug }) => {
                                 onClick={handleAddToCart}
                                 disabled={product.stock <= 0}
                                 className={`w-full py-5 rounded-2xl font-black text-lg sm:text-xl uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-3 shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-transparent ${addedId ? 'opacity-90' : 'hover:-translate-y-1 hover:shadow-[0_15px_40px_rgb(0,0,0,0.16)] active:translate-y-0 active:scale-95'} disabled:opacity-40 disabled:cursor-not-allowed`}
-                                style={addedId ? { backgroundColor: '#10b981', color: '#fff' } : { backgroundColor: primaryColor, color: shop?.settings?.primaryTextColor || '#ffffff', borderColor: `${primaryColor}20` }}
+                                style={addedId ? { backgroundColor: '#10b981', color: '#fff' } : { backgroundColor: primaryColor, color: primaryTextColor, borderColor: `${primaryColor}20` }}
                             >
                                 {addedId ? (
                                     <><FiCheck className="w-6 h-6" /> Ajouté avec succès !</>

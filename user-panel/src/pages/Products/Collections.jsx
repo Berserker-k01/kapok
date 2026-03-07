@@ -32,8 +32,12 @@ const Collections = () => {
                 const response = await axios.get('/shops')
                 const shopsData = response.data.data?.shops || []
                 setShops(shopsData)
-                if (shopsData.length > 0) {
+                const savedShopId = localStorage.getItem('selectedShopId')
+                if (savedShopId && shopsData.find(s => s.id === savedShopId)) {
+                    setSelectedShop(savedShopId)
+                } else if (shopsData.length > 0) {
                     setSelectedShop(shopsData[0].id)
+                    localStorage.setItem('selectedShopId', shopsData[0].id)
                 } else {
                     setLoading(false)
                 }
@@ -173,17 +177,20 @@ const Collections = () => {
                 </div>
 
                 <div className="flex items-center gap-3">
-                    {shops.length > 0 && (
+                    {shops.length > 0 ? (
                         <select
                             value={selectedShop}
-                            onChange={(e) => setSelectedShop(e.target.value)}
-                            className="input-field w-48"
+                            onChange={(e) => {
+                                setSelectedShop(e.target.value)
+                                localStorage.setItem('selectedShopId', e.target.value)
+                            }}
+                            className="input-field w-48 bg-white border-gray-200"
                         >
                             {shops.map(shop => (
                                 <option key={shop.id} value={shop.id}>{shop.name}</option>
                             ))}
                         </select>
-                    )}
+                    ) : null}
 
                     <Button onClick={() => { setIsEditing(false); setFormData({ name: '', description: '' }); setImagePreview(null); setImageFile(null); setShowModal(true) }}>
                         <FiPlus className="mr-2" /> Créer une collection
