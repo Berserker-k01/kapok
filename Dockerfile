@@ -7,7 +7,7 @@
 FROM node:18-alpine AS build-user
 WORKDIR /build
 COPY user-panel/package*.json ./
-RUN npm ci
+RUN npm ci --legacy-peer-deps
 COPY user-panel/ .
 ARG VITE_API_URL=/api
 ENV VITE_API_URL=${VITE_API_URL}
