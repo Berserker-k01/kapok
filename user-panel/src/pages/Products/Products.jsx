@@ -3,7 +3,7 @@ import axios from 'axios'
 import toast from 'react-hot-toast'
 import ReactQuill from 'react-quill'
 import 'react-quill/dist/quill.snow.css'
-import { FiPlus, FiEdit, FiTrash2, FiImage, FiSearch, FiFilter, FiLoader, FiCpu, FiBox, FiX } from 'react-icons/fi'
+import { FiPlus, FiEdit, FiTrash2, FiImage, FiSearch, FiFilter, FiLoader, FiCpu, FiBox, FiX, FiFileText } from 'react-icons/fi'
 import { motion, AnimatePresence } from 'framer-motion'
 import Button from '../../components/ui/Button'
 import { useAuthStore } from '../../store/authStore'
@@ -374,8 +374,21 @@ const Products = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button
+                        onClick={() => {
+                          handleEditProduct(product);
+                          setTimeout(() => {
+                            document.getElementById('rich-text-editor')?.scrollIntoView({ behavior: 'smooth' });
+                          }, 300);
+                        }}
+                        className="text-gray-400 hover:text-purple-600 transition-colors mr-2 p-2 hover:bg-purple-50 rounded-full"
+                        title="Ouvrir l'éditeur de Fiche Produit (Page Avancée)"
+                      >
+                        <FiFileText className="h-4 w-4" />
+                      </button>
+                      <button
                         onClick={() => handleEditProduct(product)}
                         className="text-gray-400 hover:text-blue-600 transition-colors mr-2 p-2 hover:bg-blue-50 rounded-full"
+                        title="Paramètres généraux"
                       >
                         <FiEdit className="h-4 w-4" />
                       </button>
@@ -536,14 +549,17 @@ const Products = () => {
                             </div>
                           </div>
 
-                          {/* Description */}
-                          <div className="space-y-2">
-                            <div className="flex justify-between items-center">
-                              <label className="block text-sm font-semibold text-gray-900">Description du produit</label>
+                          {/* Description / Fiche Produit (Rich Text Editor) */}
+                          <div id="rich-text-editor" className="space-y-4 pt-4 mt-8 border-t border-gray-100">
+                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                              <label className="block text-lg font-bold text-gray-900">
+                                🎨 Fiche Produit Détaillée
+                                <span className="block text-xs font-normal text-gray-500 mt-0.5">La page complète de vente où présenter la description avec images, vidéos, et mise en forme.</span>
+                              </label>
                               <button
                                 type="button"
                                 onClick={handleGenerateDescription}
-                                className="inline-flex items-center gap-2 text-xs font-semibold text-purple-600 hover:text-purple-700 px-4 py-2 rounded-lg hover:bg-purple-50 transition-all border border-purple-200 hover:border-purple-300"
+                                className="inline-flex shrink-0 items-center gap-2 text-xs font-semibold text-purple-600 hover:text-purple-700 px-4 py-2.5 rounded-lg hover:bg-purple-50 transition-all border border-purple-200 hover:border-purple-300"
                               >
                                 <FiCpu className="w-4 h-4" />
                                 Générer avec l'IA

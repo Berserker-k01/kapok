@@ -241,20 +241,50 @@ const ThemeMinimal = ({ shop, products }) => {
                 className="group cursor-pointer"
                 onClick={() => navigate('/product/' + product.id)}
               >
-                {/* Image */}
-                <div className="relative aspect-[3/4] bg-gray-100 rounded-xl overflow-hidden mb-3">
-                  {product.image_url ? (
-                    <img
-                      src={resolveImageUrl(product.image_url)}
-                      alt={product.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
-                      <FiImage className="w-10 h-10 text-gray-300" />
+                <div className="relative">
+                  {/* Image */}
+                  <div className="relative aspect-[3/4] bg-gray-100 rounded-xl overflow-hidden mb-3">
+                    {product.image_url ? (
+                      <img
+                        src={resolveImageUrl(product.image_url)}
+                        alt={product.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
+                        <FiImage className="w-10 h-10 text-gray-300" />
+                      </div>
+                    )}
+
+                    {/* Quick add */}
+                    <div className="absolute inset-x-0 bottom-0 p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out pointer-events-auto">
+                      <button
+                        onClick={(e) => handleAddToCart(product, e)}
+                        className={`w-full py-2.5 rounded-lg font-semibold text-sm shadow-lg transition-all flex items-center justify-center gap-2 ${addedProductId === product.id ? 'bg-green-600 text-white' : ''
+                          }`}
+                        style={addedProductId !== product.id ? { backgroundColor: primary, color: secondary } : {}}
+                      >
+                        {addedProductId === product.id ? (
+                          <><FiCheck className="w-4 h-4" /> Ajouté !</>
+                        ) : (
+                          <><FiShoppingCart className="w-4 h-4" /> Commander</>
+                        )}
+                      </button>
                     </div>
-                  )}
+
+                    {/* Badges */}
+                    {product.stock > 0 && product.stock <= 5 && (
+                      <div className="absolute top-2 left-2 bg-amber-500 text-white text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wider">
+                        Plus que {product.stock}
+                      </div>
+                    )}
+                    {product.stock === 0 && (
+                      <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] flex items-center justify-center">
+                        <span className="bg-black text-white text-xs font-bold px-4 py-2 rounded-full">Épuisé</span>
+                      </div>
+                    )}
+                  </div>
 
                   {/* Hover Description Tooltip Pop-up */}
                   {product.description && (
@@ -270,34 +300,6 @@ const ThemeMinimal = ({ shop, products }) => {
                       />
                     </div>
                   )}
-
-                  {/* Quick add */}
-                  <div className="absolute inset-x-0 bottom-0 p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out pointer-events-auto">
-                    <button
-                      onClick={(e) => handleAddToCart(product, e)}
-                      className={`w-full py-2.5 rounded-lg font-semibold text-sm shadow-lg transition-all flex items-center justify-center gap-2 ${addedProductId === product.id ? 'bg-green-600 text-white' : ''
-                        }`}
-                      style={addedProductId !== product.id ? { backgroundColor: primary, color: secondary } : {}}
-                    >
-                      {addedProductId === product.id ? (
-                        <><FiCheck className="w-4 h-4" /> Ajouté !</>
-                      ) : (
-                        <><FiShoppingCart className="w-4 h-4" /> Commander</>
-                      )}
-                    </button>
-                  </div>
-
-                  {/* Badges */}
-                  {product.stock > 0 && product.stock <= 5 && (
-                    <div className="absolute top-2 left-2 bg-amber-500 text-white text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wider">
-                      Plus que {product.stock}
-                    </div>
-                  )}
-                  {product.stock === 0 && (
-                    <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] flex items-center justify-center">
-                      <span className="bg-black text-white text-xs font-bold px-4 py-2 rounded-full">Épuisé</span>
-                    </div>
-                  )}
                 </div>
 
                 {/* Info */}
@@ -308,8 +310,9 @@ const ThemeMinimal = ({ shop, products }) => {
                   {formatCurrency(product.price, product.currency || 'XOF')}
                 </p>
               </div>
-            ))}
-          </div>
+            ))
+            }
+          </div >
         ) : (
           <div className="text-center py-24 border border-dashed border-gray-200 rounded-2xl">
             <FiBox className="mx-auto h-12 w-12 text-gray-300 mb-4" />
@@ -325,10 +328,10 @@ const ThemeMinimal = ({ shop, products }) => {
             )}
           </div>
         )}
-      </section>
+      </section >
 
       {/* ─── TRUST SECTION ─── */}
-      <section id="about" className="border-t border-gray-100 bg-gray-50/80">
+      < section id="about" className="border-t border-gray-100 bg-gray-50/80" >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-16">
             <div className="text-center">
@@ -357,10 +360,10 @@ const ThemeMinimal = ({ shop, products }) => {
             </div>
           </div>
         </div>
-      </section>
+      </section >
 
       {/* ─── FOOTER ─── */}
-      <footer className="border-t border-gray-200 bg-white">
+      < footer className="border-t border-gray-200 bg-white" >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-3">
@@ -380,11 +383,11 @@ const ThemeMinimal = ({ shop, products }) => {
             </p>
           </div>
         </div>
-      </footer>
+      </footer >
 
       {/* ─── PRODUCT DETAIL MODAL ─── */}
 
-    </div>
+    </div >
   )
 }
 

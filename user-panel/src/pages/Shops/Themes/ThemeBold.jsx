@@ -244,21 +244,56 @@ const ThemeBold = ({ shop, products }) => {
                                 className="group cursor-pointer"
                                 onClick={() => navigate('/product/' + product.id)}
                             >
-                                {/* Image */}
-                                <div className="relative aspect-[3/4] rounded-xl overflow-hidden mb-3"
-                                    style={{ backgroundColor: `${textColor}08` }}>
-                                    {product.image_url ? (
-                                        <img
-                                            src={resolveImageUrl(product.image_url)}
-                                            alt={product.name}
-                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
-                                            loading="lazy"
-                                        />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center">
-                                            <FiImage className="w-10 h-10" style={{ color: `${textColor}20` }} />
+                                <div className="relative">
+                                    {/* Image */}
+                                    <div className="relative aspect-[3/4] rounded-xl overflow-hidden mb-3"
+                                        style={{ backgroundColor: `${textColor}08` }}>
+                                        {product.image_url ? (
+                                            <img
+                                                src={resolveImageUrl(product.image_url)}
+                                                alt={product.name}
+                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                                                loading="lazy"
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center">
+                                                <FiImage className="w-10 h-10" style={{ color: `${textColor}20` }} />
+                                            </div>
+                                        )}
+
+                                        {/* Quick add overlay */}
+                                        <div className="absolute inset-x-0 bottom-0 p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300 z-10 pointer-events-auto">
+                                            <button
+                                                onClick={(e) => handleAddToCart(product, e)}
+                                                className={`w-full py-2.5 rounded-lg font-bold text-sm shadow-2xl transition-all flex items-center justify-center gap-2 ${addedProductId === product.id ? 'bg-green-500 text-white' : ''
+                                                    }`}
+                                                style={addedProductId !== product.id ? { backgroundColor: primaryColor, color: primaryTextColor } : {}}
+                                            >
+                                                {addedProductId === product.id ? (
+                                                    <><FiCheck className="w-4 h-4" /> Ajouté !</>
+                                                ) : (
+                                                    <><FiShoppingBag className="w-4 h-4" /> Commander</>
+                                                )}
+                                            </button>
                                         </div>
-                                    )}
+
+                                        {/* Badges */}
+                                        {product.stock > 0 && product.stock <= 5 && (
+                                            <div className="absolute top-2.5 left-2.5 text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md"
+                                                style={{ backgroundColor: primaryColor, color: primaryTextColor }}>
+                                                {product.stock} restant{product.stock > 1 ? 's' : ''}
+                                            </div>
+                                        )}
+                                        {product.stock === 0 && (
+                                            <div className="absolute inset-0 flex items-center justify-center" style={{ backgroundColor: `${bgColor}80` }}>
+                                                <span className="text-xs font-black uppercase tracking-wider px-4 py-2 rounded-full"
+                                                    style={{ backgroundColor: textColor, color: bgColor }}>
+                                                    Épuisé
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+
                                     {/* Hover Description Tooltip Pop-up */}
                                     {product.description && (
                                         <div
@@ -272,38 +307,6 @@ const ThemeBold = ({ shop, products }) => {
                                                 style={{ color: textColor }}
                                                 dangerouslySetInnerHTML={{ __html: product.description.replace(/<img[^>]*>/g, '') }}
                                             />
-                                        </div>
-                                    )}
-
-                                    {/* Quick add overlay */}
-                                    <div className="absolute inset-x-0 bottom-0 p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300 z-10 pointer-events-auto">
-                                        <button
-                                            onClick={(e) => handleAddToCart(product, e)}
-                                            className={`w-full py-2.5 rounded-lg font-bold text-sm shadow-2xl transition-all flex items-center justify-center gap-2 ${addedProductId === product.id ? 'bg-green-500 text-white' : ''
-                                                }`}
-                                            style={addedProductId !== product.id ? { backgroundColor: primaryColor, color: primaryTextColor } : {}}
-                                        >
-                                            {addedProductId === product.id ? (
-                                                <><FiCheck className="w-4 h-4" /> Ajouté !</>
-                                            ) : (
-                                                <><FiShoppingBag className="w-4 h-4" /> Commander</>
-                                            )}
-                                        </button>
-                                    </div>
-
-                                    {/* Badges */}
-                                    {product.stock > 0 && product.stock <= 5 && (
-                                        <div className="absolute top-2.5 left-2.5 text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md"
-                                            style={{ backgroundColor: primaryColor, color: primaryTextColor }}>
-                                            {product.stock} restant{product.stock > 1 ? 's' : ''}
-                                        </div>
-                                    )}
-                                    {product.stock === 0 && (
-                                        <div className="absolute inset-0 flex items-center justify-center" style={{ backgroundColor: `${bgColor}80` }}>
-                                            <span className="text-xs font-black uppercase tracking-wider px-4 py-2 rounded-full"
-                                                style={{ backgroundColor: textColor, color: bgColor }}>
-                                                Épuisé
-                                            </span>
                                         </div>
                                     )}
                                 </div>
