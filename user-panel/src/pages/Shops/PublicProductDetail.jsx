@@ -90,6 +90,10 @@ const PublicProductDetail = ({ overrideSlug }) => {
     const primaryTextColor = inThemeConfig.secondary || '#ffffff'
     const logoUrl = shop?.settings?.themeConfig?.content?.logoUrl || shop?.logo_url ? resolveImageUrl(shop?.settings?.themeConfig?.content?.logoUrl || shop?.logo_url) : null
 
+    const displayShopName = shop?.settings?.themeConfig?.content?.shopName || shop?.name || 'BOUTIQUE'
+    const deliveryText = shop?.settings?.themeConfig?.content?.deliveryText || 'Expédition 24/48h'
+    const securePaymentText = shop?.settings?.themeConfig?.content?.securePaymentText || 'À la livraison / Mobile'
+
     // Combine images into an array for gallery
     let images = []
     if (product.images && product.images.length > 0) {
@@ -112,8 +116,8 @@ const PublicProductDetail = ({ overrideSlug }) => {
                             <FiChevronLeft className="w-5 h-5" /> Retour
                         </button>
                         <div className="font-bold text-lg hidden sm:flex items-center gap-2">
-                            {logoUrl && <img src={logoUrl} alt={shop.name} className="h-8 max-w-[120px] object-contain" />}
-                            {!logoUrl && shop.name}
+                            {logoUrl && <img src={logoUrl} alt={displayShopName} className="h-8 max-w-[120px] object-contain" />}
+                            {!logoUrl && displayShopName}
                         </div>
                         <button
                             className="relative"
@@ -215,7 +219,7 @@ const PublicProductDetail = ({ overrideSlug }) => {
                                     </div>
                                     <div className="flex flex-col">
                                         <span className="text-xs font-bold uppercase tracking-wider">Livraison Rapide</span>
-                                        <span className="text-[10px] opacity-60">Expédition 24/48h</span>
+                                        <span className="text-[10px] opacity-60">{deliveryText}</span>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3 p-4 rounded-xl shadow-sm border" style={{ backgroundColor: `${textColor}03`, borderColor: `${textColor}08` }}>
@@ -224,7 +228,7 @@ const PublicProductDetail = ({ overrideSlug }) => {
                                     </div>
                                     <div className="flex flex-col">
                                         <span className="text-xs font-bold uppercase tracking-wider">Paiement Sécurisé</span>
-                                        <span className="text-[10px] opacity-60">À la livraison / Mobile</span>
+                                        <span className="text-[10px] opacity-60">{securePaymentText}</span>
                                     </div>
                                 </div>
                             </div>

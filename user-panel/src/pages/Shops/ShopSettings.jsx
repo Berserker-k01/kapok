@@ -25,6 +25,9 @@ const shopSettingsSchema = z.object({
         content: z.object({
             logoUrl: z.string().optional(),
             shopName: z.string().optional(),
+            topBannerText: z.string().optional(),
+            deliveryText: z.string().optional(),
+            securePaymentText: z.string().optional(),
         }).optional(),
     }).optional(),
     google_sheet_id: z.string().optional(),
@@ -84,7 +87,10 @@ const ShopSettings = () => {
                     },
                     content: {
                         logoUrl: '',
-                        shopName: ''
+                        shopName: '',
+                        topBannerText: '',
+                        deliveryText: '',
+                        securePaymentText: ''
                     }
                 }
             })
@@ -378,6 +384,25 @@ const ShopSettings = () => {
                                     placeholder="Ma Super Boutique"
                                     {...register('themeConfig.content.shopName')}
                                 />
+
+                                <Input
+                                    label="Message de la Bannière (Top Bar)"
+                                    placeholder="Ex: 🚚 Livraison gratuite à partir de 20 000 FCFA"
+                                    {...register('themeConfig.content.topBannerText')}
+                                />
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <Input
+                                        label="Texte de Livraison (Badges)"
+                                        placeholder="Ex: Expédition 24/48h"
+                                        {...register('themeConfig.content.deliveryText')}
+                                    />
+                                    <Input
+                                        label="Texte de Paiement (Badges)"
+                                        placeholder="Ex: À la livraison / Mobile"
+                                        {...register('themeConfig.content.securePaymentText')}
+                                    />
+                                </div>
                             </div>
                         </div>
 

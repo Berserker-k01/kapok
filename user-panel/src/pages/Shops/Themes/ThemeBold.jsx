@@ -45,6 +45,8 @@ const ThemeBold = ({ shop, products }) => {
 
     const logoUrl = resolveImageUrl(shop?.settings?.themeConfig?.content?.logoUrl || shop?.logo_url)
     const bannerUrl = resolveImageUrl(shop?.settings?.themeConfig?.content?.bannerUrl || shop?.banner_url)
+    const topBannerText = shop?.settings?.themeConfig?.content?.topBannerText || 'Livraison Express · Paiement Sécurisé'
+    const displayShopName = shop?.settings?.themeConfig?.content?.shopName || shop?.name || 'BOUTIQUE'
 
     // Categories
     const categories = ['all', ...new Set(products?.map(p => p.category).filter(Boolean))]
@@ -82,7 +84,7 @@ const ThemeBold = ({ shop, products }) => {
                     <div className="text-center py-2 text-xs font-bold tracking-[0.2em] uppercase"
                         style={{ backgroundColor: primaryColor, color: primaryTextColor }}>
                         <FiZap className="inline w-3 h-3 mr-1.5 -mt-0.5" />
-                        Livraison Express · Paiement Sécurisé
+                        {topBannerText}
                     </div>
                 )}
 
@@ -94,7 +96,7 @@ const ThemeBold = ({ shop, products }) => {
                                 <img src={logoUrl} alt={shop.name} className="h-10 w-auto object-contain" />
                             )}
                             <span className="text-xl md:text-2xl font-black tracking-tight" style={{ color: primaryColor }}>
-                                {shop.name?.toUpperCase()}
+                                {!logoUrl && displayShopName.toUpperCase()}
                             </span>
                         </div>
 
@@ -144,7 +146,7 @@ const ThemeBold = ({ shop, products }) => {
                         </div>
 
                         <h1 className="text-5xl md:text-7xl lg:text-8xl font-black leading-[0.95] tracking-tight mb-6">
-                            {shop.name?.toUpperCase()}
+                            {displayShopName.toUpperCase()}
                         </h1>
                         <p className="text-lg md:text-xl opacity-80 mb-10 max-w-xl leading-relaxed font-medium">
                             {shop.description || "Découvrez des produits uniques, sélectionnés avec passion."}

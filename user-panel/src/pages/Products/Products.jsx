@@ -102,11 +102,15 @@ const Products = () => {
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files)
     if (files.length > 0) {
-      // Limit to 5 files
-      const newFiles = files.slice(0, 5)
-      setImageFiles(newFiles)
-      setImagePreviews(newFiles.map(file => URL.createObjectURL(file)))
+      setImageFiles(prev => [...prev, ...files].slice(0, 5))
+      const newPreviews = files.map(file => URL.createObjectURL(file))
+      setImagePreviews(prev => [...prev, ...newPreviews].slice(0, 5))
     }
+  }
+
+  const removeImage = (indexToRemove) => {
+    setImagePreviews(prev => prev.filter((_, idx) => idx !== indexToRemove))
+    setImageFiles(prev => prev.filter((_, idx) => idx !== indexToRemove))
   }
 
   const handleEditProduct = (product) => {
@@ -437,6 +441,13 @@ const Products = () => {
                                     Principale
                                   </div>
                                 )}
+                                <button
+                                  type="button"
+                                  onClick={(e) => { e.stopPropagation(); removeImage(idx); }}
+                                  className="absolute top-2 right-2 bg-white rounded-full p-1.5 shadow-md opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-50 hover:text-red-500"
+                                >
+                                  <FiX className="w-4 h-4" />
+                                </button>
                               </div>
                             ))}
                             {imagePreviews.length < 5 && (

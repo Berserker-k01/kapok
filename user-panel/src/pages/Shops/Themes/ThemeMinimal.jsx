@@ -41,6 +41,8 @@ const ThemeMinimal = ({ shop, products }) => {
   const logoUrl = resolveImageUrl(shop?.settings?.themeConfig?.content?.logoUrl || shop?.logo_url)
   const bannerUrl = resolveImageUrl(shop?.settings?.themeConfig?.content?.bannerUrl || shop?.banner_url)
   const hasBanner = !!bannerUrl
+  const topBannerText = shop?.settings?.themeConfig?.content?.topBannerText || 'Livraison gratuite à partir de 25 000 F CFA'
+  const displayShopName = shop?.settings?.themeConfig?.content?.shopName || shop?.name || 'BOUTIQUE'
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50)
@@ -84,7 +86,7 @@ const ThemeMinimal = ({ shop, products }) => {
           <div className="text-center py-2 text-xs font-medium tracking-wide transition-all duration-300"
             style={{ backgroundColor: primary, color: secondary }}>
             <FiTruck className="inline w-3.5 h-3.5 mr-1.5 -mt-0.5" />
-            Livraison gratuite à partir de 25 000 F CFA
+            {topBannerText}
           </div>
         )}
 
@@ -102,7 +104,7 @@ const ThemeMinimal = ({ shop, products }) => {
               )}
               <span className={`font-bold text-lg tracking-tight transition-colors duration-300 ${scrolled || !hasBanner ? 'text-gray-900' : 'text-white'
                 }`}>
-                {shop?.name}
+                {displayShopName}
               </span>
             </div>
 
