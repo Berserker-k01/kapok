@@ -240,14 +240,11 @@ const PublicProductDetail = ({ overrideSlug }) => {
                                         <span className="w-2 h-6 rounded-full" style={{ backgroundColor: primaryColor }}></span>
                                         Description du produit
                                     </h3>
-                                    <div className="prose prose-sm sm:prose-base max-w-none opacity-90 leading-relaxed space-y-4" style={{ color: textColor }}>
-                                        {product.description.split('\n').map((line, i) => {
-                                            if (line.trim().startsWith('- ')) {
-                                                return <li key={i} className="ml-5 list-disc pl-2">{line.replace('- ', '')}</li>
-                                            }
-                                            return <p key={i}>{line}</p>
-                                        })}
-                                    </div>
+                                    <div
+                                        className="prose prose-sm sm:prose-base max-w-none opacity-90 leading-relaxed space-y-4"
+                                        style={{ color: textColor }}
+                                        dangerouslySetInnerHTML={{ __html: product.description }}
+                                    />
                                 </div>
                             )}
                         </div>

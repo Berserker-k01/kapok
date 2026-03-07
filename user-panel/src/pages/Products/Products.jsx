@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 import toast from 'react-hot-toast'
+import ReactQuill from 'react-quill'
+import 'react-quill/dist/quill.snow.css'
 import { FiPlus, FiEdit, FiTrash2, FiImage, FiSearch, FiFilter, FiLoader, FiCpu, FiBox, FiX } from 'react-icons/fi'
 import { motion, AnimatePresence } from 'framer-motion'
 import Button from '../../components/ui/Button'
@@ -409,7 +411,7 @@ const Products = () => {
                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                className="relative bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden z-10 flex flex-col"
+                className="relative bg-white rounded-xl shadow-2xl max-w-6xl w-full h-[95vh] sm:max-h-[92vh] overflow-hidden z-10 flex flex-col"
               >
                 <div className="flex items-center justify-between px-8 py-6 border-b sticky top-0 bg-white z-10">
                   <h3 className="text-xl font-bold text-gray-900">{isEditing ? 'Modifier le produit' : 'Ajouter un produit'}</h3>
@@ -547,13 +549,26 @@ const Products = () => {
                                 Générer avec l'IA
                               </button>
                             </div>
-                            <textarea
-                              rows={5}
-                              className="input-field resize-none text-base"
-                              placeholder="Décrivez les caractéristiques, matériaux, tailles disponibles..."
-                              value={newProduct.description}
-                              onChange={e => setNewProduct({ ...newProduct, description: e.target.value })}
-                            />
+                            <div className="pb-12">
+                              {/* pb-12 is added so that ReactQuill's 64 height doesn't overlap the container below it */}
+                              <ReactQuill
+                                theme="snow"
+                                className="bg-white h-[400px]"
+                                value={newProduct.description}
+                                onChange={val => setNewProduct({ ...newProduct, description: val })}
+                                modules={{
+                                  toolbar: [
+                                    [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                                    ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+                                    [{ 'list': 'ordered' }, { 'list': 'bullet' }, { 'indent': '-1' }, { 'indent': '+1' }],
+                                    ['link', 'image', 'video'],
+                                    [{ 'color': [] }, { 'background': [] }],
+                                    ['clean']
+                                  ],
+                                }}
+                                placeholder="Générez ou concevez la page produit entière avec des images, vidéos, et formatage complet !..."
+                              />
+                            </div>
                           </div>
                         </div>
                       </div>

@@ -259,16 +259,19 @@ const ThemeBold = ({ shop, products }) => {
                                             <FiImage className="w-10 h-10" style={{ color: `${textColor}20` }} />
                                         </div>
                                     )}
-
-                                    {/* Hover Description Overlay */}
+                                    {/* Hover Description Tooltip Pop-up */}
                                     {product.description && (
                                         <div
-                                            className="absolute inset-x-0 top-0 p-4 h-full pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-center items-center backdrop-blur-sm"
-                                            style={{ backgroundColor: `${bgColor}CC`, color: textColor }}
+                                            className="absolute z-30 left-1/2 -translate-x-1/2 bottom-[105%] w-[110%] p-4 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.4)] pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0"
+                                            style={{ backgroundColor: bgColor, border: `1px solid ${textColor}20` }}
                                         >
-                                            <p className="text-xs sm:text-sm font-medium text-center line-clamp-6 px-2">
-                                                {product.description}
-                                            </p>
+                                            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 rotate-45" style={{ backgroundColor: bgColor, borderBottom: `1px solid ${textColor}20`, borderRight: `1px solid ${textColor}20` }}></div>
+                                            <h4 className="font-bold text-xs mb-2 truncate" style={{ color: primaryColor }}>Description</h4>
+                                            <div
+                                                className="text-xs font-medium line-clamp-5 prose prose-sm prose-invert"
+                                                style={{ color: textColor }}
+                                                dangerouslySetInnerHTML={{ __html: product.description.replace(/<img[^>]*>/g, '') }}
+                                            />
                                         </div>
                                     )}
 

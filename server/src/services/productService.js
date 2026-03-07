@@ -196,11 +196,11 @@ class ProductService {
         if (updateData.stock !== undefined && updateData.inventory === undefined) {
             updateData.inventory = updateData.stock;
         }
-
         const { name, description, price, category, image_url, inventory, sku, weight, dimensions } = updateData;
 
         let { images } = updateData;
-        if (image_url) {
+        // Fix: Use image_url only if images array is empty or undefined
+        if ((!images || images.length === 0) && image_url) {
             images = [image_url];
         }
 
