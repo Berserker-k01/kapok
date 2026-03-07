@@ -421,35 +421,49 @@ const Products = () => {
                   <div className="overflow-y-auto flex-1">
                     <div className="p-8 space-y-6">
 
-                      {/* Image Upload Card */}
-                      <div className="bg-gray-50 rounded-2xl p-6 border border-gray-200">
-                        <div className="flex flex-col space-y-2">
-                          <label className="block text-sm font-bold text-gray-700">Images du produit</label>
-                          <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-xl relative cursor-pointer hover:border-primary-500 transition-colors bg-white hover:bg-gray-50 shadow-sm">
-                            {imagePreviews.length > 0 ? (
-                              <div className="flex flex-wrap gap-4 w-full justify-center pointer-events-none">
-                                {imagePreviews.map((preview, idx) => (
-                                  <div key={idx} className="h-28 w-28 relative rounded-lg overflow-hidden border-2 border-gray-200 shadow-sm">
-                                    <img src={preview} alt={`Preview ${idx + 1}`} className="h-full w-full object-cover" />
+                      {/* Shopify-like Media Card */}
+                      <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm">
+                        <div className="flex justify-between items-center mb-4">
+                          <label className="block text-base font-bold text-gray-900">Médias (jusqu'à 5)</label>
+                        </div>
+
+                        {imagePreviews.length > 0 ? (
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                            {imagePreviews.map((preview, idx) => (
+                              <div key={idx} className={`relative rounded-xl overflow-hidden border border-gray-200 group ${idx === 0 ? 'col-span-2 row-span-2 aspect-square' : 'aspect-square'}`}>
+                                <img src={preview} alt={`Preview ${idx + 1}`} className="w-full h-full object-cover" />
+                                {idx === 0 && (
+                                  <div className="absolute bottom-2 left-2 bg-white px-2 py-1 text-[10px] font-bold rounded-md shadow-sm border border-gray-100">
+                                    Principale
                                   </div>
-                                ))}
-                                <div className="w-full text-center mt-2">
-                                  <span className="text-xs text-gray-500 font-medium bg-gray-100 px-3 py-1.5 rounded-full inline-flex items-center gap-2">
-                                    <FiEdit className="w-3 h-3" /> Cliquez n'importe où ici pour changer les images
-                                  </span>
-                                </div>
+                                )}
                               </div>
-                            ) : (
-                              <div className="space-y-1 text-center pointer-events-none py-4">
-                                <FiImage className="mx-auto h-16 w-16 text-gray-300 mb-4" />
-                                <div className="flex text-sm text-gray-600 justify-center">
-                                  <span className="relative rounded-md font-bold text-primary-600 hover:text-primary-500 flex items-center gap-2">
-                                    <FiEdit /> Ajouter des photos (jusqu'à 5)
-                                  </span>
-                                </div>
-                                <p className="text-xs text-gray-400 mt-2">Glissez-déposez ou cliquez ici (PNG, JPG)</p>
+                            ))}
+                            {imagePreviews.length < 5 && (
+                              <div className={`relative rounded-xl border-2 border-dashed border-gray-300 hover:border-primary-500 hover:bg-gray-50 cursor-pointer transition-colors flex flex-col items-center justify-center ${imagePreviews.length === 0 ? 'col-span-2 row-span-2 aspect-square' : 'aspect-square'}`}>
+                                <FiPlus className="w-6 h-6 text-gray-400 mb-1" />
+                                <span className="text-xs font-semibold text-gray-500">Ajouter</span>
+                                <input
+                                  type="file"
+                                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                  accept="image/*"
+                                  multiple
+                                  onChange={handleImageChange}
+                                />
                               </div>
                             )}
+                          </div>
+                        ) : (
+                          <div className="mt-1 flex justify-center px-6 pt-10 pb-12 border-2 border-gray-300 border-dashed rounded-xl relative cursor-pointer hover:border-primary-500 transition-colors bg-white hover:bg-gray-50 shadow-sm">
+                            <div className="space-y-2 text-center pointer-events-none">
+                              <FiImage className="mx-auto h-12 w-12 text-gray-400 mb-3" />
+                              <div className="flex text-sm text-gray-600 justify-center">
+                                <span className="relative rounded-md font-bold text-primary-600 hover:text-primary-500 focus-within:outline-none">
+                                  Ajouter des images
+                                </span>
+                              </div>
+                              <p className="text-xs text-gray-500">Accepte les images par glisser-déposer</p>
+                            </div>
                             <input
                               type="file"
                               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
@@ -458,8 +472,8 @@ const Products = () => {
                               onChange={handleImageChange}
                             />
                           </div>
-                          <p className="text-xs font-medium text-gray-600 pt-2 text-center">JPG ou PNG • Maximum 2MB</p>
-                        </div>
+                        )}
+                        <p className="text-xs font-medium text-gray-500 mt-4 text-center">Recommandé: Images carrées (JPG, PNG)</p>
                       </div>
 
                       {/* Product Details Card */}
