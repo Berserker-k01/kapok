@@ -157,15 +157,19 @@ const Shops = () => {
               {/* Quick Stats */}
               <div className="grid grid-cols-3 gap-2 py-4 border-t border-b border-gray-50 my-4">
                 <div className="text-center p-2 rounded-lg hover:bg-gray-50 transition-colors">
-                  <p className="text-lg font-bold text-gray-900">-</p>
+                  <p className="text-lg font-bold text-gray-900">{shop.product_count || 0}</p>
                   <p className="text-[10px] uppercase tracking-wide text-gray-500 font-medium">Produits</p>
                 </div>
                 <div className="text-center p-2 rounded-lg hover:bg-gray-50 transition-colors">
-                  <p className="text-lg font-bold text-gray-900">-</p>
+                  <p className="text-lg font-bold text-gray-900">{shop.order_count || 0}</p>
                   <p className="text-[10px] uppercase tracking-wide text-gray-500 font-medium">Commandes</p>
                 </div>
                 <div className="text-center p-2 rounded-lg hover:bg-gray-50 transition-colors">
-                  <p className="text-lg font-bold text-gray-900">-</p>
+                  <p className="text-lg font-bold text-gray-900">{shop.total_revenue ? new Intl.NumberFormat('fr-FR', {
+                    style: 'currency',
+                    currency: shop.currency || 'XOF',
+                    minimumFractionDigits: 0
+                  }).format(shop.total_revenue) : '0'}</p>
                   <p className="text-[10px] uppercase tracking-wide text-gray-500 font-medium">Revenus</p>
                 </div>
               </div>

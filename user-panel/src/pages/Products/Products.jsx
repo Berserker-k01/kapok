@@ -25,8 +25,7 @@ const Products = () => {
     collectionId: '' // [NEW] Optional Collection
   })
   const [collections, setCollections] = useState([]) // [NEW] Collections state
-  const [imageFiles, setImageFiles] = useState([])
-  const [imagePreviews, setImagePreviews] = useState([])
+  const [media, setMedia] = useState([]) // Array of { type: 'existing' | 'new', url: string, file?: File }
   const [isEditing, setIsEditing] = useState(false)
   const [editingId, setEditingId] = useState(null)
   const { token } = useAuthStore()
@@ -102,15 +101,13 @@ const Products = () => {
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files)
     if (files.length > 0) {
-      setImageFiles(prev => [...prev, ...files].slice(0, 5))
-      const newPreviews = files.map(file => URL.createObjectURL(file))
-      setImagePreviews(prev => [...prev, ...newPreviews].slice(0, 5))
+      const newMedia = files.map(file => ({ type: 'new', url: URL.createObjectURL(file), file }));
+      setMedia(prev => [...prev, ...newMedia].slice(0, 5));
     }
   }
 
   const removeImage = (indexToRemove) => {
-    setImagePreviews(prev => prev.filter((_, idx) => idx !== indexToRemove))
-    setImageFiles(prev => prev.filter((_, idx) => idx !== indexToRemove))
+    setMedia(prev => prev.filter((_, idx) => idx !== indexToRemove))
   }
 
   const handleEditProduct = (product) => {
@@ -124,15 +121,14 @@ const Products = () => {
       collectionId: product.collection_id || ''
     })
 
-    // Resolve multiple images
-    const previews = []
+    // Resolve multiple images into media state
+    const existingMedia = []
     if (product.images && Array.isArray(product.images)) {
-      previews.push(...product.images.map(img => resolveImageUrl(img)))
+      existingMedia.push(...product.images.map(img => ({ type: 'existing', url: resolveImageUrl(img) })))
     } else if (product.image_url) {
-      previews.push(resolveImageUrl(product.image_url))
+      existingMedia.push({ type: 'existing', url: resolveImageUrl(product.image_url) })
     }
-    setImagePreviews(previews)
-    setImageFiles([])
+    setMedia(existingMedia)
     setEditingId(product.id)
     setIsEditing(true)
     setShowAddModal(true)
@@ -150,9 +146,14 @@ const Products = () => {
     formData.append('shopId', selectedShop)
     if (newProduct.collectionId) formData.append('collectionId', newProduct.collectionId) // [NEW]
 
-    if (imageFiles && imageFiles.length > 0) {
-      imageFiles.forEach(file => {
-        formData.append('images', file)
+    if (media.length > 0) {
+      media.forEach(m => {
+        if (m.type === 'new' && m.file) {
+          formData.append('images', m.file)
+        } else if (m.type === 'existing') {
+          // Send existing URLs as strings
+          formData.append('existingImages', m.url)
+        }
       })
     }
 
@@ -183,8 +184,7 @@ const Products = () => {
 
   const resetForm = () => {
     setNewProduct({ name: '', price: '', description: '', category: 'Vêtements', stock: '', shopId: '', collectionId: '' })
-    setImageFiles([])
-    setImagePreviews([])
+    setMedia([])
     setIsEditing(false)
     setEditingId(null)
   }
@@ -431,11 +431,11 @@ const Products = () => {
                           <label className="block text-base font-bold text-gray-900">Médias (jusqu'à 5)</label>
                         </div>
 
-                        {imagePreviews.length > 0 ? (
+                        {media.length > 0 ? (
                           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                            {imagePreviews.map((preview, idx) => (
+                            {media.map((item, idx) => (
                               <div key={idx} className={`relative rounded-xl overflow-hidden border border-gray-200 group ${idx === 0 ? 'col-span-2 row-span-2 aspect-square' : 'aspect-square'}`}>
-                                <img src={preview} alt={`Preview ${idx + 1}`} className="w-full h-full object-cover" />
+                                <img src={item.url} alt={`Preview ${idx + 1}`} className="w-full h-full object-cover" />
                                 {idx === 0 && (
                                   <div className="absolute bottom-2 left-2 bg-white px-2 py-1 text-[10px] font-bold rounded-md shadow-sm border border-gray-100">
                                     Principale
@@ -450,8 +450,8 @@ const Products = () => {
                                 </button>
                               </div>
                             ))}
-                            {imagePreviews.length < 5 && (
-                              <div className={`relative rounded-xl border-2 border-dashed border-gray-300 hover:border-primary-500 hover:bg-gray-50 cursor-pointer transition-colors flex flex-col items-center justify-center ${imagePreviews.length === 0 ? 'col-span-2 row-span-2 aspect-square' : 'aspect-square'}`}>
+                            {media.length < 5 && (
+                              <div className={`relative rounded-xl border-2 border-dashed border-gray-300 hover:border-primary-500 hover:bg-gray-50 cursor-pointer transition-colors flex flex-col items-center justify-center ${media.length === 0 ? 'col-span-2 row-span-2 aspect-square' : 'aspect-square'}`}>
                                 <FiPlus className="w-6 h-6 text-gray-400 mb-1" />
                                 <span className="text-xs font-semibold text-gray-500">Ajouter</span>
                                 <input

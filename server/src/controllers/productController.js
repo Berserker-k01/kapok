@@ -65,11 +65,26 @@ exports.getProduct = catchAsync(async (req, res, next) => {
 });
 
 exports.updateProduct = catchAsync(async (req, res, next) => {
-    // Gestion de l'image uploadée (STOCKAGE LOCAL)
+    // Gestion des images existantes (issues du front-end)
+    let images = [];
+    if (req.body.existingImages) {
+        images = Array.isArray(req.body.existingImages) ? req.body.existingImages : [req.body.existingImages];
+    }
+
+    // Ajout des nouvelles images uploadées
     if (req.files && req.files.length > 0) {
-        req.body.images = req.files.map(f => `/api/uploads/${f.filename}`);
-        req.body.image_url = req.body.images[0];
-        console.log('[Product] ✅ Images updated (Local):', req.body.images);
+        const newImages = req.files.map(f => `/api/uploads/${f.filename}`);
+        images = [...images, ...newImages];
+        console.log('[Product] ✅ Nouvelles images uploadées:', newImages);
+    }
+
+    // Mise à jour de req.body avec la liste fusionnée
+    if (images.length > 0) {
+        req.body.images = images;
+        req.body.image_url = images[0];
+    } else {
+        req.body.images = [];
+        req.body.image_url = null;
     }
 
     const product = await productService.updateProduct(req.user.id, req.params.productId, req.body);

@@ -41,13 +41,11 @@ class ShopService {
     const query = `
       SELECT 
         s.*,
-        COUNT(DISTINCT p.id)::integer as product_count,
-        COUNT(DISTINCT o.id)::integer as order_count
+        (SELECT COUNT(id) FROM products WHERE shop_id = s.id) as product_count,
+        (SELECT COUNT(id) FROM orders WHERE shop_id = s.id) as order_count,
+        (SELECT COALESCE(SUM(total_amount), 0) FROM orders WHERE shop_id = s.id) as total_revenue
       FROM shops s
-      LEFT JOIN products p ON s.id = p.shop_id
-      LEFT JOIN orders o ON s.id = o.shop_id
       WHERE s.owner_id = ?
-      GROUP BY s.id
       ORDER BY s.created_at DESC
     `;
     const result = await db.query(query, [userId]);

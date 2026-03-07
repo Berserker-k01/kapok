@@ -256,8 +256,17 @@ const ThemeMinimal = ({ shop, products }) => {
                     </div>
                   )}
 
+                  {/* Hover Description Overlay */}
+                  {product.description && (
+                    <div className="absolute inset-x-0 top-0 p-4 h-full pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-center items-center bg-black/60 backdrop-blur-sm text-white">
+                      <p className="text-xs sm:text-sm font-medium text-center line-clamp-6 px-2">
+                        {product.description}
+                      </p>
+                    </div>
+                  )}
+
                   {/* Quick add */}
-                  <div className="absolute inset-x-0 bottom-0 p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out">
+                  <div className="absolute inset-x-0 bottom-0 p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out pointer-events-auto">
                     <button
                       onClick={(e) => handleAddToCart(product, e)}
                       className={`w-full py-2.5 rounded-lg font-semibold text-sm shadow-lg transition-all flex items-center justify-center gap-2 ${addedProductId === product.id ? 'bg-green-600 text-white' : ''
